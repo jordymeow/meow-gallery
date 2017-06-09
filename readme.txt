@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: gallery, masonry, lightroom, image, media, photo
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 0.1.0
+Stable tag: 0.1.2
 
 Gallery system built for photographers, by photographers. Clean, focused, evolve naturally. Using the Masonry layout by default. More information on https://meowapps.com/meow-gallery/.
 
@@ -29,7 +29,7 @@ Nothing yet.
 
 == Changelog ==
 
-= 0.1.0 =
+= 0.1.2 =
 * Fix: Many fixes, many updates, revamped.
 * Add: Pro -> Infinite loading, with options
 
