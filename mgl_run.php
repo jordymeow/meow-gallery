@@ -57,7 +57,7 @@ class Meow_Gallery_Run {
 	    }
 	    $attr['include'] = $attr['ids'];
 		}
-		$html5 = current_theme_supports( 'html5', 'gallery' );
+		$html5 = true; // current_theme_supports( 'html5', 'gallery' );
 		$default_size = get_option( 'mgl_default_size', 'thumbnail' );
 		$enable_caption = get_option( 'mgl_enable_caption', true ); // THOMAS : I've edit default value to true for dev purpose
 		$atts = shortcode_atts( array(
