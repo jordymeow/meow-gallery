@@ -47,7 +47,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				update_option( 'mgl_infinite_batch_size', 20 );
 
 			$layout = get_option( 'mgl_layout' );
-			$infinite = get_option( 'mgl_infinite', false );
+			$infinite = get_option( 'mgl_infinite', false ) && $this->is_registered();
 
 			if ( $infinite ) {
 				add_settings_section( 'mgl_infinite', null, null, 'mgl_settings_infinite-menu' );
@@ -152,7 +152,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 						<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
 
-						<?php if ( get_option( 'mgl_infinite', false ) ): ?>
+						<?php if ( get_option( 'mgl_infinite', false ) && $this->is_registered() ): ?>
 						<div class="meow-box">
 							<form method="post" action="options.php">
 								<h3>Infinite Loading</h3>

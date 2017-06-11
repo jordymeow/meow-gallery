@@ -2,7 +2,10 @@
 
 class Meow_Gallery_Core {
 
-	public function __construct() {
+	public $admin = null;
+
+	public function __construct( $admin ) {
+		$this->admin = $admin;
 		add_action( 'init', array( $this, 'init' ) );
 	}
 
@@ -12,7 +15,7 @@ class Meow_Gallery_Core {
 
 	function init() {
 		include( 'mgl_run.php' );
-    new Meow_Gallery_Run;
+    new Meow_Gallery_Run( $this->admin );
 	}
 
 }

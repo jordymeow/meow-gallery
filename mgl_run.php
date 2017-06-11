@@ -2,8 +2,15 @@
 
 class Meow_Gallery_Run {
 
-	public function __construct() {
-    wp_enqueue_script( 'jquery' );
+	public $admin = null;
+
+	public function __construct( $admin ) {
+		$this->admin = $admin;
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+	}
+
+	function enqueue_scripts() {
+		wp_enqueue_script( 'jquery' );
     wp_enqueue_script( 'imagesLoaded', plugins_url( '/js/imagesloaded.min.js', __FILE__ ),
 			array( 'jquery' ), '0.0.1', false );
     wp_enqueue_script( 'masonry', plugins_url( '/js/masonry.min.js', __FILE__ ),
@@ -17,7 +24,7 @@ class Meow_Gallery_Run {
 			'settings' => array(
 				'layout' => get_option( 'mgl_layout', 'masonry' ),
 				'infinite_loading' => array(
-					'enabled' => get_option( 'mgl_infinite', false ),
+					'enabled' => get_option( 'mgl_infinite', false ) && $this->admin->is_registered(),
 					'animated' => get_option( 'mgl_infinite_animation', true ),
 					'batch_size' => get_option( 'mgl_infinite_batch_size', 20 ),
 					'loader' => array(
@@ -42,7 +49,6 @@ class Meow_Gallery_Run {
 		) );
     wp_enqueue_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css' );
     //wp_enqueue_style( 'ionicons', '//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css' );
-
 		add_shortcode( 'gallery', array( $this, 'gallery_shortcode' ) );
 	}
 
