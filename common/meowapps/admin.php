@@ -37,7 +37,7 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
       	'item_name' => $item,
       	'wp_override' => true,
       	'author' => 'Jordy Meow',
-      	'url' => home_url(),
+      	'url' => get_site_url(),
         'beta' => false
       ) );
 

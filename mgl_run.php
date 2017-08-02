@@ -10,19 +10,24 @@ class Meow_Gallery_Run {
 	}
 
 	function enqueue_scripts() {
+		global $mgl_version;
 		wp_enqueue_script( 'jquery' );
     wp_enqueue_script( 'imagesLoaded', plugins_url( '/js/imagesloaded.min.js', __FILE__ ),
-			array( 'jquery' ), '0.0.1', false );
+			array( 'jquery' ), $mgl_version, false );
+		wp_enqueue_script( 'justifiedGallery', plugins_url( '/js/jquery.justifiedGallery.min.js', __FILE__ ),
+			array('jquery'), $mgl_version, false );
     wp_enqueue_script( 'masonry', plugins_url( '/js/masonry.min.js', __FILE__ ),
-			array('jquery'), '0.0.1', false );
+			array('jquery'), $mgl_version, false );
 		wp_enqueue_script( 'mgl-masonry', plugins_url( '/js/mgl-masonry.js', __FILE__ ),
-			array('jquery','masonry'), '0.0.1', false );
+			array('jquery','masonry'), $mgl_version, false );
+		wp_enqueue_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
+				array('jquery','justifiedGallery'), $mgl_version, false );
 		wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-			array( 'jquery','masonry','mgl-masonry','imagesLoaded' ), '0.0.1', false );
+			array( 'jquery','masonry', 'justifiedGallery', 'mgl-masonry', 'mgl-justified', 'imagesLoaded' ), $mgl_version, false );
 		wp_localize_script('mgl-js', 'mgl', array(
 			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',s
 			'settings' => array(
-				'layout' => get_option( 'mgl_layout', 'masonry' ),
+				'layout' => get_option( 'mgl_layout', 'justified' ),
 				'infinite_loading' => array(
 					'enabled' => get_option( 'mgl_infinite', false ) && $this->admin->is_registered(),
 					'animated' => get_option( 'mgl_infinite_animation', true ),
@@ -38,7 +43,8 @@ class Meow_Gallery_Run {
 					'gutter' => get_option( 'mgl_masonry_gutter', 10 )
 				),
 				'justified' => array(
-					'gutter' => get_option( 'mgl_justified_gutter', 10 )
+					'gutter' => get_option( 'mgl_justified_gutter', 10 ),
+					'row_height' => get_option( 'mgl_justified_row_height', 250 )
 				),
 				'horizontal_slider' => array(
 					'slider_height' => 400, // in px
@@ -48,7 +54,7 @@ class Meow_Gallery_Run {
 			)
 		) );
     wp_enqueue_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css' );
-    //wp_enqueue_style( 'ionicons', '//code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css' );
+		wp_enqueue_style( 'justifiedGallery-css', plugin_dir_url( __FILE__ ) . 'css/justifiedGallery.min.css' );
 		add_shortcode( 'gallery', array( $this, 'gallery_shortcode' ) );
 	}
 
@@ -67,17 +73,17 @@ class Meow_Gallery_Run {
 		$default_size = get_option( 'mgl_default_size', 'thumbnail' );
 		$enable_caption = get_option( 'mgl_enable_caption', true ); // THOMAS : I've edit default value to true for dev purpose
 		$atts = shortcode_atts( array(
-		        'order'      => 'ASC',
-		        'orderby'    => 'menu_order ID',
-		        'id'         => $post ? $post->ID : 0,
-		        'itemtag'    => $html5 ? 'figure'     : 'dl',
-		        'icontag'    => $html5 ? 'div'        : 'dt',
-		        'captiontag' => $html5 ? 'figcaption' : 'dd',
-		        'columns'    => 3,
-		        'size'       => $default_size,
-		        'include'    => '',
-		        'exclude'    => '',
-		        'link'       => ''
+	    'order'      => 'ASC',
+	    'orderby'    => 'menu_order ID',
+	    'id'         => $post ? $post->ID : 0,
+	    'itemtag'    => $html5 ? 'figure'     : 'dl',
+	    'icontag'    => $html5 ? 'div'        : 'dt',
+	    'captiontag' => $html5 ? 'figcaption' : 'dd',
+	    'columns'    => 3,
+	    'size'       => $default_size,
+	    'include'    => '',
+	    'exclude'    => '',
+	    'link'       => ''
 		), $attr, 'gallery' );
 
 		$id = intval( $atts['id'] );
@@ -96,15 +102,16 @@ class Meow_Gallery_Run {
 		}
 
 		if ( empty( $attachments ) ) {
-		        return '';
+			return '';
 		}
 
 		if ( is_feed() ) {
-		        $output = "\n";
-		        foreach ( $attachments as $att_id => $attachment ) {
-		                $output .= wp_get_attachment_link( $att_id, $atts['size'], true ) . "\n";
-		        }
-		        return $output;
+	    $output = "\n";
+	    foreach ( $attachments as $att_id => $attachment ) {
+				$image_meta = wp_get_attachment_metadata( $id );
+	      $output .= wp_get_attachment_link( $att_id, $atts['size'], true ) . "\n";
+	    }
+	    return $output;
 		}
 
 		$itemtag = tag_escape( $atts['itemtag'] );
@@ -141,9 +148,14 @@ class Meow_Gallery_Run {
 		$output = apply_filters( 'gallery_style', $gallery_style . $gallery_div );
 
 		$i = 0;
-		foreach ( $attachments as $id => $attachment ) {
 
-	    $attr = ( trim( $attachment->post_excerpt ) ) ? array( 'aria-describedby' => "$selector-$id" ) : '';
+		foreach ( $attachments as $id => $attachment ) {
+	    $attr = ( trim( $attachment->post_excerpt ) ) ? array( 'aria-describedby' => "$selector-$id" ) : array();
+			$image_meta = wp_get_attachment_metadata( $id );
+			$attr = array_merge( $attr, array(
+				"mgl-width" => !isset( $image_meta['width'] ) ? "" : $image_meta['width'],
+				"mgl-height" => !isset( $image_meta['height'] ) ? "" : $image_meta['height']
+			) );
 	    if ( ! empty( $atts['link'] ) && 'file' === $atts['link'] ) {
 	            $image_output = wp_get_attachment_link( $id, $atts['size'], false, false, false, $attr );
 	    } elseif ( ! empty( $atts['link'] ) && 'none' === $atts['link'] ) {
@@ -151,7 +163,6 @@ class Meow_Gallery_Run {
 	    } else {
 	            $image_output = wp_get_attachment_link( $id, $atts['size'], true, false, false, $attr );
 	    }
-	    $image_meta  = wp_get_attachment_metadata( $id );
 
 	    $orientation = '';
 	    if ( isset( $image_meta['height'], $image_meta['width'] ) ) {

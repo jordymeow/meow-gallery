@@ -63,6 +63,11 @@ jQuery(document).ready(function($) {
                         all_images_loaded = true;
                     });
 
+                    // After 5s, we recalculate layout
+                    setTimeout(function() {
+                        $grid.masonry('layout');
+                    }, 5000);
+
                     // Function dealing with the scrolling logic, callback() takes care of the rest
                     var infinite_scroll = function(container, callback) {
                         $(window).on('scroll', function() {
@@ -118,7 +123,92 @@ jQuery(document).ready(function($) {
 
             };
 
-            mglMasonry.pro_callback();    
+            if(typeof mglMasonry !== 'undefined') {
+                mglMasonry.pro_callback();
+            }
+
+            window.Meowapps_justified_infinite_loading = function (infinite_loading) {
+
+                // Initialize items_array
+                var items_array = [];
+
+                // We run through all the items
+                $('.gallery-item').each(function(index, item) {
+                    // We add them index
+                    $(this).attr('data-mgl-index', index);
+                    // We store them in the items_array
+                    items_array.push( $(this).clone() );
+                    // We delete them from the DOM
+                    $(this).remove();
+                });
+
+                // Declaring some useful vars
+                var number_of_items = items_array.length;
+                var batch_size = infinite_loading.batch_size;
+                var last_item_displayed = 0;
+                var all_images_loaded = false;
+
+                // First of all, let's put the first items in the grid
+                for(var i=0; i < batch_size; i++) {
+                    $('.gallery').append(items_array[i]);
+                    last_item_displayed = i;
+                }
+
+                // Apply layout to first batch
+                setTimeout(function() {
+                    $('.gallery').justifiedGallery({
+                        selector: 'figure, .gallery-item',
+                        rowHeight: mgl.settings.justified.row_height,
+                        margins: mgl.settings.justified.gutter,
+                        waitThumbnailsLoad: false
+                    });
+                });
+
+                // FROM NOW, We listen the scroll !
+
+                // Next batches
+                var readyToLoad = true;
+
+                $(window).on('scroll', function() {
+                    if(readyToLoad) {
+                        var container = $('.gallery');
+                        var containerBottomOffset = container.offset().top + container.outerHeight();
+                        var scrollTop = $(this).scrollTop();
+                        var scrollTopBottom = scrollTop + $(this).outerHeight();
+
+                        // If we are scrolling after the end of the gallery container
+                        if(scrollTopBottom > containerBottomOffset - 200) {
+                            readyToLoad = false;
+                            setTimeout(function() {
+                                readyToLoad = true;
+                            }, 500);
+
+                            // Everything is ok to load more items, let's do it !
+                            // We append the new items
+                            var count = 0;
+                            while(count < batch_size) {
+                                $('.gallery').append(items_array[last_item_displayed + 1]);
+                                last_item_displayed++;
+                                count++;
+                            }
+
+                            // Apply layout to first batch
+                            setTimeout(function() {
+                                $('.gallery').justifiedGallery('norewind', {
+                                    selector: 'figure, .gallery-item',
+                                    rowHeight: mgl.settings.justified.row_height,
+                                    margins: mgl.settings.justified.gutter,
+                                    waitThumbnailsLoad: false
+                                });
+                            });
+                        }
+                    }
+                });
+            };
+
+            if(typeof mglJustified !== 'undefined') {
+                mglJustified.pro_callback();
+            }
     }
 
 });

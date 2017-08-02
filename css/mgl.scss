@@ -1,6 +1,33 @@
 // Removing captions !
 
 .gallery {
+
+    &.justified {
+        position: relative;
+
+        .gallery-item {
+            position: absolute;
+            width: auto;
+            max-width: none;
+            line-height: 0;
+            margin: 0 !important;
+            opacity: 0;
+
+            &.entry-visible {
+                opacity: 1;
+            }
+
+            .gallery-icon {
+                height: 100%;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                }
+            }
+        }
+    }
+
     &.masonry {
         margin: 0 auto;
 

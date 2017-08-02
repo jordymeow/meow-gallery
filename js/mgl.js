@@ -1,10 +1,5 @@
 jQuery(document).ready(function($) {
 
-    // TEMPORARY : transforms a justified layout option into an horizontal slide one //
-    if (mgl.settings.layout == "justified") {
-        mgl.settings.layout = "horizontal-slider";
-    }
-
     // Check if there is a wordpress gallery on the page
     var gallery_exists = false;
     if ($('.gallery').length > 0) {
@@ -13,6 +8,32 @@ jQuery(document).ready(function($) {
 
     // Check if there is more than one gallery
     var galleries_number = $('.gallery').length;
+
+    /* ========================================= */
+    /* JUSTIFIED LAYOUT ------------------------ */
+    /* ========================================= */
+    if (mgl.settings.layout == "justified" && gallery_exists) {
+
+        var parameters = {
+            gutter: mgl.settings.justified.gutter,
+            rowHeight: mgl.settings.justified.row_height,
+            infinite_loading: {
+                enabled: mgl.settings.infinite_loading.enabled,
+                animated: mgl.settings.infinite_loading.animated,
+                batch_size: mgl.settings.infinite_loading.batch_size,
+                loader: {
+                    enabled: true,
+                    color: "#444",
+                }
+            },
+            context: {
+                galleries_number: galleries_number,
+            }
+        };
+
+        window.mglJustified = new MglJustified(parameters);
+        mglJustified.run();
+    }
 
     /* ========================================= */
     /* MASONRY LAYOUT -------------------------- */
@@ -41,7 +62,7 @@ jQuery(document).ready(function($) {
     /* ========================================= */
     /* HORIZONTAL SLIDER LAYOUT ---------------- */
     /* ========================================= */
-    if (mgl.settings.layout == "horizontal-slider" && gallery_exists) {
+    if (mgl.settings.layout == "horizontal_slider" && gallery_exists) {
 
         // Adding classes and CSS
         $('.gallery').addClass('horizontal-slider-gallery');

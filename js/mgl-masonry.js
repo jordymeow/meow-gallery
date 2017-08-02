@@ -64,6 +64,11 @@ jQuery(document).ready(function($) {
                     style_captions(gutter);
     	        });
 
+                // After 5s, we recalculate layout
+                setTimeout(function() {
+                    $grid.masonry('layout');
+                }, 5000);
+
                 // Recalculate layout on resize
                 $(window).on('resize', function() {
                     $grid.masonry('layout');
@@ -78,6 +83,8 @@ jQuery(document).ready(function($) {
                     meowapps_masonry_infinite_loading.listen();
                 }
     		}
+
+
 
         };
 

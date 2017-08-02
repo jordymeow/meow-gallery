@@ -45,6 +45,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			$batch = get_option( 'mgl_infinite_batch_size', 20 );
 			if ( empty( $batch ) )
 				update_option( 'mgl_infinite_batch_size', 20 );
+			$batch = get_option( 'mgl_infinite_batch_size', 20 );
 
 			$layout = get_option( 'mgl_layout' );
 			$infinite = get_option( 'mgl_infinite', false ) && $this->is_registered();
@@ -82,7 +83,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				register_setting( 'mgl_settings_masonry', 'mgl_masonry_gutter' );
 			}
 			// SUBMENU > Settings > Settings
-			else if ( $layout == 'horizontal-slider' ) {
+			else if ( $layout == 'horizontal_slider' ) {
 				//add_settings_section( 'mgl_justified', null, null, 'mgl_settings_horizontal-slider-menu' );
 				// add_settings_field( 'mgl_horizontal-slider_gutter', "Gutter",
 				// 	array( $this, 'admin_horizontal-slider_gutter_callback' ),
@@ -95,6 +96,13 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				add_settings_field( 'mgl_justified_gutter', "Gutter",
 					array( $this, 'admin_justified_gutter_callback' ),
 					'mgl_settings_justified-menu', 'mgl_justified' );
+
+				add_settings_section( 'mgl_justified', null, null, 'mgl_settings_justified-menu' );
+				add_settings_field( 'mgl_justified_row_height', "Row Height",
+					array( $this, 'admin_justified_row_height_callback' ),
+					'mgl_settings_justified-menu', 'mgl_justified' );
+
+				register_setting( 'mgl_settings_justified', 'mgl_justified_row_height' );
 				register_setting( 'mgl_settings_justified', 'mgl_justified_gutter' );
 			}
 
@@ -133,13 +141,26 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 							</form>
 						</div>
 
-						<?php if ( get_option( 'mgl_layout', 'masonry' ) == 'masonry' ): ?>
+						<?php if ( get_option( 'mgl_layout', 'justified' ) == 'masonry' ): ?>
 						<div class="meow-box">
 							<form method="post" action="options.php">
 								<h3>Masonry</h3>
 								<div class="inside">
 									<?php settings_fields( 'mgl_settings_masonry' ); ?>
 									<?php do_settings_sections( 'mgl_settings_masonry-menu' ); ?>
+							    <?php submit_button(); ?>
+								</div>
+							</form>
+						</div>
+						<?php endif; ?>
+
+						<?php if ( get_option( 'mgl_layout', 'justified' ) == 'justified' ): ?>
+						<div class="meow-box">
+							<form method="post" action="options.php">
+								<h3>Justified</h3>
+								<div class="inside">
+									<?php settings_fields( 'mgl_settings_justified' ); ?>
+									<?php do_settings_sections( 'mgl_settings_justified-menu' ); ?>
 							    <?php submit_button(); ?>
 								</div>
 							</form>
@@ -178,17 +199,19 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 	function admin_layout_callback( $args ) {
 		$layouts = array(
+			'justified' => array( 'name' => 'Justified', 'desc' => "Display your photos using Justified (similar to Flickr)." ),
 			'masonry' => array( 'name' => 'Masonry', 'desc' => "Display your photos using Masonry." ),
-			'horizontal-slider' => array( 'name' => 'Horizontal Slider', 'desc' => "Your photos in a horizontal slider." ),
-			//'justified' => array( 'name' => 'Justified', 'desc' => "Justified by row." ),
+			'horizontal_slider' => array( 'name' => 'Horizontal Slider (BETA)', 'desc' => "Your photos in a horizontal slider." )
 		);
 		$html = '';
 		foreach ( $layouts as $key => $arg )
-			$html .= '<input type="radio" class="radio" id="mgl_layout" name="mgl_layout" value="' . $key . '"' .
-				checked( $key, get_option( 'mgl_layout', 'masonry' ), false ) . ' > '  .
+			$html .= '<img width="50" style="float: left; margin-right: 20px; margin-top: -10px;"
+				src="' . plugin_dir_url(__FILE__) . 'img/layout-' . $key . '.png" />' .
+				'<input type="radio" class="radio" id="mgl_layout" name="mgl_layout" value="' . $key . '"' .
+				checked( $key, get_option( 'mgl_layout', 'justified' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				( empty( $arg ) ? '' : '<br/><small>' . $arg['desc'] . '</small>' ) .
-				'<br /><br />';
+				'<br /><br /><div style="clear: both;">';
 		echo $html;
 	}
 
@@ -212,6 +235,22 @@ class Meow_MGL_Admin extends MeowApps_Admin {
     $value = get_option( 'mgl_masonry_gutter', 10 );
     $html = '<input type="number" style="width: 100%;" id="mgl_masonry_gutter" name="mgl_masonry_gutter" value="' . $value . '" />';
     $html .= '<br /><span class="description">Spacing in pixels between the photos.</label>';
+    echo $html;
+  }
+
+	function admin_justified_gutter_callback( $args ) {
+    $value = get_option( 'mgl_justified_gutter', 10 );
+    $html = '<input type="number" style="width: 100%;" id="mgl_justified_gutter" name="mgl_justified_gutter" value="' .
+			$value . '" />';
+    $html .= '<br /><span class="description">Spacing in pixels between the photos.</label>';
+    echo $html;
+  }
+
+	function admin_justified_row_height_callback( $args ) {
+    $value = get_option( 'mgl_justified_row_height', 250 );
+    $html = '<input type="number" style="width: 100%;" id="mgl_justified_row_height" name="mgl_justified_row_height" value="' .
+			$value . '" />';
+    $html .= '<br /><span class="description">Ideal height in pixels for each row.</label>';
     echo $html;
   }
 
