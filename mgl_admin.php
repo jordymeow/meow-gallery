@@ -141,7 +141,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 							</form>
 						</div>
 
-						<?php if ( get_option( 'mgl_layout', 'justified' ) == 'masonry' ): ?>
+						<?php if ( get_option( 'mgl_layout', 'masonry' ) == 'masonry' ): ?>
 						<div class="meow-box">
 							<form method="post" action="options.php">
 								<h3>Masonry</h3>
@@ -154,7 +154,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 						</div>
 						<?php endif; ?>
 
-						<?php if ( get_option( 'mgl_layout', 'justified' ) == 'justified' ): ?>
+						<?php if ( get_option( 'mgl_layout', 'masonry' ) == 'justified' ): ?>
 						<div class="meow-box">
 							<form method="post" action="options.php">
 								<h3>Justified</h3>
@@ -208,7 +208,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			$html .= '<img width="50" style="float: left; margin-right: 20px; margin-top: -10px;"
 				src="' . plugin_dir_url(__FILE__) . 'img/layout-' . $key . '.png" />' .
 				'<input type="radio" class="radio" id="mgl_layout" name="mgl_layout" value="' . $key . '"' .
-				checked( $key, get_option( 'mgl_layout', 'justified' ), false ) . ' > '  .
+				checked( $key, get_option( 'mgl_layout', 'masonry' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				( empty( $arg ) ? '' : '<br/><small>' . $arg['desc'] . '</small>' ) .
 				'<br /><br /><div style="clear: both;">';
@@ -247,7 +247,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
   }
 
 	function admin_justified_row_height_callback( $args ) {
-    $value = get_option( 'mgl_justified_row_height', 250 );
+    $value = get_option( 'mgl_justified_row_height', 120 );
     $html = '<input type="number" style="width: 100%;" id="mgl_justified_row_height" name="mgl_justified_row_height" value="' .
 			$value . '" />';
     $html .= '<br /><span class="description">Ideal height in pixels for each row.</label>';

@@ -6,12 +6,11 @@
         position: relative;
 
         .gallery-item {
-            position: absolute;
-            width: auto;
             max-width: none;
             line-height: 0;
             margin: 0 !important;
             opacity: 0;
+            overflow: hidden;
 
             &.entry-visible {
                 opacity: 1;
@@ -21,8 +20,7 @@
                 height: 100%;
 
                 img {
-                    width: 100%;
-                    height: 100%;
+                    display: inline-block !important;
                 }
             }
         }

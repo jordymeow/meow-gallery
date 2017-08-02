@@ -27,7 +27,7 @@ class Meow_Gallery_Run {
 		wp_localize_script('mgl-js', 'mgl', array(
 			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',s
 			'settings' => array(
-				'layout' => get_option( 'mgl_layout', 'justified' ),
+				'layout' => get_option( 'mgl_layout', 'masonry' ),
 				'infinite_loading' => array(
 					'enabled' => get_option( 'mgl_infinite', false ) && $this->admin->is_registered(),
 					'animated' => get_option( 'mgl_infinite_animation', true ),
@@ -44,7 +44,7 @@ class Meow_Gallery_Run {
 				),
 				'justified' => array(
 					'gutter' => get_option( 'mgl_justified_gutter', 10 ),
-					'row_height' => get_option( 'mgl_justified_row_height', 250 )
+					'row_height' => get_option( 'mgl_justified_row_height', 120 )
 				),
 				'horizontal_slider' => array(
 					'slider_height' => 400, // in px

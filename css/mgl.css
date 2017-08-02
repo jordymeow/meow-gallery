@@ -1,19 +1,19 @@
 .gallery.justified {
   position: relative; }
   .gallery.justified .gallery-item {
-    position: absolute;
-    width: auto;
     max-width: none;
     line-height: 0;
     margin: 0 !important;
-    opacity: 0; }
+    opacity: 0;
+    overflow: hidden; }
     .gallery.justified .gallery-item.entry-visible {
       opacity: 1; }
     .gallery.justified .gallery-item .gallery-icon {
       height: 100%; }
       .gallery.justified .gallery-item .gallery-icon img {
-        width: 100%;
-        height: 100%; }
+        display: inline-block !important;
+        width: 100% !important;
+        height: 100% !important; }
 .gallery.masonry {
   margin: 0 auto; }
   .gallery.masonry.gallery-columns-1 .gallery-item {
