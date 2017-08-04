@@ -33,7 +33,6 @@ jQuery(document).ready(function($) {
 
         window.mglJustified = new MglJustified(parameters);
         mglJustified.run();
-        $('.gallery-item').css('position', 'absolute');
     }
 
     /* ========================================= */

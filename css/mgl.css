@@ -1,19 +1,22 @@
 .gallery.justified {
   position: relative; }
   .gallery.justified .gallery-item {
+    position: absolute;
+    display: inline-block;
     max-width: none;
+    width: auto;
     line-height: 0;
     margin: 0 !important;
     opacity: 0;
     overflow: hidden; }
     .gallery.justified .gallery-item.entry-visible {
       opacity: 1; }
+      .gallery.justified .gallery-item.entry-visible img {
+        width: 100%; }
     .gallery.justified .gallery-item .gallery-icon {
       height: 100%; }
       .gallery.justified .gallery-item .gallery-icon img {
-        display: inline-block !important;
-        width: 100% !important;
-        height: 100% !important; }
+        display: inline-block !important; }
 .gallery.masonry {
   margin: 0 auto; }
   .gallery.masonry.gallery-columns-1 .gallery-item {

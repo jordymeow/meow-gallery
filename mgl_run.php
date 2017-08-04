@@ -21,7 +21,7 @@ class Meow_Gallery_Run {
 		wp_enqueue_script( 'mgl-masonry', plugins_url( '/js/mgl-masonry.js', __FILE__ ),
 			array('jquery','masonry'), $mgl_version, false );
 		wp_enqueue_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
-				array('jquery','justifiedGallery'), $mgl_version, false );
+				array('jquery','justifiedGallery', 'imagesLoaded'), $mgl_version, false );
 		wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
 			array( 'jquery','masonry', 'justifiedGallery', 'mgl-masonry', 'mgl-justified', 'imagesLoaded' ), $mgl_version, false );
 		wp_localize_script('mgl-js', 'mgl', array(
@@ -53,8 +53,10 @@ class Meow_Gallery_Run {
 				)
 			)
 		) );
-    wp_enqueue_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css' );
-		wp_enqueue_style( 'justifiedGallery-css', plugin_dir_url( __FILE__ ) . 'css/justifiedGallery.min.css' );
+    wp_enqueue_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css',
+			null, $mgl_version );
+		wp_enqueue_style( 'justifiedGallery-css', plugin_dir_url( __FILE__ ) . 'css/justifiedGallery.min.css',
+			null, $mgl_version );
 		add_shortcode( 'gallery', array( $this, 'gallery_shortcode' ) );
 	}
 

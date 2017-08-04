@@ -6,7 +6,10 @@
         position: relative;
 
         .gallery-item {
+            position: absolute;
+            display: inline-block;
             max-width: none;
+            width: auto;
             line-height: 0;
             margin: 0 !important;
             opacity: 0;
@@ -14,6 +17,10 @@
 
             &.entry-visible {
                 opacity: 1;
+
+                img {
+                    width: 100%;
+                }
             }
 
             .gallery-icon {

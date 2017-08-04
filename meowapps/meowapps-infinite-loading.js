@@ -1,3 +1,4 @@
+
 jQuery(document).ready(function($) {
 
     if($('.gallery').length > 0) {
@@ -154,20 +155,31 @@ jQuery(document).ready(function($) {
                     last_item_displayed = i;
                 }
 
+                var readyToLoad = false;
+
+                var loader_color = infinite_loading.loader.color;
+                var loader_html = '<div class="mgl-infinite-spinner '+ loader_color +'"> \
+                    <div class="bounce1"></div> \
+                    <div class="bounce2"></div> \
+                    <div class="bounce3"></div> \
+                </div>';
+                $('.gallery').after(loader_html);
+                $('.mgl-infinite-spinner div').css("background-color", loader_color);
+
                 // Apply layout to first batch
-                setTimeout(function() {
+                $('.gallery').imagesLoaded(function() {
                     $('.gallery').justifiedGallery({
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
                         margins: mgl.settings.justified.gutter,
-                        waitThumbnailsLoad: false
+                        waitThumbnailsLoad: true
                     });
+                    $('.mgl-infinite-spinner').hide();
+
+                    readyToLoad = true;
                 });
 
                 // FROM NOW, We listen the scroll !
-
-                // Next batches
-                var readyToLoad = true;
 
                 $(window).on('scroll', function() {
                     if(readyToLoad) {
@@ -177,11 +189,8 @@ jQuery(document).ready(function($) {
                         var scrollTopBottom = scrollTop + $(this).outerHeight();
 
                         // If we are scrolling after the end of the gallery container
-                        if(scrollTopBottom > containerBottomOffset - 200) {
+                        if(scrollTopBottom > containerBottomOffset - 200 && !all_images_loaded) {
                             readyToLoad = false;
-                            setTimeout(function() {
-                                readyToLoad = true;
-                            }, 500);
 
                             // Everything is ok to load more items, let's do it !
                             // We append the new items
@@ -189,16 +198,26 @@ jQuery(document).ready(function($) {
                             while(count < batch_size) {
                                 $('.gallery').append(items_array[last_item_displayed + 1]);
                                 last_item_displayed++;
+                                if(last_item_displayed > items_array.length) {
+                                    all_images_loaded = true;
+                                }
                                 count++;
                             }
 
+                            $('.mgl-infinite-spinner').show();
+
                             // Apply layout to first batch
                             setTimeout(function() {
-                                $('.gallery').justifiedGallery('norewind', {
-                                    selector: 'figure, .gallery-item',
-                                    rowHeight: mgl.settings.justified.row_height,
-                                    margins: mgl.settings.justified.gutter,
-                                    waitThumbnailsLoad: false
+                                $('.gallery').imagesLoaded(function() {
+                                    $('.gallery').justifiedGallery('norewind',{
+                                        selector: 'figure, .gallery-item',
+                                        rowHeight: mgl.settings.justified.row_height,
+                                        margins: mgl.settings.justified.gutter,
+                                        waitThumbnailsLoad: true
+                                    });
+
+                                    $('.mgl-infinite-spinner').hide();
+                                    readyToLoad = true;
                                 });
                             });
                         }
