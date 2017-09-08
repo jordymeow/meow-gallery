@@ -1,6 +1,66 @@
 // Removing captions !
 
+.meow-gallery {
+    opacity: 0;
+
+    &.js-loaded {
+        opacity: 1;
+    }
+}
+
 .gallery {
+
+    &.instagram {
+
+        .gallery-columns-3 {
+            .gallery-item {
+                width: 33%;
+            }
+        }
+
+        .gallery-columns-4 {
+            .gallery-item {
+                width: 25%;
+            }
+        }
+
+        .gallery-columns-5 {
+            .gallery-item {
+                width: 20%;
+            }
+        }
+
+        .gallery-item {
+            margin: 0;
+            background-size: cover;
+            background-position: center;
+            box-sizing: border-box;
+            background-clip: content-box;
+
+            .gallery-icon {
+                    height: 100%;
+                    width: 100%;
+            }
+
+            img {
+                opacity: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        @media screen and (max-width: 960px) {
+            .gallery-item {
+                max-width: 50%;
+            }
+        }
+
+        @media screen and (max-width: 560px) {
+            .gallery-item {
+                max-width: 100%;
+            }
+        }
+    }
 
     &.justified {
         position: relative;

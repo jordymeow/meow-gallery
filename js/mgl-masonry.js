@@ -6,28 +6,28 @@ jQuery(document).ready(function($) {
         var infinite_loading = parameters.infinite_loading;
         var galleries_number = parameters.context.galleries_number;
 
-        var style_captions = function(gutter) {
-            $('figcaption').each(function() {
+        var style_captions = function(gutter, $gallery) {
+            $gallery.find('figcaption').each(function() {
                 var $figcaption_parent = $(this).parent();
                 $(this).css('width', ( $figcaption_parent.outerWidth() - 2*gutter ) + 'px');
                 $(this).css('max-height', ($figcaption_parent.height()/2) + 'px');
             });
         };
 
-        this.run = function() {
+        this.run = function($gallery) {
             // Adding layout class to the gallery
-    		$('.gallery').addClass('masonry');
+    		$gallery.addClass('masonry');
 
     		// Adding gutter
-    		$('.gallery-item').css('padding', gutter + "px");
+    		$gallery.find('.gallery-item').css('padding', gutter + "px");
 
             // Styling captions
-            $('figcaption').css({
+            $gallery.find('figcaption').css({
                 'left': gutter + 'px',
                 'bottom': gutter + 'px'
             });
 
-            $('figcaption').each(function() {
+            $gallery.find('figcaption').each(function() {
                 var caption = $(this).text().replace(/^\s\s*/, '').replace(/\s\s*$/, '');
                 if(caption != caption.substr(0,50)) {
                     var truncated_caption = caption.substr(0, 50) + "...";
@@ -36,11 +36,11 @@ jQuery(document).ready(function($) {
             });
 
             if(!mgl.settings.masonry.display_captions) {
-                $('figcaption').hide();
+                $gallery.find('figcaption').hide();
             }
 
             $(window).on('resize', function() {
-                style_captions(gutter);
+                style_captions(gutter, $gallery);
             });
 
 
@@ -49,7 +49,7 @@ jQuery(document).ready(function($) {
     		// NON INFINITE LOADING MODE ========
     		if(!infinite_loading.enabled || galleries_number > 1) {
     			// Creating $grid masonry object
-    			$grid = $('.gallery').masonry({
+    			$grid = $gallery.masonry({
     				percentPosition: true,
     				itemSelector: '.gallery-item',
     				transitionDuration: 0,
@@ -61,7 +61,7 @@ jQuery(document).ready(function($) {
     	        // Everytime an image is loaded in the grid, recalculate the layout
     	        $grid.imagesLoaded().progress(function() {
     	            $grid.masonry('layout');
-                    style_captions(gutter);
+                    style_captions(gutter, $gallery);
     	        });
 
                 // After 5s, we recalculate layout
@@ -72,7 +72,7 @@ jQuery(document).ready(function($) {
                 // Recalculate layout on resize
                 $(window).on('resize', function() {
                     $grid.masonry('layout');
-                    style_captions(gutter);
+                    style_captions(gutter, $gallery);
                 });
 
     		}

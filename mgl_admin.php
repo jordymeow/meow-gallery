@@ -28,7 +28,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 			// SUBMENU > Settings > Settings
 			add_settings_section( 'mgl_settings', null, null, 'mgl_settings-menu' );
-			add_settings_field( 'mgl_layout', "Layout",
+			add_settings_field( 'mgl_layout', "Default Layout",
 				array( $this, 'admin_layout_callback' ),
 				'mgl_settings-menu', 'mgl_settings' );
 			add_settings_field( 'mgl_default_size', "Default Size",
@@ -201,6 +201,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		$layouts = array(
 			'justified' => array( 'name' => 'Justified', 'desc' => "Display your photos using Justified (similar to Flickr)." ),
 			'masonry' => array( 'name' => 'Masonry', 'desc' => "Display your photos using Masonry." ),
+			'instagram' => array( 'name' => 'Instagram', 'desc' => "Similar to Instagram flow." ),
 			'horizontal_slider' => array( 'name' => 'Horizontal Slider (BETA)', 'desc' => "Your photos in a horizontal slider." )
 		);
 		$html = '';
@@ -212,6 +213,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				( empty( $arg ) ? '' : '<br/><small>' . $arg['desc'] . '</small>' ) .
 				'<br /><br /><div style="clear: both;">';
+		$html .= '<small>Can be overriden by using an attribute <i>layout</i> in the shortcode of the gallery, like: [gallery layout=\'masonry\']. This value can be: justified, masonry, instagram, horizontal_slider.</small>';
 		echo $html;
 	}
 

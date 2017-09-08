@@ -6,10 +6,10 @@ jQuery(document).ready(function($) {
         var infinite_loading = parameters.infinite_loading;
         var galleries_number = parameters.context.galleries_number;
 
-        this.run = function() {
-            $('.gallery').addClass('justified');
+        this.run = function($gallery) {
+            $gallery.addClass('justified');
 
-            $('figcaption').hide();
+            $gallery.find('figcaption').hide();
 
             if(!mgl.settings.infinite_loading.enabled || galleries_number > 1) {
 
@@ -19,11 +19,11 @@ jQuery(document).ready(function($) {
                     <div class="bounce2"></div> \
                     <div class="bounce3"></div> \
                 </div>';
-                $('.gallery').after(loader_html);
+                $gallery.after(loader_html);
                 $('.mgl-infinite-spinner div').css("background-color", loader_color);
 
-                $('.gallery').imagesLoaded(function() {
-                    $('.gallery').justifiedGallery({
+                $gallery.imagesLoaded(function() {
+                    $gallery.justifiedGallery({
                         selector: 'figure, .gallery-item',
                         rowHeight: rowHeight,
                         margins: gutter,

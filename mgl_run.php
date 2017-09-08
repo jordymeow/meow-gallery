@@ -11,19 +11,34 @@ class Meow_Gallery_Run {
 
 	function enqueue_scripts() {
 		global $mgl_version;
-		wp_enqueue_script( 'jquery' );
-    wp_enqueue_script( 'imagesLoaded', plugins_url( '/js/imagesloaded.min.js', __FILE__ ),
+    wp_register_script( 'imagesLoaded', plugins_url( '/js/imagesloaded.min.js', __FILE__ ),
 			array( 'jquery' ), $mgl_version, false );
-		wp_enqueue_script( 'justifiedGallery', plugins_url( '/js/jquery.justifiedGallery.min.js', __FILE__ ),
+		wp_register_script( 'justifiedGallery', plugins_url( '/js/jquery.justifiedGallery.min.js', __FILE__ ),
 			array('jquery'), $mgl_version, false );
-    wp_enqueue_script( 'masonry', plugins_url( '/js/masonry.min.js', __FILE__ ),
+    wp_register_script( 'masonry', plugins_url( '/js/masonry.min.js', __FILE__ ),
 			array('jquery'), $mgl_version, false );
-		wp_enqueue_script( 'mgl-masonry', plugins_url( '/js/mgl-masonry.js', __FILE__ ),
-			array('jquery','masonry'), $mgl_version, false );
-		wp_enqueue_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
-				array('jquery','justifiedGallery', 'imagesLoaded'), $mgl_version, false );
+		wp_register_script( 'mgl-masonry', plugins_url( '/js/mgl-masonry.js', __FILE__ ),
+			array('jquery', 'masonry'), $mgl_version, false );
+		wp_register_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
+			array('jquery', 'justifiedGallery', 'imagesLoaded' ), $mgl_version, false );
 		wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-			array( 'jquery','masonry', 'justifiedGallery', 'mgl-masonry', 'mgl-justified', 'imagesLoaded' ), $mgl_version, false );
+				array( 'jquery', 'mgl-masonry', 'mgl-justified' ), $mgl_version, false );
+		/*
+		$layout = get_option( 'mgl_layout', 'masonry' );
+		if ( $layout == 'masonry' ) {
+			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
+				array( 'jquery', 'mgl-masonry' ), $mgl_version, false );
+		}
+		else if ( $layout == 'justified' ) {
+			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
+				array( 'jquery', 'mgl-justified' ), $mgl_version, false );
+		}
+		else if ( $layout == 'horizontal_slider' ) {
+			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
+				array( 'jquery' ), $mgl_version, false );
+		}
+		*/
+
 		wp_localize_script('mgl-js', 'mgl', array(
 			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',s
 			'settings' => array(
@@ -64,10 +79,11 @@ class Meow_Gallery_Run {
 		$post = get_post();
 		static $instance = 0;
 		$instance++;
+		$attr['ids'] = apply_filters( 'meow_gallery_images', !empty( $attr['ids'] ) ? $attr['ids'] : null, $attr );
 		if ( ! empty( $attr['ids'] ) ) {
 	    // 'ids' is explicitly ordered, unless you specify otherwise.
 	    if ( empty( $attr['orderby'] ) ) {
-	            $attr['orderby'] = 'post__in';
+				$attr['orderby'] = 'post__in';
 	    }
 	    $attr['include'] = $attr['ids'];
 		}
@@ -91,16 +107,15 @@ class Meow_Gallery_Run {
 		$id = intval( $atts['id'] );
 
 		if ( ! empty( $atts['include'] ) ) {
-		        $_attachments = get_posts( array( 'include' => $atts['include'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
-
-		        $attachments = array();
-		        foreach ( $_attachments as $key => $val ) {
-		                $attachments[$val->ID] = $_attachments[$key];
-		        }
+	    $_attachments = get_posts( array( 'include' => $atts['include'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
+	    $attachments = array();
+	    foreach ( $_attachments as $key => $val ) {
+	    	$attachments[$val->ID] = $_attachments[$key];
+	    }
 		} elseif ( ! empty( $atts['exclude'] ) ) {
-		        $attachments = get_children( array( 'post_parent' => $id, 'exclude' => $atts['exclude'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
+	    $attachments = get_children( array( 'post_parent' => $id, 'exclude' => $atts['exclude'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
 		} else {
-		        $attachments = get_children( array( 'post_parent' => $id, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
+	    $attachments = get_children( array( 'post_parent' => $id, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
 		}
 
 		if ( empty( $attachments ) ) {
@@ -121,13 +136,13 @@ class Meow_Gallery_Run {
 		$icontag = tag_escape( $atts['icontag'] );
 		$valid_tags = wp_kses_allowed_html( 'post' );
 		if ( ! isset( $valid_tags[ $itemtag ] ) ) {
-		        $itemtag = 'dl';
+			$itemtag = 'dl';
 		}
 		if ( ! isset( $valid_tags[ $captiontag ] ) ) {
-		        $captiontag = 'dd';
+			$captiontag = 'dd';
 		}
 		if ( ! isset( $valid_tags[ $icontag ] ) ) {
-		        $icontag = 'dt';
+			$icontag = 'dt';
 		}
 
 		$columns = intval( $atts['columns'] );
@@ -137,7 +152,11 @@ class Meow_Gallery_Run {
 		$gallery_style = '';
 
 		$size_class = sanitize_html_class( $atts['size'] );
-		$gallery_div = "<div id='$selector' class='gallery galleryid-{$id} gallery-columns-{$columns} gallery-size-{$size_class}'>";
+		$layout = get_option( 'mgl_layout', 'masonry' );
+		if ( !empty( $attr['layout'] ) )
+			$layout = $attr['layout'];
+		$gallery_div = "<div id='$selector' mgl-layout='$layout'
+			class='meow-gallery gallery galleryid-{$id} gallery-columns-{$columns} gallery-size-{$size_class}'>";
 
 		/**
 		 * Filters the default gallery shortcode CSS styles.

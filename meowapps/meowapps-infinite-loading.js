@@ -228,6 +228,36 @@ jQuery(document).ready(function($) {
             if(typeof mglJustified !== 'undefined') {
                 mglJustified.pro_callback();
             }
+
+            window.Meowapps_instagram_infinite_loading = function (infinite_loading) {
+                if(infinite_loading.enabled) {
+                    var batch_number = 0;
+                    $('.gallery-item').hide();
+                    $('.gallery-item').slice(0,infinite_loading.batch_size).show();
+                    batch_number++;
+
+                    var readyToLoad = true;
+                    var container = $('.gallery');
+                    var containerBottomOffset = container.offset().top + container.outerHeight();
+                    $(window).on('scroll', function() {
+                        if(readyToLoad) {
+                            var scrollTop = $(this).scrollTop();
+                            var scrollTopBottom = scrollTop + $(this).outerHeight();
+
+                            // If we are scrolling after the end of the gallery container
+                            if(scrollTopBottom > containerBottomOffset - 200) {
+                                readyToLoad = false;
+                                $('.gallery-item').slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).show();
+                                batch_number++;
+
+                                setTimeout(function() {
+                                    readyToLoad = true;
+                                }, 1000);
+                            }
+                        }
+                    });
+                }
+            };
     }
 
 });
