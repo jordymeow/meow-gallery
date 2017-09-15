@@ -244,13 +244,13 @@
     }
 }
 
-.mgl-infinite-spinner {
+#mgl-infinite-spinner {
   margin: 50px auto 0;
   width: 70px;
   text-align: center;
 }
 
-.mgl-infinite-spinner > div {
+#mgl-infinite-spinner > div {
     width: 18px;
     height: 18px;
     background-color: #444;
@@ -260,12 +260,12 @@
     animation: sk-bouncedelay 1.4s infinite ease-in-out both;
 }
 
-.mgl-infinite-spinner .bounce1 {
+#mgl-infinite-spinner .bounce1 {
   -webkit-animation-delay: -0.32s;
   animation-delay: -0.32s;
 }
 
-.mgl-infinite-spinner .bounce2 {
+#mgl-infinite-spinner .bounce2 {
   -webkit-animation-delay: -0.16s;
   animation-delay: -0.16s;
 }

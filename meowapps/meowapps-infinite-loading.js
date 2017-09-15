@@ -3,124 +3,104 @@ jQuery(document).ready(function($) {
 
     if($('.gallery').length > 0) {
 
-            window.Meowapps_masonry_infinite_loading = function (infinite_loading) {
-                this.listen = function() {
+            var loader_exists = false;
 
-                    var gutter = mgl.settings.masonry.gutter;
+            function createLoader(infinite_loading) {
+                if( !loader_exists && infinite_loading.loader.enabled ) {
+                    var loader_color = infinite_loading.loader.color;
+                    var loader_html = '<div id="mgl-infinite-spinner"> \
+                        <div class="bounce1"></div> \
+                        <div class="bounce2"></div> \
+                        <div class="bounce3"></div> \
+                    </div>';
+                    $('.gallery').after(loader_html);
+                    $('#mgl-infinite-spinner div').css("background-color", loader_color);
+                    loader_exists = true;
+                }
+            }
 
-                    var style_captions = function(gutter) {
-                        $('figcaption').each(function() {
-                            var $figcaption_parent = $(this).parent();
-                            $(this).css('width', ( $figcaption_parent.outerWidth() - 2*gutter ) + 'px');
-                            $(this).css('max-height', ($figcaption_parent.height()/2) + 'px');
-                        });
-                    };
+            function removeLoader() {
+                $('#mgl-infinite-spinner').remove();
+                loader_exists = false;
+            }
 
-                    // Adding animation class depending on setting
-                    if(infinite_loading.animated) {
-                        $('.gallery-item').addClass('not-loaded');
-                    }
+            window.Meowapps_masonry_infinite_loading = function (infinite_loading, $gallery) {
 
-                    // Initialize items_array
-                    var items_array = [];
+                var items_array = [];
+                var batch_number = 0;
+                var readyToLoad = false;
+                var grid = "";
 
-                    // We run through all the items
-                    $('.gallery-item').each(function(index, item) {
-                        // We add them index
-                        $(this).attr('data-mgl-index', index);
-                        // We store them in the items_array
-                        items_array.push( $(this).clone() );
-                        // We delete them from the DOM
-                        $(this).remove();
-                    });
+                $gallery.find('.gallery-item').each(function() {
+                    var $item = $(this);
+                    items_array.push($item);
+                    $item.remove();
+                });
 
-                    // NOW WE CAN START !
+                createLoader(infinite_loading);
 
-                    // Declaring some useful vars
-                    var number_of_items = items_array.length;
-                    var batch_size = infinite_loading.batch_size;
-                    var last_item_displayed = 0;
-                    var all_images_loaded = false;
+                items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
+                    var $image = $item.find('img');
+                    $image.attr('src', $image.attr('mgl-src'));
+                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $item.show();
+                    $gallery.append($item);
+                });
+                batch_number++;
 
-                    // First of all, let's put the first items in the grid
-                    for(var i=0; i < batch_size; i++) {
-                        $('.gallery').append(items_array[i]);
-                        last_item_displayed = i;
-                    }
-
-                    // Then let's masonryfy them
-                    $grid = $('.gallery').masonry({
+                // Apply layout to first batch
+                $gallery.imagesLoaded(function() {
+                    grid = $gallery.masonry({
                         percentPosition: true,
                         itemSelector: '.gallery-item',
                         transitionDuration: 0,
                     });
-                    $grid.imagesLoaded().progress(function(imgLoad, image) {
-                        $grid.masonry('layout');
-                        style_captions(gutter);
-                        $(image.img).closest('.gallery-item').removeClass('not-loaded');
-                    });
-                    $grid.imagesLoaded(function() {
-                        style_captions(gutter);
-                        all_images_loaded = true;
-                    });
+                    removeLoader();
 
-                    // After 5s, we recalculate layout
                     setTimeout(function() {
-                        $grid.masonry('layout');
-                    }, 5000);
+                        readyToLoad = true;
+                    }, 1000);
+                });
 
-                    // Function dealing with the scrolling logic, callback() takes care of the rest
-                    var infinite_scroll = function(container, callback) {
-                        $(window).on('scroll', function() {
-                            if(all_images_loaded && last_item_displayed <= number_of_items - 1) {
-                                var containerBottomOffset = container.offset().top + container.outerHeight();
-                                var scrollTop = $(this).scrollTop();
-                                var scrollTopBottom = scrollTop + $(this).outerHeight();
-                                // If we are scrolling after the end of the gallery container
-                                if(scrollTopBottom > containerBottomOffset) {
-                                    // Everything is ok to load more items, let's do it !
-                                    callback();
-                                }
-                            }
-                        });
-                    };
+                $(window).on('scroll', function() {
+                    var container = $gallery;
+                    var containerBottomOffset = container.offset().top + container.outerHeight();
+                    if( readyToLoad && $gallery.find('.gallery-item').length != items_array.length ) {
+                        var scrollTop = $(this).scrollTop();
+                        var scrollTopBottom = scrollTop + $(this).outerHeight();
 
-                    infinite_scroll($('.gallery'), function() {
-                        // We start to load new images
-                        all_images_loaded = false;
-                        // Loader
-                        if(infinite_loading.loader.enabled === true) {
-                            var loader_color = infinite_loading.loader.color;
-                            var loader_html = '<div class="mgl-infinite-spinner '+ loader_color +'"> \
-                                <div class="bounce1"></div> \
-                                <div class="bounce2"></div> \
-                                <div class="bounce3"></div> \
-                            </div>';
-                            $('.gallery').after(loader_html);
-                            $('.mgl-infinite-spinner div').css("background-color", loader_color);
+                        // If we are scrolling after the end of the gallery container
+                        if(scrollTopBottom > containerBottomOffset - 200) {
+
+                            readyToLoad = false;
+                            createLoader(infinite_loading);
+
+                            items_array.slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).forEach(function($item) {
+                                var $image = $item.find('img');
+                                $image.attr('src', $image.attr('mgl-src'));
+                                $image.attr('srcset', $image.attr('mgl-srcset'));
+                                $item.show();
+                                $gallery.append( $item[ 0 ] );
+                                grid.masonry( 'appended', $item[ 0 ] );
+                            });
+                            batch_number++;
+
+                            $gallery.imagesLoaded().progress(function(imgLoad, image) {
+                                $gallery.masonry('layout');
+                            });
+
+                            $gallery.imagesLoaded(function() {
+                                removeLoader();
+
+                                setTimeout(function() {
+                                    readyToLoad = true;
+                                }, 1000);
+                            });
+
                         }
-                        // Display 20 more items
-                        var count = 0;
-                        while(count < batch_size) {
-                            $('.gallery').append(items_array[last_item_displayed + 1]);
-                            //$grid.masonry('appended', items_array[last_item_displayed + 1]);
-                            $grid.masonry('addItems', items_array[last_item_displayed + 1]);
-                            last_item_displayed++;
-                            count++;
-                        }
-                        $grid.imagesLoaded().progress(function(imgLoad, image) {
-                            $grid.masonry('layout');
-                            style_captions(gutter);
-                            $(image.img).closest('.gallery-item').removeClass('not-loaded');
-                        });
-                        // When these new items are loaded, we say it
-                        $grid.imagesLoaded(function() {
-                            style_captions(gutter);
-                            $('.mgl-infinite-spinner').remove();
-                            all_images_loaded = true;
-                        });
-                    });
-                };
+                    }
+
+                });
 
             };
 
@@ -128,136 +108,179 @@ jQuery(document).ready(function($) {
                 mglMasonry.pro_callback();
             }
 
-            window.Meowapps_justified_infinite_loading = function (infinite_loading) {
+            window.Meowapps_justified_infinite_loading = function (infinite_loading, $gallery) {
 
-                // Initialize items_array
                 var items_array = [];
-
-                // We run through all the items
-                $('.gallery-item').each(function(index, item) {
-                    // We add them index
-                    $(this).attr('data-mgl-index', index);
-                    // We store them in the items_array
-                    items_array.push( $(this).clone() );
-                    // We delete them from the DOM
-                    $(this).remove();
-                });
-
-                // Declaring some useful vars
-                var number_of_items = items_array.length;
-                var batch_size = infinite_loading.batch_size;
-                var last_item_displayed = 0;
-                var all_images_loaded = false;
-
-                // First of all, let's put the first items in the grid
-                for(var i=0; i < batch_size; i++) {
-                    $('.gallery').append(items_array[i]);
-                    last_item_displayed = i;
-                }
-
+                var batch_number = 0;
                 var readyToLoad = false;
 
-                var loader_color = infinite_loading.loader.color;
-                var loader_html = '<div class="mgl-infinite-spinner '+ loader_color +'"> \
-                    <div class="bounce1"></div> \
-                    <div class="bounce2"></div> \
-                    <div class="bounce3"></div> \
-                </div>';
-                $('.gallery').after(loader_html);
-                $('.mgl-infinite-spinner div').css("background-color", loader_color);
+                $gallery.find('.gallery-item').each(function() {
+                    var $item = $(this);
+                    items_array.push($item);
+                    $item.remove();
+                });
+
+                createLoader(infinite_loading);
+
+                items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
+                    var $image = $item.find('img');
+                    $image.attr('src', $image.attr('mgl-src'));
+                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $item.show();
+                    $gallery.append($item);
+                });
+                batch_number++;
 
                 // Apply layout to first batch
-                $('.gallery').imagesLoaded(function() {
-                    $('.gallery').justifiedGallery({
+                $gallery.imagesLoaded(function() {
+                    $gallery.justifiedGallery({
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
                         margins: mgl.settings.justified.gutter,
                         waitThumbnailsLoad: true
                     });
-                    $('.mgl-infinite-spinner').hide();
 
-                    readyToLoad = true;
+                    removeLoader();
+
+                    setTimeout(function() {
+                        readyToLoad = true;
+                    }, 1000);
                 });
 
-                // FROM NOW, We listen the scroll !
-
                 $(window).on('scroll', function() {
-                    if(readyToLoad) {
-                        var container = $('.gallery');
-                        var containerBottomOffset = container.offset().top + container.outerHeight();
+                    var container = $gallery;
+                    var containerBottomOffset = container.offset().top + container.outerHeight();
+                    if(readyToLoad && $gallery.find('.gallery-item').length != items_array.length) {
                         var scrollTop = $(this).scrollTop();
                         var scrollTopBottom = scrollTop + $(this).outerHeight();
 
                         // If we are scrolling after the end of the gallery container
-                        if(scrollTopBottom > containerBottomOffset - 200 && !all_images_loaded) {
+                        if(scrollTopBottom > containerBottomOffset - 200) {
+
                             readyToLoad = false;
 
-                            // Everything is ok to load more items, let's do it !
-                            // We append the new items
-                            var count = 0;
-                            while(count < batch_size) {
-                                $('.gallery').append(items_array[last_item_displayed + 1]);
-                                last_item_displayed++;
-                                if(last_item_displayed > items_array.length) {
-                                    all_images_loaded = true;
-                                }
-                                count++;
-                            }
-
-                            $('.mgl-infinite-spinner').show();
-
-                            // Apply layout to first batch
-                            setTimeout(function() {
-                                $('.gallery').imagesLoaded(function() {
-                                    $('.gallery').justifiedGallery('norewind',{
-                                        selector: 'figure, .gallery-item',
-                                        rowHeight: mgl.settings.justified.row_height,
-                                        margins: mgl.settings.justified.gutter,
-                                        waitThumbnailsLoad: true
-                                    });
-
-                                    $('.mgl-infinite-spinner').hide();
-                                    readyToLoad = true;
-                                });
+                            items_array.slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).forEach(function($item) {
+                                var $image = $item.find('img');
+                                $image.attr('src', $image.attr('mgl-src'));
+                                $image.attr('srcset', $image.attr('mgl-srcset'));
+                                $item.show();
+                                $gallery.append($item);
                             });
+                            batch_number++;
+
+                            createLoader(infinite_loading);
+
+                            $gallery.imagesLoaded(function() {
+                                $gallery.justifiedGallery('norewind',{
+                                    selector: 'figure, .gallery-item',
+                                    rowHeight: mgl.settings.justified.row_height,
+                                    margins: mgl.settings.justified.gutter,
+                                    waitThumbnailsLoad: true
+                                });
+
+                                removeLoader();
+
+                                setTimeout(function() {
+                                    readyToLoad = true;
+                                }, 1000);
+                            });
+
                         }
                     }
+
                 });
+
             };
 
             if(typeof mglJustified !== 'undefined') {
                 mglJustified.pro_callback();
             }
 
-            window.Meowapps_instagram_infinite_loading = function (infinite_loading) {
-                if(infinite_loading.enabled) {
-                    var batch_number = 0;
-                    $('.gallery-item').hide();
-                    $('.gallery-item').slice(0,infinite_loading.batch_size).show();
-                    batch_number++;
+            window.Meowapps_instagram_infinite_loading = function (infinite_loading, $gallery, gutter) {
 
-                    var readyToLoad = true;
-                    var container = $('.gallery');
+                var items_array = [];
+                var batch_number = 0;
+                var readyToLoad = false;
+
+                function makeItInstagram(animated = false) {
+                    $gallery.find('.gallery-item').each(function() {
+                        var $item = $(this);
+                        var $image = $(this).find('img');
+                        $image.attr('src', $image.attr('mgl-src'));
+                        $image.attr('srcset', $image.attr('mgl-srcset'));
+                        animated ? $item.fadeIn(500) : $item.show();
+                    });
+
+                    $gallery.find('figure.gallery-item').each(function() {
+                        $(this).css('height', $(this).width());
+                        var image_url = $(this).find('img').attr('src');
+                        $(this).css('background-image', 'url('+image_url+')');
+                        $(this).css('padding', gutter/2+'px');
+                    });
+
+                    $(window).on('resize', function() {
+                        $gallery.find('figure.gallery-item').each(function() {
+                            $(this).css('height', $(this).width());
+                        });
+                    });
+                }
+
+                $gallery.find('.gallery-item').each(function() {
+                    var $item = $(this);
+                    items_array.push($item);
+                    $item.remove();
+                });
+
+                items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
+                    $gallery.append($item);
+                });
+                batch_number++;
+
+                $gallery.imagesLoaded(function() {
+                    makeItInstagram();
+
+                    setTimeout(function() {
+                        readyToLoad = true;
+                    }, 1000);
+                });
+
+                $(window).on('scroll', function() {
+                    var container = $gallery;
                     var containerBottomOffset = container.offset().top + container.outerHeight();
-                    $(window).on('scroll', function() {
-                        if(readyToLoad) {
-                            var scrollTop = $(this).scrollTop();
-                            var scrollTopBottom = scrollTop + $(this).outerHeight();
+                    if(readyToLoad && $gallery.find('.gallery-item').length != items_array.length) {
+                        var scrollTop = $(this).scrollTop();
+                        var scrollTopBottom = scrollTop + $(this).outerHeight();
 
-                            // If we are scrolling after the end of the gallery container
-                            if(scrollTopBottom > containerBottomOffset - 200) {
-                                readyToLoad = false;
-                                $('.gallery-item').slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).show();
-                                batch_number++;
+                        createLoader(infinite_loading);
+
+                        // If we are scrolling after the end of the gallery container
+                        if(scrollTopBottom > containerBottomOffset - 200) {
+
+                            items_array.slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).forEach(function($item) {
+                                $gallery.append($item);
+                            });
+                            batch_number++;
+
+                            $gallery.imagesLoaded(function() {
+                                makeItInstagram();
+                                removeLoader();
 
                                 setTimeout(function() {
                                     readyToLoad = true;
                                 }, 1000);
-                            }
+                            });
+
                         }
-                    });
-                }
+                    }
+
+                });
+
             };
+
+            if(typeof mglInstagram !== 'undefined') {
+                mglInstagram.pro_callback();
+            }
+
     }
 
 });

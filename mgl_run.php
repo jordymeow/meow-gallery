@@ -7,6 +7,14 @@ class Meow_Gallery_Run {
 	public function __construct( $admin ) {
 		$this->admin = $admin;
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 10, 3 );
+		add_filter( 'gallery_style', array( $this, 'gallery_style' ), 10, 1 );
+		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 10, 1 );
+		add_filter( 'use_default_gallery_style', '__return_false' );
+		add_shortcode( 'gallery', array( $this, 'gallery' ) );
+
+		// For now:
+		add_theme_support( 'html5', array( 'gallery', 'caption' ) );
 	}
 
 	function enqueue_scripts() {
@@ -21,26 +29,13 @@ class Meow_Gallery_Run {
 			array('jquery', 'masonry'), $mgl_version, false );
 		wp_register_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
 			array('jquery', 'justifiedGallery', 'imagesLoaded' ), $mgl_version, false );
+		wp_register_script( 'mgl-instagram', plugins_url( '/js/mgl-instagram.js', __FILE__ ),
+			array('jquery', 'imagesLoaded' ), $mgl_version, false );
 		wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-				array( 'jquery', 'mgl-masonry', 'mgl-justified' ), $mgl_version, false );
-		/*
-		$layout = get_option( 'mgl_layout', 'masonry' );
-		if ( $layout == 'masonry' ) {
-			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-				array( 'jquery', 'mgl-masonry' ), $mgl_version, false );
-		}
-		else if ( $layout == 'justified' ) {
-			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-				array( 'jquery', 'mgl-justified' ), $mgl_version, false );
-		}
-		else if ( $layout == 'horizontal_slider' ) {
-			wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-				array( 'jquery' ), $mgl_version, false );
-		}
-		*/
+				array( 'jquery', 'mgl-masonry', 'mgl-justified', 'mgl-instagram' ), $mgl_version, false );
 
 		wp_localize_script('mgl-js', 'mgl', array(
-			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',s
+			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',
 			'settings' => array(
 				'layout' => get_option( 'mgl_layout', 'masonry' ),
 				'infinite_loading' => array(
@@ -61,6 +56,9 @@ class Meow_Gallery_Run {
 					'gutter' => get_option( 'mgl_justified_gutter', 10 ),
 					'row_height' => get_option( 'mgl_justified_row_height', 120 )
 				),
+				'instagram' => array(
+					'gutter' => get_option( 'mgl_instagram_gutter', 10 )
+				),
 				'horizontal_slider' => array(
 					'slider_height' => 400, // in px
 					'slider_width' => 100, // in %
@@ -72,150 +70,60 @@ class Meow_Gallery_Run {
 			null, $mgl_version );
 		wp_enqueue_style( 'justifiedGallery-css', plugin_dir_url( __FILE__ ) . 'css/justifiedGallery.min.css',
 			null, $mgl_version );
-		add_shortcode( 'gallery', array( $this, 'gallery_shortcode' ) );
 	}
 
-	function gallery_shortcode( $attr ) {
-		$post = get_post();
-		static $instance = 0;
-		$instance++;
-		$attr['ids'] = apply_filters( 'meow_gallery_images', !empty( $attr['ids'] ) ? $attr['ids'] : null, $attr );
-		if ( ! empty( $attr['ids'] ) ) {
-	    // 'ids' is explicitly ordered, unless you specify otherwise.
-	    if ( empty( $attr['orderby'] ) ) {
-				$attr['orderby'] = 'post__in';
-	    }
-	    $attr['include'] = $attr['ids'];
+	// Overrides the WP Gallery
+	// With a new class and style
+
+	private $atts;
+	private $gallery_process = false;
+
+	function shortcode_atts_gallery( $result, $defaults, $atts ) {
+		$this->atts = $atts;
+		if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
+			$default_size = get_option( 'mgl_default_size', 'large' );
+			$result['size'] = $default_size;
 		}
-		$html5 = true; // current_theme_supports( 'html5', 'gallery' );
-		$default_size = get_option( 'mgl_default_size', 'thumbnail' );
-		$enable_caption = get_option( 'mgl_enable_caption', true ); // THOMAS : I've edit default value to true for dev purpose
-		$atts = shortcode_atts( array(
-	    'order'      => 'ASC',
-	    'orderby'    => 'menu_order ID',
-	    'id'         => $post ? $post->ID : 0,
-	    'itemtag'    => $html5 ? 'figure'     : 'dl',
-	    'icontag'    => $html5 ? 'div'        : 'dt',
-	    'captiontag' => $html5 ? 'figcaption' : 'dd',
-	    'columns'    => 3,
-	    'size'       => $default_size,
-	    'include'    => '',
-	    'exclude'    => '',
-	    'link'       => ''
-		), $attr, 'gallery' );
+		return $result;
+	}
 
-		$id = intval( $atts['id'] );
-
-		if ( ! empty( $atts['include'] ) ) {
-	    $_attachments = get_posts( array( 'include' => $atts['include'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
-	    $attachments = array();
-	    foreach ( $_attachments as $key => $val ) {
-	    	$attachments[$val->ID] = $_attachments[$key];
-	    }
-		} elseif ( ! empty( $atts['exclude'] ) ) {
-	    $attachments = get_children( array( 'post_parent' => $id, 'exclude' => $atts['exclude'], 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
-		} else {
-	    $attachments = get_children( array( 'post_parent' => $id, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $atts['order'], 'orderby' => $atts['orderby'] ) );
+	function gallery_style( $div ) {
+		$dom = new DOMDocument();
+		$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		$divs = $dom->getElementsByTagName('div');
+		if ( !empty( $divs ) ) {
+			$class = $divs[0]->getAttribute( 'class' );
+			$divs[0]->setAttribute( 'class', 'meow-gallery ' . $class );
+			$divs[0]->setAttribute( 'style', 'display: none;' );
+			if ( !empty( $this->atts['layout'] ) ) {
+				$layout = $this->atts['layout'];
+				$divs[0]->setAttribute( 'mgl-layout', $layout );
+			}
+			$div = $dom->saveHtml();
+			$div = str_replace( '</div>', '', $div );
+			return $div;
 		}
+		return $div;
+	}
 
-		if ( empty( $attachments ) ) {
-			return '';
+	function wp_get_attachment_image_attributes( $attr ) {
+		if ( $this->gallery_process ) {
+		  $attr['mgl-src'] = $attr['src'];
+			unset( $attr['src'] );
+			if ( isset( $attr['srcset'] ) ) {
+				$attr['mgl-srcset'] = $attr['srcset'];
+				unset( $attr['srcset'] );
+			}
 		}
+		return $attr;
+	}
 
-		if ( is_feed() ) {
-	    $output = "\n";
-	    foreach ( $attachments as $att_id => $attachment ) {
-				$image_meta = wp_get_attachment_metadata( $id );
-	      $output .= wp_get_attachment_link( $att_id, $atts['size'], true ) . "\n";
-	    }
-	    return $output;
-		}
-
-		$itemtag = tag_escape( $atts['itemtag'] );
-		$captiontag = tag_escape( $atts['captiontag'] );
-		$icontag = tag_escape( $atts['icontag'] );
-		$valid_tags = wp_kses_allowed_html( 'post' );
-		if ( ! isset( $valid_tags[ $itemtag ] ) ) {
-			$itemtag = 'dl';
-		}
-		if ( ! isset( $valid_tags[ $captiontag ] ) ) {
-			$captiontag = 'dd';
-		}
-		if ( ! isset( $valid_tags[ $icontag ] ) ) {
-			$icontag = 'dt';
-		}
-
-		$columns = intval( $atts['columns'] );
-		$itemwidth = $columns > 0 ? floor(100/$columns) : 100;
-		$float = is_rtl() ? 'right' : 'left';
-		$selector = "gallery-{$instance}";
-		$gallery_style = '';
-
-		$size_class = sanitize_html_class( $atts['size'] );
-		$layout = get_option( 'mgl_layout', 'masonry' );
-		if ( !empty( $attr['layout'] ) )
-			$layout = $attr['layout'];
-		$gallery_div = "<div id='$selector' mgl-layout='$layout'
-			class='meow-gallery gallery galleryid-{$id} gallery-columns-{$columns} gallery-size-{$size_class}'>";
-
-		/**
-		 * Filters the default gallery shortcode CSS styles.
-		 *
-		 * @since 2.5.0
-		 *
-		 * @param string $gallery_style Default CSS styles and opening HTML div container
-		 *                              for the gallery shortcode output.
-		 */
-		$output = apply_filters( 'gallery_style', $gallery_style . $gallery_div );
-
-		$i = 0;
-
-		foreach ( $attachments as $id => $attachment ) {
-	    $attr = ( trim( $attachment->post_excerpt ) ) ? array( 'aria-describedby' => "$selector-$id" ) : array();
-			$image_meta = wp_get_attachment_metadata( $id );
-			$attr = array_merge( $attr, array(
-				"mgl-width" => !isset( $image_meta['width'] ) ? "" : $image_meta['width'],
-				"mgl-height" => !isset( $image_meta['height'] ) ? "" : $image_meta['height']
-			) );
-	    if ( ! empty( $atts['link'] ) && 'file' === $atts['link'] ) {
-	            $image_output = wp_get_attachment_link( $id, $atts['size'], false, false, false, $attr );
-	    } elseif ( ! empty( $atts['link'] ) && 'none' === $atts['link'] ) {
-	            $image_output = wp_get_attachment_image( $id, $atts['size'], false, $attr );
-	    } else {
-	            $image_output = wp_get_attachment_link( $id, $atts['size'], true, false, false, $attr );
-	    }
-
-	    $orientation = '';
-	    if ( isset( $image_meta['height'], $image_meta['width'] ) ) {
-	            $orientation = ( $image_meta['height'] > $image_meta['width'] ) ? 'portrait' : 'landscape';
-	    }
-	    $output .= "<{$itemtag} class='gallery-item'>";
-	    $output .= "
-	            <{$icontag} class='gallery-icon {$orientation}'>
-	                    $image_output
-	            </{$icontag}>";
-	    if ( $enable_caption && $captiontag && trim($attachment->post_excerpt) ) {
-	            $output .= "
-	                    <{$captiontag} class='wp-caption-text gallery-caption' id='$selector-$id'>
-	                    " . wptexturize($attachment->post_excerpt) . "
-	                    </{$captiontag}>";
-	    }
-	    $output .= "</{$itemtag}>";
-	    if ( ! $html5 && $columns > 0 && ++$i % $columns == 0 ) {
-	            $output .= '<br style="clear: both" />';
-	    }
-		}
-
-		if ( ! $html5 && $columns > 0 && $i % $columns !== 0 ) {
-		        $output .= "
-		                <br style='clear: both' />";
-		}
-
-		$output .= "
-		        </div>\n";
-
-		return $output;
-}
+	function gallery( $atts ) {
+		$this->gallery_process = true;
+		$result = gallery_shortcode( $atts );
+		$this->gallery_process = false;
+		return $result;
+	}
 
 }
 

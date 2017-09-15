@@ -48,6 +48,15 @@ jQuery(document).ready(function($) {
 
     		// NON INFINITE LOADING MODE ========
     		if(!infinite_loading.enabled || galleries_number > 1) {
+
+                $gallery.find('.gallery-item').each(function() {
+                    var $item = $(this);
+                    var $image = $(this).find('img');
+                    $image.attr('src', $image.attr('mgl-src'));
+                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $item.show();
+                });
+
     			// Creating $grid masonry object
     			$grid = $gallery.masonry({
     				percentPosition: true,
@@ -79,8 +88,7 @@ jQuery(document).ready(function($) {
     		// INFINITE LOADING MODE ============
     		else {
                 if(typeof Meowapps_masonry_infinite_loading === "function") {
-                    var meowapps_masonry_infinite_loading = new Meowapps_masonry_infinite_loading(infinite_loading);
-                    meowapps_masonry_infinite_loading.listen();
+                    Meowapps_masonry_infinite_loading(infinite_loading, $gallery);
                 }
     		}
 
@@ -90,8 +98,7 @@ jQuery(document).ready(function($) {
 
         this.pro_callback = function() {
             if(typeof Meowapps_masonry_infinite_loading === "function") {
-                var meowapps_masonry_infinite_loading = new Meowapps_masonry_infinite_loading(infinite_loading);
-                meowapps_masonry_infinite_loading.listen();
+                Meowapps_masonry_infinite_loading(infinite_loading, $gallery);
             }
         };
     };

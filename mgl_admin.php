@@ -90,6 +90,13 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				// 	'mgl_settings_horizontal-slider-menu', 'mgl_justified' );
 				//register_setting( 'mgl_settings', 'mgl_justified_gutter' );
 			}
+			else if ( $layout == 'instagram' ) {
+				add_settings_section( 'mgl_instagram', null, null, 'mgl_settings_instagram-menu' );
+				add_settings_field( 'mgl_instagram_gutter', "Gutter",
+					array( $this, 'admin_instagram_gutter_callback' ),
+					'mgl_settings_instagram-menu', 'mgl_instagram' );
+				register_setting( 'mgl_settings_instagram', 'mgl_instagram_gutter' );
+			}
 			// SUBMENU > Settings > Settings
 			else if ( $layout == 'justified' ) {
 				add_settings_section( 'mgl_justified', null, null, 'mgl_settings_justified-menu' );
@@ -167,6 +174,19 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 						</div>
 						<?php endif; ?>
 
+						<?php if ( get_option( 'mgl_layout', 'masonry' ) == 'instagram' ): ?>
+						<div class="meow-box">
+							<form method="post" action="options.php">
+								<h3>Instagram</h3>
+								<div class="inside">
+									<?php settings_fields( 'mgl_settings_instagram' ); ?>
+									<?php do_settings_sections( 'mgl_settings_instagram-menu' ); ?>
+							    <?php submit_button(); ?>
+								</div>
+							</form>
+						</div>
+						<?php endif; ?>
+
 					</div>
 
 					<div class="meow-col meow-span_1_of_2">
@@ -202,7 +222,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			'justified' => array( 'name' => 'Justified', 'desc' => "Display your photos using Justified (similar to Flickr)." ),
 			'masonry' => array( 'name' => 'Masonry', 'desc' => "Display your photos using Masonry." ),
 			'instagram' => array( 'name' => 'Instagram', 'desc' => "Similar to Instagram flow." ),
-			'horizontal_slider' => array( 'name' => 'Horizontal Slider (BETA)', 'desc' => "Your photos in a horizontal slider." )
+			//'horizontal_slider' => array( 'name' => 'Horizontal Slider (BETA)', 'desc' => "Your photos in a horizontal slider." )
 		);
 		$html = '';
 		foreach ( $layouts as $key => $arg )
@@ -244,6 +264,13 @@ class Meow_MGL_Admin extends MeowApps_Admin {
     $value = get_option( 'mgl_justified_gutter', 10 );
     $html = '<input type="number" style="width: 100%;" id="mgl_justified_gutter" name="mgl_justified_gutter" value="' .
 			$value . '" />';
+    $html .= '<br /><span class="description">Spacing in pixels between the photos.</label>';
+    echo $html;
+  }
+
+	function admin_instagram_gutter_callback( $args ) {
+    $value = get_option( 'mgl_instagram_gutter', 10 );
+    $html = '<input type="number" style="width: 100%;" id="mgl_instagram_gutter" name="mgl_instagram_gutter" value="' . $value . '" />';
     $html .= '<br /><span class="description">Spacing in pixels between the photos.</label>';
     echo $html;
   }

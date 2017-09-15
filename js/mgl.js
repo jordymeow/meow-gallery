@@ -3,7 +3,14 @@ jQuery(document).ready(function($) {
     // Check if there is a wordpress gallery on the page
     var gallery_exists = false;
     if ($('.gallery').length > 0) {
+
         gallery_exists = true;
+
+        $('.gallery-item').each(function() {
+            $(this).hide();
+        });
+
+        $('.gallery').show();
     }
 
     // Check if there is more than one gallery
@@ -16,7 +23,7 @@ jQuery(document).ready(function($) {
         var layout = mgl.settings.layout;
         var $gallery = $(this);
 
-        if($(this).attr('mgl-layout') != '') {
+        if($(this).attr('mgl-layout') != null) {
             layout = $(this).attr('mgl-layout');
         }
 
@@ -24,27 +31,17 @@ jQuery(document).ready(function($) {
         /* INSTAGRAM LAYOUT ------------------------ */
         /* ========================================= */
         if (layout == "instagram" && gallery_exists) {
-            $gallery.addClass('instagram');
-            $gallery.find('figcaption').hide();
 
-            var gutter = 10;
+            var parameters = {
+                gutter: mgl.settings.instagram.gutter,
+                context: {
+                    galleries_number: galleries_number
+                }
+            };
 
-            $gallery.find('figure.gallery-item').each(function() {
-                $(this).css('height', $(this).width());
-                var image_url = $(this).find('img').attr('src');
-                $(this).css('background-image', 'url('+image_url+')');
-                $(this).css('padding', gutter/2+'px');
-            });
+            window.mglInstagram = new MglInstagram(parameters);
+            mglInstagram.run($gallery);
 
-            $(window).on('resize', function() {
-                $gallery.find('figure.gallery-item').each(function() {
-                    $(this).css('height', $(this).width());
-                });
-            });
-
-            if(typeof Meowapps_instagram_infinite_loading === "function") {
-                Meowapps_instagram_infinite_loading(mgl.settings.infinite_loading);
-            }
         }
 
         /* ========================================= */
@@ -94,6 +91,7 @@ jQuery(document).ready(function($) {
                     galleries_number: galleries_number,
                 }
             };
+
             window.mglMasonry = new MglMasonry(parameters);
             mglMasonry.run($gallery);
 

@@ -13,6 +13,14 @@ jQuery(document).ready(function($) {
 
             if(!mgl.settings.infinite_loading.enabled || galleries_number > 1) {
 
+                $gallery.find('.gallery-item').each(function() {
+                    var $item = $(this);
+                    var $image = $(this).find('img');
+                    $image.attr('src', $image.attr('mgl-src'));
+                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $item.show();
+                });
+
                 var loader_color = infinite_loading.loader.color;
                 var loader_html = '<div class="mgl-infinite-spinner '+ loader_color +'"> \
                     <div class="bounce1"></div> \
@@ -35,14 +43,14 @@ jQuery(document).ready(function($) {
             }
             else {
                 if(typeof Meowapps_justified_infinite_loading === "function") {
-                    Meowapps_justified_infinite_loading(mgl.settings.infinite_loading);
+                    Meowapps_justified_infinite_loading(mgl.settings.infinite_loading, $gallery);
                 }
             }
         }
 
         this.pro_callback = function() {
             if(typeof Meowapps_justified_infinite_loading === "function") {
-                Meowapps_justified_infinite_loading(mgl.settings.infinite_loading);
+                Meowapps_justified_infinite_loading(mgl.settings.infinite_loading, $gallery);
             }
         };
     }
