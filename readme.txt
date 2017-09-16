@@ -3,13 +3,13 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, grid, photo gallery, image gallery
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 
-Gallery system built for photographers, by photographers. Clean, focused, evolve naturally. Using the Masonry layout by default.
+Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
 == Description ==
 
-Gallery system built for photographers, by photographers. Clean, focused, evolve naturally. Using the Masonry layout by default. More information on https://meowapps.com/meow-gallery/.
+Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default. More information on https://meowapps.com/meow-gallery/.
 
 == Installation ==
 
@@ -25,6 +25,11 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 1.0.1 =
+* Fix: Gallery width.
+* Fix: WP3C validation.
+* Fix: Issues with PHP < 7.
 
 = 1.0.0 =
 * Add: Optimization of the Infinite Loading.

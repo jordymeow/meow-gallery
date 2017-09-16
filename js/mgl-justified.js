@@ -16,8 +16,8 @@ jQuery(document).ready(function($) {
                 $gallery.find('.gallery-item').each(function() {
                     var $item = $(this);
                     var $image = $(this).find('img');
-                    $image.attr('src', $image.attr('mgl-src'));
-                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $image.attr('src', $image.attr('data-mgl-src'));
+                    $image.attr('srcset', $image.attr('data-mgl-srcset'));
                     $item.show();
                 });
 
@@ -28,6 +28,7 @@ jQuery(document).ready(function($) {
                     <div class="bounce3"></div> \
                 </div>';
                 $gallery.after(loader_html);
+
                 $('.mgl-infinite-spinner div').css("background-color", loader_color);
 
                 $gallery.imagesLoaded(function() {
@@ -35,6 +36,7 @@ jQuery(document).ready(function($) {
                         selector: 'figure, .gallery-item',
                         rowHeight: rowHeight,
                         margins: gutter,
+                        border: 0,
                         waitThumbnailsLoad: true
                     });
                     $('.mgl-infinite-spinner').hide();

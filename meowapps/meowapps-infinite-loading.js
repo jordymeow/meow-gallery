@@ -24,12 +24,24 @@ jQuery(document).ready(function($) {
                 loader_exists = false;
             }
 
-            window.Meowapps_masonry_infinite_loading = function (infinite_loading, $gallery) {
+            window.Meowapps_masonry_infinite_loading = function (infinite_loading, $gallery, gutter) {
 
                 var items_array = [];
                 var batch_number = 0;
                 var readyToLoad = false;
                 var grid = "";
+
+                // Resizing the container to overflow the container and ignore outside padding
+                var gallery_width = $gallery.outerWidth();
+                $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
+                $gallery.css('margin-left', -gutter);
+
+                $(window).on('resize', function() {
+                    $gallery.css('width', '100%');
+                    var gallery_width = $gallery.outerWidth();
+                    $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
+                    $gallery.css('margin-left', -gutter);
+                });
 
                 $gallery.find('.gallery-item').each(function() {
                     var $item = $(this);
@@ -41,12 +53,22 @@ jQuery(document).ready(function($) {
 
                 items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
                     var $image = $item.find('img');
-                    $image.attr('src', $image.attr('mgl-src'));
-                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $image.attr('src', $image.attr('data-mgl-src'));
+                    $image.attr('srcset', $image.attr('data-mgl-srcset'));
+                    $item.addClass('not-loaded');
                     $item.show();
                     $gallery.append($item);
                 });
                 batch_number++;
+
+                $gallery.imagesLoaded().progress(function(imgLoad, image) {
+                    grid = $gallery.masonry({
+                        percentPosition: true,
+                        itemSelector: '.gallery-item',
+                        transitionDuration: 0,
+                    });
+                    $(image.img).closest('.gallery-item').removeClass('not-loaded');
+                });
 
                 // Apply layout to first batch
                 $gallery.imagesLoaded(function() {
@@ -59,7 +81,7 @@ jQuery(document).ready(function($) {
 
                     setTimeout(function() {
                         readyToLoad = true;
-                    }, 1000);
+                    }, 10);
                 });
 
                 $(window).on('scroll', function() {
@@ -77,13 +99,19 @@ jQuery(document).ready(function($) {
 
                             items_array.slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).forEach(function($item) {
                                 var $image = $item.find('img');
-                                $image.attr('src', $image.attr('mgl-src'));
-                                $image.attr('srcset', $image.attr('mgl-srcset'));
+                                $image.attr('src', $image.attr('data-mgl-src'));
+                                $image.attr('srcset', $image.attr('data-mgl-srcset'));
+                                $item.addClass('not-loaded');
                                 $item.show();
                                 $gallery.append( $item[ 0 ] );
                                 grid.masonry( 'appended', $item[ 0 ] );
                             });
                             batch_number++;
+
+                            $gallery.imagesLoaded().progress(function(imgLoad, image) {
+                                $(image.img).closest('.gallery-item').removeClass('not-loaded');
+                                $gallery.masonry('layout');
+                            });
 
                             $gallery.imagesLoaded().progress(function(imgLoad, image) {
                                 $gallery.masonry('layout');
@@ -94,7 +122,7 @@ jQuery(document).ready(function($) {
 
                                 setTimeout(function() {
                                     readyToLoad = true;
-                                }, 1000);
+                                }, 10);
                             });
 
                         }
@@ -124,8 +152,8 @@ jQuery(document).ready(function($) {
 
                 items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
                     var $image = $item.find('img');
-                    $image.attr('src', $image.attr('mgl-src'));
-                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $image.attr('src', $image.attr('data-mgl-src'));
+                    $image.attr('srcset', $image.attr('data-mgl-srcset'));
                     $item.show();
                     $gallery.append($item);
                 });
@@ -137,6 +165,7 @@ jQuery(document).ready(function($) {
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
                         margins: mgl.settings.justified.gutter,
+                        border: 0,
                         waitThumbnailsLoad: true
                     });
 
@@ -144,7 +173,7 @@ jQuery(document).ready(function($) {
 
                     setTimeout(function() {
                         readyToLoad = true;
-                    }, 1000);
+                    }, 10);
                 });
 
                 $(window).on('scroll', function() {
@@ -161,8 +190,8 @@ jQuery(document).ready(function($) {
 
                             items_array.slice(batch_number*infinite_loading.batch_size,(batch_number+1)*infinite_loading.batch_size).forEach(function($item) {
                                 var $image = $item.find('img');
-                                $image.attr('src', $image.attr('mgl-src'));
-                                $image.attr('srcset', $image.attr('mgl-srcset'));
+                                $image.attr('src', $image.attr('data-mgl-src'));
+                                $image.attr('srcset', $image.attr('data-mgl-srcset'));
                                 $item.show();
                                 $gallery.append($item);
                             });
@@ -175,6 +204,7 @@ jQuery(document).ready(function($) {
                                     selector: 'figure, .gallery-item',
                                     rowHeight: mgl.settings.justified.row_height,
                                     margins: mgl.settings.justified.gutter,
+                                    border: 0,
                                     waitThumbnailsLoad: true
                                 });
 
@@ -182,7 +212,7 @@ jQuery(document).ready(function($) {
 
                                 setTimeout(function() {
                                     readyToLoad = true;
-                                }, 1000);
+                                }, 10);
                             });
 
                         }
@@ -202,13 +232,13 @@ jQuery(document).ready(function($) {
                 var batch_number = 0;
                 var readyToLoad = false;
 
-                function makeItInstagram(animated = false) {
+                function makeItInstagram() {
                     $gallery.find('.gallery-item').each(function() {
                         var $item = $(this);
                         var $image = $(this).find('img');
-                        $image.attr('src', $image.attr('mgl-src'));
-                        $image.attr('srcset', $image.attr('mgl-srcset'));
-                        animated ? $item.fadeIn(500) : $item.show();
+                        $item.show();
+                        $image.attr('src', $image.attr('data-mgl-src'));
+                        $image.attr('srcset', $image.attr('data-mgl-srcset'));
                     });
 
                     $gallery.find('figure.gallery-item').each(function() {
@@ -231,6 +261,11 @@ jQuery(document).ready(function($) {
                     $item.remove();
                 });
 
+                // Resizing the container to overflow the container and ignore outside padding
+                var gallery_width = $gallery.outerWidth();
+                $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
+                $gallery.css('margin-left', -gutter);
+
                 items_array.slice(0,infinite_loading.batch_size).forEach(function($item) {
                     $gallery.append($item);
                 });
@@ -241,7 +276,7 @@ jQuery(document).ready(function($) {
 
                     setTimeout(function() {
                         readyToLoad = true;
-                    }, 1000);
+                    }, 10);
                 });
 
                 $(window).on('scroll', function() {
@@ -267,7 +302,7 @@ jQuery(document).ready(function($) {
 
                                 setTimeout(function() {
                                     readyToLoad = true;
-                                }, 1000);
+                                }, 10);
                             });
 
                         }

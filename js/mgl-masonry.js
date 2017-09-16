@@ -52,17 +52,30 @@ jQuery(document).ready(function($) {
                 $gallery.find('.gallery-item').each(function() {
                     var $item = $(this);
                     var $image = $(this).find('img');
-                    $image.attr('src', $image.attr('mgl-src'));
-                    $image.attr('srcset', $image.attr('mgl-srcset'));
+                    $image.attr('src', $image.attr('data-mgl-src'));
+                    $image.attr('srcset', $image.attr('data-mgl-srcset'));
                     $item.show();
                 });
 
     			// Creating $grid masonry object
     			$grid = $gallery.masonry({
     				percentPosition: true,
+                    columnWidth: $gallery.find('.gallery-item')[0],
     				itemSelector: '.gallery-item',
     				transitionDuration: 0,
     			});
+
+                // Resizing the container to overflow the container and ignore outside padding
+                var gallery_width = $gallery.outerWidth();
+                $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
+                $gallery.css('margin-left', -gutter);
+
+                $(window).on('resize', function() {
+                    $gallery.css('width', '100%');
+                    var gallery_width = $gallery.outerWidth();
+                    $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
+                    $gallery.css('margin-left', -gutter);
+                });
 
     	        // Calculate the layout immediately
     	        $grid.masonry('layout');
@@ -88,7 +101,7 @@ jQuery(document).ready(function($) {
     		// INFINITE LOADING MODE ============
     		else {
                 if(typeof Meowapps_masonry_infinite_loading === "function") {
-                    Meowapps_masonry_infinite_loading(infinite_loading, $gallery);
+                    Meowapps_masonry_infinite_loading(infinite_loading, $gallery, gutter);
                 }
     		}
 

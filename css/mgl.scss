@@ -10,6 +10,15 @@
 
 .gallery {
 
+    .gallery-item {
+        opacity: 1 !important;
+        transition: opacity .5s !important;
+
+        &.not-loaded {
+            opacity: 0 !important;
+        }
+    }
+
     &.instagram {
 
         .gallery-columns-3 {
@@ -171,16 +180,10 @@
         }
 
         .gallery-item {
-            opacity: 1;
             background: none !important;
-            padding: 10px;
+            padding: 0;
             margin: 0;
             box-sizing: border-box;
-            transition: opacity .3s;
-
-            &.not-loaded {
-                opacity: 0;
-            }
 
             img {
                 width: 100%;

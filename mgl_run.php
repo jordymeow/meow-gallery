@@ -92,6 +92,7 @@ class Meow_Gallery_Run {
 		$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 		$divs = $dom->getElementsByTagName('div');
 		if ( !empty( $divs ) ) {
+			$divs = iterator_to_array( $divs ) ;
 			$class = $divs[0]->getAttribute( 'class' );
 			$divs[0]->setAttribute( 'class', 'meow-gallery ' . $class );
 			$divs[0]->setAttribute( 'style', 'display: none;' );
@@ -108,10 +109,10 @@ class Meow_Gallery_Run {
 
 	function wp_get_attachment_image_attributes( $attr ) {
 		if ( $this->gallery_process ) {
-		  $attr['mgl-src'] = $attr['src'];
+		  $attr['data-mgl-src'] = $attr['src'];
 			unset( $attr['src'] );
 			if ( isset( $attr['srcset'] ) ) {
-				$attr['mgl-srcset'] = $attr['srcset'];
+				$attr['data-mgl-srcset'] = $attr['srcset'];
 				unset( $attr['srcset'] );
 			}
 		}
