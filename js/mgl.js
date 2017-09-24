@@ -23,8 +23,12 @@ jQuery(document).ready(function($) {
         var layout = mgl.settings.layout;
         var $gallery = $(this);
 
-        if($(this).attr('mgl-layout') != null) {
-            layout = $(this).attr('mgl-layout');
+        if($(this).attr('data-mgl-layout') != null) {
+            layout = $(this).attr('data-mgl-layout');
+        }
+
+        if($(this).attr('data-mgl-infinite-loading') != null) {
+            mgl.settings.infinite_loading.enabled = $(this).attr('data-mgl-infinite-loading');
         }
 
         /* ========================================= */

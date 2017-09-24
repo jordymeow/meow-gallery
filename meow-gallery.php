@@ -3,8 +3,8 @@
 Plugin Name: Meow Gallery Pro
 Plugin URI: https://meowapps.com
 Description: Gallery system built for photographers.
-Version: 1.0.1
-Author: TigrouMeow, kywyz
+Version: 1.0.2
+Author: Jordy Meow, Thomas Kim
 Author URI: https://meowapps.com
 Text Domain: meow-gallery
 Domain Path: /languages
@@ -23,7 +23,7 @@ if ( class_exists( 'Meow_Gallery_Core' ) ) {
 }
 
 global $mgl_version;
-$mgl_version = '1.0.1';
+$mgl_version = '1.0.2';
 
 // Admin
 include "mgl_admin.php";

@@ -5,14 +5,24 @@
 
 .gallery .gallery-item {
   opacity: 1 !important;
-  transition: opacity .5s !important; }
+  transition: opacity .5s !important;
+  width: 100%; }
+  .gallery .gallery-item img {
+    max-width: none !important; }
   .gallery .gallery-item.not-loaded {
     opacity: 0 !important; }
-.gallery.instagram .gallery-columns-3 .gallery-item {
+.gallery.instagram .gallery-item {
+  display: inline-block;
+  text-align: center;
+  vertical-align: top;
+  width: 100%; }
+  .gallery.instagram .gallery-item img {
+    max-width: none !important; }
+.gallery.instagram.gallery-columns-3 .gallery-item {
   width: 33%; }
-.gallery.instagram .gallery-columns-4 .gallery-item {
+.gallery.instagram.gallery-columns-4 .gallery-item {
   width: 25%; }
-.gallery.instagram .gallery-columns-5 .gallery-item {
+.gallery.instagram.gallery-columns-5 .gallery-item {
   width: 20%; }
 .gallery.instagram .gallery-item {
   margin: 0;
@@ -44,10 +54,8 @@
     margin: 0 !important;
     opacity: 0;
     overflow: hidden; }
-    .gallery.justified .gallery-item.entry-visible {
-      opacity: 1; }
-      .gallery.justified .gallery-item.entry-visible img {
-        width: 100%; }
+    .gallery.justified .gallery-item.entry-visible img {
+      width: 100%; }
     .gallery.justified .gallery-item .gallery-icon {
       height: 100%; }
       .gallery.justified .gallery-item .gallery-icon img {

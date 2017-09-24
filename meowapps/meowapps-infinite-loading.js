@@ -24,6 +24,9 @@ jQuery(document).ready(function($) {
                 loader_exists = false;
             }
 
+            /* =======================================
+             * MASONRY
+             * ==================================== */
             window.Meowapps_masonry_infinite_loading = function (infinite_loading, $gallery, gutter) {
 
                 var items_array = [];
@@ -55,6 +58,7 @@ jQuery(document).ready(function($) {
                     var $image = $item.find('img');
                     $image.attr('src', $image.attr('data-mgl-src'));
                     $image.attr('srcset', $image.attr('data-mgl-srcset'));
+                    $image.attr('sizes', $image.attr('data-mgl-sizes'));
                     $item.addClass('not-loaded');
                     $item.show();
                     $gallery.append($item);
@@ -101,6 +105,7 @@ jQuery(document).ready(function($) {
                                 var $image = $item.find('img');
                                 $image.attr('src', $image.attr('data-mgl-src'));
                                 $image.attr('srcset', $image.attr('data-mgl-srcset'));
+                                $image.attr('sizes', $image.attr('data-mgl-sizes'));
                                 $item.addClass('not-loaded');
                                 $item.show();
                                 $gallery.append( $item[ 0 ] );
@@ -136,6 +141,9 @@ jQuery(document).ready(function($) {
                 mglMasonry.pro_callback();
             }
 
+            /* =======================================
+             * JUSTIFIED
+             * ==================================== */
             window.Meowapps_justified_infinite_loading = function (infinite_loading, $gallery) {
 
                 var items_array = [];
@@ -144,6 +152,8 @@ jQuery(document).ready(function($) {
 
                 $gallery.find('.gallery-item').each(function() {
                     var $item = $(this);
+                    $item.addClass('not-loaded');
+                    $item.show();
                     items_array.push($item);
                     $item.remove();
                 });
@@ -154,19 +164,21 @@ jQuery(document).ready(function($) {
                     var $image = $item.find('img');
                     $image.attr('src', $image.attr('data-mgl-src'));
                     $image.attr('srcset', $image.attr('data-mgl-srcset'));
-                    $item.show();
+                    $image.attr('sizes', $image.attr('data-mgl-sizes'));
                     $gallery.append($item);
                 });
                 batch_number++;
 
                 // Apply layout to first batch
                 $gallery.imagesLoaded(function() {
+
                     $gallery.justifiedGallery({
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
                         margins: mgl.settings.justified.gutter,
-                        border: 0,
-                        waitThumbnailsLoad: true
+                        border: 0
+                    }).on('jg.complete', function() {
+                        $gallery.find('.gallery-item.not-loaded').removeClass('not-loaded');
                     });
 
                     removeLoader();
@@ -184,7 +196,7 @@ jQuery(document).ready(function($) {
                         var scrollTopBottom = scrollTop + $(this).outerHeight();
 
                         // If we are scrolling after the end of the gallery container
-                        if(scrollTopBottom > containerBottomOffset - 200) {
+                        if(scrollTopBottom > containerBottomOffset - 200 && readyToLoad) {
 
                             readyToLoad = false;
 
@@ -192,7 +204,6 @@ jQuery(document).ready(function($) {
                                 var $image = $item.find('img');
                                 $image.attr('src', $image.attr('data-mgl-src'));
                                 $image.attr('srcset', $image.attr('data-mgl-srcset'));
-                                $item.show();
                                 $gallery.append($item);
                             });
                             batch_number++;
@@ -200,12 +211,9 @@ jQuery(document).ready(function($) {
                             createLoader(infinite_loading);
 
                             $gallery.imagesLoaded(function() {
-                                $gallery.justifiedGallery('norewind',{
-                                    selector: 'figure, .gallery-item',
-                                    rowHeight: mgl.settings.justified.row_height,
-                                    margins: mgl.settings.justified.gutter,
-                                    border: 0,
-                                    waitThumbnailsLoad: true
+
+                                $gallery.justifiedGallery('norewind').on('jg.complete', function() {
+                                    $gallery.find('.gallery-item.not-loaded').removeClass('not-loaded');
                                 });
 
                                 removeLoader();
@@ -213,6 +221,7 @@ jQuery(document).ready(function($) {
                                 setTimeout(function() {
                                     readyToLoad = true;
                                 }, 10);
+
                             });
 
                         }
@@ -226,6 +235,9 @@ jQuery(document).ready(function($) {
                 mglJustified.pro_callback();
             }
 
+            /* =======================================
+             * INSTAGRAM
+             * ==================================== */
             window.Meowapps_instagram_infinite_loading = function (infinite_loading, $gallery, gutter) {
 
                 var items_array = [];
@@ -239,6 +251,7 @@ jQuery(document).ready(function($) {
                         $item.show();
                         $image.attr('src', $image.attr('data-mgl-src'));
                         $image.attr('srcset', $image.attr('data-mgl-srcset'));
+                        $image.attr('sizes', $image.attr('data-mgl-sizes'));
                     });
 
                     $gallery.find('figure.gallery-item').each(function() {

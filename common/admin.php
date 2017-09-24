@@ -134,7 +134,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
       $html .= '<div class="inside">';
 			echo $html;
 			$html = apply_filters( $this->prefix . '_meowapps_license_input', ( 'More information about the Pro version here:
-				<a target="_blank" href="' . $url . '">' . $url . '</a>.' ), $url );
+				<a target="_blank" href="' . $url . '">' . $url . '</a>. If you actually bought the Pro version already, please remove the current plugin and download the Pro version from your account at the <a target="_blank" href="https://store.meowapps.com/account/downloads/">Meow Apps Store</a>.' ), $url );
       $html .= '</div>';
       $html .= '</div>';
 			echo $html;

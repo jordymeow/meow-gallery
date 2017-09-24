@@ -60,7 +60,6 @@ jQuery(document).ready(function($) {
     			// Creating $grid masonry object
     			$grid = $gallery.masonry({
     				percentPosition: true,
-                    columnWidth: $gallery.find('.gallery-item')[0],
     				itemSelector: '.gallery-item',
     				transitionDuration: 0,
     			});

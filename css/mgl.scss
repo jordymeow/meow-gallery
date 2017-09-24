@@ -1,5 +1,4 @@
 // Removing captions !
-
 .meow-gallery {
     opacity: 0;
 
@@ -13,6 +12,11 @@
     .gallery-item {
         opacity: 1 !important;
         transition: opacity .5s !important;
+        width: 100%;
+
+        img {
+            max-width: none !important;
+        }
 
         &.not-loaded {
             opacity: 0 !important;
@@ -21,19 +25,31 @@
 
     &.instagram {
 
-        .gallery-columns-3 {
+        .gallery-item {
+            display: inline-block;
+        	text-align: center;
+        	vertical-align: top;
+        	width: 100%;
+
+            img {
+                max-width: none !important;
+            }
+
+        }
+
+        &.gallery-columns-3 {
             .gallery-item {
                 width: 33%;
             }
         }
 
-        .gallery-columns-4 {
+        &.gallery-columns-4 {
             .gallery-item {
                 width: 25%;
             }
         }
 
-        .gallery-columns-5 {
+        &.gallery-columns-5 {
             .gallery-item {
                 width: 20%;
             }
@@ -85,7 +101,6 @@
             overflow: hidden;
 
             &.entry-visible {
-                opacity: 1;
 
                 img {
                     width: 100%;

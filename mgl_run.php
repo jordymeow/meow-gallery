@@ -88,29 +88,44 @@ class Meow_Gallery_Run {
 	}
 
 	function gallery_style( $div ) {
-		$dom = new DOMDocument();
-		$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
-		$divs = $dom->getElementsByTagName('div');
-		if ( !empty( $divs ) ) {
-			$divs = iterator_to_array( $divs ) ;
-			$class = $divs[0]->getAttribute( 'class' );
-			$divs[0]->setAttribute( 'class', 'meow-gallery ' . $class );
-			$divs[0]->setAttribute( 'style', 'display: none;' );
-			if ( !empty( $this->atts['layout'] ) ) {
-				$layout = $this->atts['layout'];
-				$divs[0]->setAttribute( 'mgl-layout', $layout );
+		try {
+			$dom = new DOMDocument();
+			$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+			$divs = $dom->getElementsByTagName('div');
+			if ( !empty( $divs ) ) {
+				$divs = iterator_to_array( $divs ) ;
+				$class = $divs[0]->getAttribute( 'class' );
+				$divs[0]->setAttribute( 'class', 'meow-gallery ' . $class );
+				$divs[0]->setAttribute( 'style', 'display: none;' );
+				if ( !empty( $this->atts['layout'] ) ) {
+					$layout = $this->atts['layout'];
+					$divs[0]->setAttribute( 'data-mgl-layout', $layout );
+				}
+				if ( !empty( $this->atts['infinite-loading'] ) ) {
+					$infinite = $this->atts['infinite-loading'];
+					$divs[0]->setAttribute( 'data-mgl-infinite-loading', $infinite );
+				}
+				$div = $dom->saveHtml();
+				$div = str_replace( '</div>', '', $div );
+				return $div;
 			}
-			$div = $dom->saveHtml();
-			$div = str_replace( '</div>', '', $div );
-			return $div;
+		}
+		catch ( Exception $e ) {
+			error_log( "Meow Gallery caught an exception: " . $e->getMessage() );
 		}
 		return $div;
 	}
 
 	function wp_get_attachment_image_attributes( $attr ) {
 		if ( $this->gallery_process ) {
-		  $attr['data-mgl-src'] = $attr['src'];
-			unset( $attr['src'] );
+			if ( isset( $attr['sizes'] ) ) {
+				$attr['data-mgl-sizes'] = $attr['sizes'];
+				unset( $attr['sizes'] );
+			}
+			if ( isset( $attr['src'] ) ) {
+			  $attr['data-mgl-src'] = $attr['src'];
+				$attr['src'] = '//:0';
+			}
 			if ( isset( $attr['srcset'] ) ) {
 				$attr['data-mgl-srcset'] = $attr['srcset'];
 				unset( $attr['srcset'] );
