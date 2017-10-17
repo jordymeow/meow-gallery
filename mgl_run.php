@@ -90,7 +90,10 @@ class Meow_Gallery_Run {
 	function gallery_style( $div ) {
 		try {
 			$dom = new DOMDocument();
-			$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+			if ( PHP_VERSION_ID > 50400 )
+				$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+			else
+			 	$dom->loadHTML( $div, LIBXML_HTML_NODEFDTD );
 			$divs = $dom->getElementsByTagName('div');
 			if ( !empty( $divs ) ) {
 				$divs = iterator_to_array( $divs ) ;

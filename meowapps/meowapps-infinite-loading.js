@@ -176,6 +176,7 @@ jQuery(document).ready(function($) {
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
                         margins: mgl.settings.justified.gutter,
+                        waitThumbnailsLoad: false,
                         border: 0
                     }).on('jg.complete', function() {
                         $gallery.find('.gallery-item.not-loaded').removeClass('not-loaded');

@@ -14,6 +14,7 @@ class Meow_Gallery_Core {
 	*/
 
 	function init() {
+		load_plugin_textdomain( 'meow-gallery', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 		include( 'mgl_run.php' );
     new Meow_Gallery_Run( $this->admin );
 	}

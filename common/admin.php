@@ -5,7 +5,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 	class MeowApps_Admin {
 
 		public static $loaded = false;
-		public static $admin_version = "1.3";
+		public static $admin_version = "1.4";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -28,14 +28,95 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			$this->mainfile = $mainfile;
 			$this->domain = $domain;
 
-			// Check if the free version is installed but there is license
-			// TODO: In the future, this should be removed ideally
+			register_activation_hook( $mainfile, array( $this, 'show_meowapps_create_rating_date' ) );
+
 			if ( is_admin() ) {
 				$license = get_option( $this->prefix . '_license', "" );
 				if ( ( !empty( $license ) ) && !file_exists( plugin_dir_path( $this->mainfile ) . 'common/meowapps/admin.php' ) ) {
 					add_action( 'admin_notices', array( $this, 'admin_notices_licensed_free' ) );
 				}
+				$rating_date = $this->create_rating_date();
+				if ( time() > $rating_date ) {
+					add_action( 'admin_notices', array( $this, 'admin_notices_rating' ) );
+				}
 			}
+		}
+
+		function show_meowapps_create_rating_date() {
+			delete_option( 'meowapps_hide_meowapps' );
+			$this->create_rating_date();
+		}
+
+		function create_rating_date() {
+			$rating_date = get_option( $this->prefix . '_rating_date' );
+			if ( empty( $rating_date ) ) {
+				$two_months = strtotime( '+2 months' );
+				$six_months = strtotime( '+6 months' );
+				$rating_date = mt_rand( $two_months, $six_months );
+				update_option( $this->prefix . '_rating_date', $rating_date, false );
+			}
+			return $rating_date;
+		}
+
+		function admin_notices_rating() {
+			if ( isset( $_POST[$this->prefix . '_remind_me'] ) ) {
+				$two_weeks = strtotime( '+2 weeks' );
+				$six_weeks = strtotime( '+6 weeks' );
+				$future_date = mt_rand( $two_weeks, $six_weeks );
+				update_option( $this->prefix . '_rating_date', $future_date, false );
+				return;
+			}
+			else if ( isset( $_POST[$this->prefix . '_never_remind_me'] ) ) {
+				$twenty_years = strtotime( '+20 years' );
+				update_option( $this->prefix . '_rating_date', $twenty_years, false );
+				return;
+			}
+			else if ( isset( $_POST[$this->prefix . '_did_it'] ) ) {
+				$twenty_years = strtotime( '+100 years' );
+				update_option( $this->prefix . '_rating_date', $twenty_years, false );
+				return;
+			}
+			$rating_date = get_option( $this->prefix . '_rating_date' );
+			echo '<div class="notice notice-success" data-rating-date="' . date( 'Y-m-d', $rating_date ) . '">';
+				echo '<p style="font-size: 100%;">You have been using <b>' . $this->nice_name_from_file( $this->mainfile  ) . '</b> for some time now. If you enjoy it, could you share your thoughts and give the developers a sweet spike of motivation? In that case, please: <a target="_blank" href="https://wordpress.org/support/plugin/' . $this->nice_short_url_from_file( $this->mainfile ) . '/reviews/?rate=5#new-post">review it</a>. Thank you :)';
+			echo '<p>
+				<form method="post" action="" style="float: right;">
+					<input type="hidden" name="' . $this->prefix . '_never_remind_me" value="true">
+					<input type="submit" name="submit" id="submit" class="button button-red" value="Never remind me!">
+				</form>
+				<form method="post" action="" style="float: right; margin-right: 10px;">
+					<input type="hidden" name="' . $this->prefix . '_remind_me" value="true">
+					<input type="submit" name="submit" id="submit" class="button button-primary" value="Remind me in a few weeks...">
+				</form>
+				<form method="post" action="" style="float: right; margin-right: 10px;">
+					<input type="hidden" name="' . $this->prefix . '_did_it" value="true">
+					<input type="submit" name="submit" id="submit" class="button button-primary" value="Yes, I did it!">
+				</form>
+				<div style="clear: both;"></div>
+			</p>
+			';
+			echo '</div>';
+		}
+
+		function nice_short_url_from_file( $file ) {
+			$info = pathinfo( $file );
+			if ( !empty( $info ) ) {
+				$info['filename'] = str_replace( '-pro', '', $info['filename'] );
+				return $info['filename'];
+			}
+			return "";
+		}
+
+		function nice_name_from_file( $file ) {
+			$info = pathinfo( $file );
+			if ( !empty( $info ) ) {
+				if ( $info['filename'] == 'wplr-sync' ) {
+					return "WP/LR Sync";
+				}
+				$info['filename'] = str_replace( '-', ' ', $info['filename'] );
+				$file = ucwords( $info['filename'] );
+			}
+			return $file;
 		}
 
 		function admin_notices_licensed_free() {
@@ -45,7 +126,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 				return;
 			}
 			echo '<div class="error">';
-			echo '<p>It looks like you are using the free version of the plugin (<b>' . $this->mainfile . '</b>) but a license for the Pro version was also found. The Pro version might have been replaced by the Free version during an update (might be caused by a temporarily issue). If it is the case, <b>please download it again</b> from the <a target="_blank" href="https://store.meowapps.com">Meow Store</a>. If you wish to continue using the free version and clear this message, click on this button.';
+			echo '<p>It looks like you are using the free version of the plugin (<b>' . $this->nice_name_from_file( $this->mainfile  )	 . '</b>) but a license for the Pro version was also found. The Pro version might have been replaced by the Free version during an update (might be caused by a temporarily issue). If it is the case, <b>please download it again</b> from the <a target="_blank" href="https://store.meowapps.com">Meow Store</a>. If you wish to continue using the free version and clear this message, click on this button.';
 			echo '<p>
 				<form method="post" action="">
 					<input type="hidden" name="' . $this->prefix . '_reset_sub" value="true">
@@ -61,7 +142,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 		}
 
 		function display_title( $title = "Meow Apps",
-			$author = "By <a style='text-decoration: none;' href='http://meowapps.com' target='_blank'>Jordy Meow</a>" ) {
+			$author = "By <a style='text-decoration: none;' href='https://meowapps.com' target='_blank'>Jordy Meow</a>" ) {
 			if ( !empty( $this->prefix ) )
 				$title = apply_filters( $this->prefix . '_plugin_title', $title );
 			if ( $this->display_ads() ) {

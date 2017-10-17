@@ -49,6 +49,8 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
         add_action( 'update_option_' . $prefix . '_pro_serial', array( $this, 'serial_updated' ), 10, 2 );
         add_action( 'admin_menu', array( $this, 'admin_menu_for_serialkey' ) );
         add_filter( 'plugin_row_meta', array( $this, 'custom_plugin_row_meta' ), 10, 2 );
+        if ( isset( $_POST['retry-validation-' . $this->prefix] ) )
+          add_filter( 'admin_init', array( $this, 'retry_validation' ) );
       }
     }
 
@@ -67,6 +69,13 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
     		$links = array_merge( $new_links, $links );
     	}
     	return $links;
+    }
+
+    function retry_validation() {
+      if ( isset( $_POST[$this->prefix . '_pro_serial'] ) ) {
+        $serial = $_POST[$this->prefix . '_pro_serial'];
+        $this->validate_pro( $serial );
+      }
     }
 
     function is_registered( $force = false ) {
@@ -91,7 +100,7 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 				return false;
       $url = 'https://store.meowapps.com/?edd_action=activate_license' .
         '&item_name=' . urlencode( $this->item ) .
-        '&license=' . $subscr_id . '&url=' . get_site_url();
+        '&license=' . $subscr_id . '&url=' . get_site_url() . '&cache=' . bin2hex( openssl_random_pseudo_bytes( 4 ) );
 			$response = wp_remote_get( $url, array(
           'user-agent' => "MeowApps",
           'sslverify' => false,
@@ -121,17 +130,15 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 				error_log( print_r( $response, true ) );
 			}
 			else if ( $post->license !== "valid" ) {
-				if ( $post->license == "no_activations_left" )
-					$status = __( "Your license key has reached its activation limit." );
-				else if ( $post->license == "expired" )
-					$status = __( "Your license key expired." );
+				if ( $post->error == "no_activations_left" )
+					$status = __( "Your license key has reached its activation limit <a target='_blank' href='$url'>({$post->error})</a>." );
+				else if ( $post->error == "expired" )
+					$status = __( "Your license key expired <a target='_blank' href='$url'>({$post->error})</a>." );
 				else {
-					$status = "There is a problem with your subscription <a target='_blank' href='$url'>({$post->license})</a>.";
-
+					$status = "There is a problem with your subscription <a target='_blank' href='$url'>({$post->error})</a>.";
         }
 			}
       else {
-        //error_log( print_r( $post, 1 ) );
         $license = $post->license;
         $expires = $post->expires;
         delete_option( '_site_transient_update_plugins' );
@@ -159,12 +166,12 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 
     function admin_serialkey_callback( $args ) {
 	    $value = get_option( $this->prefix . '_pro_serial', null );
-	    $html = '<input type="text" id="' . $this->prefix . '_pro_serial" name="' . $this->prefix . '_pro_serial" value="' . $value . '" />';
+	    $html = '<input type="text" id="' . $this->prefix . '_pro_serial" name="' .
+        $this->prefix . '_pro_serial" value="' . $value . '" />';
 	    echo $html;
 	  }
 
     function license_input( $html, $url ) {
-      $this->is_registered();
       echo '<form method="post" action="options.php">';
       if ( isset( $this->license['issue'] ) ) {
         echo '<div class="pro_info ' . ( $this->is_registered() ? 'enabled' : 'disabled' ) . '">';
@@ -174,7 +181,7 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
       settings_fields( $this->prefix . '_settings_serialkey' );
       do_settings_sections( $this->prefix . '_settings_serialkey-menu' );
       if ( !$this->is_registered() ) {
-        echo '<small class="description">Insert your serial key above. If you don\'t have one yet, you can get one <a target="_blank" href="' . $url . '">here</a>.</small>';
+        echo '<small class="description">Insert your serial key above. If you don\'t have one yet, you can get one <a target="_blank" href="' . $url . '">here</a>. If there was an error during the validation, try the <i>Retry to validate</i> button.</small>';
       }
       else {
         if ( $this->license['expires'] == 'lifetime' ) {
@@ -186,8 +193,13 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
           echo "This license expires in $days days.";
         }
       }
-      submit_button();
-      echo '</form>';
+      echo '<p class="submit">';
+      if ( !$this->is_registered() ) {
+        submit_button( "Retry to validate", 'delete', 'retry-validation-' . $this->prefix,
+          false, array( 'style' => 'margin-right: 5px;' ) );
+      }
+      submit_button( "Save Changes", 'primary', 'submit', false );
+      echo '</p></form>';
     }
 
     function serial_updated( $old_value, $new_value ) {

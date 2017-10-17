@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, grid, photo gallery, image gallery
 Requires at least: 3.5
 Tested up to: 4.8
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,12 +26,14 @@ Nothing yet.
 
 == Changelog ==
 
+= 1.0.3 =
+* Fix: Tiny issue with Justified Layout (lines).
+* Add: i18n.
+
 = 1.0.2 =
 * Fix: Better Justified layout.
-* Fix: WP3C validation.
+* Fix: W3C validation.
 * Fix: Compatibility with prehistoric themes.
-
-= 1.0.1 =
 * Fix: Gallery width.
 * Fix: Issues with PHP < 7.
 

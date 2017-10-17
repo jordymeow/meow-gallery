@@ -13,11 +13,6 @@ jQuery(document).ready(function($) {
 
             if(!mgl.settings.infinite_loading.enabled || galleries_number > 1) {
 
-                // Resizing the container to overflow the container and ignore outside padding
-                var gallery_width = $gallery.outerWidth();
-                $gallery.css('width', gallery_width + gutter*2 + 2 +'px');
-                $gallery.css('margin-left', -gutter);
-
                 $gallery.find('.gallery-item').each(function() {
                     var $item = $(this);
                     var $image = $(this).find('img');
@@ -28,11 +23,11 @@ jQuery(document).ready(function($) {
 
                 $gallery.imagesLoaded(function() {
                     $gallery.justifiedGallery({
-                        selector: 'figure, .gallery-item',
+                        selector: '.gallery-item',
                         rowHeight: rowHeight,
                         margins: gutter,
                         border: 0,
-                        waitThumbnailsLoad: true
+                        waitThumbnailsLoad: false
                     });
 
                     $gallery.justifiedGallery().on('jg.complete', function(e) {
