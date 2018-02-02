@@ -1,7 +1,8 @@
-
 jQuery(document).ready(function($) {
 
-    if($('.gallery').length > 0) {
+    console.log('pro loaded');
+
+    if($('.gallery, .wp-block-gallery').length > 0) {
 
             var loader_exists = false;
 
@@ -179,7 +180,7 @@ jQuery(document).ready(function($) {
                         waitThumbnailsLoad: false,
                         border: 0
                     }).on('jg.complete', function() {
-                        $gallery.find('.gallery-item.not-loaded').removeClass('not-loaded');
+                        $gallery.find('.gallery-item.not-loaded').fadeIn().removeClass('not-loaded');
                     });
 
                     removeLoader();
@@ -214,7 +215,7 @@ jQuery(document).ready(function($) {
                             $gallery.imagesLoaded(function() {
 
                                 $gallery.justifiedGallery('norewind').on('jg.complete', function() {
-                                    $gallery.find('.gallery-item.not-loaded').removeClass('not-loaded');
+                                    $gallery.find('.gallery-item.not-loaded').fadeIn().removeClass('not-loaded');
                                 });
 
                                 removeLoader();

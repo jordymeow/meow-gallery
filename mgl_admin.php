@@ -219,10 +219,10 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 	function admin_layout_callback( $args ) {
 		$layouts = array(
-			'justified' => array( 'name' => __( 'Justified', 'meow-gallery' ),
-				'desc' => __( "Display your photos using Justified (similar to Flickr).", 'meow-gallery' ) ),
 			'masonry' => array( 'name' => __( 'Masonry', 'meow-gallery' ),
 				'desc' => __( "Display your photos using Masonry.", 'meow-gallery' ) ),
+			'justified' => array( 'name' => __( 'Justified', 'meow-gallery' ),
+				'desc' => __( "Display your photos using Justified (similar to Flickr).", 'meow-gallery' ) ),
 			'instagram' => array( 'name' => __( 'Instagram', 'meow-gallery' ),
 				'desc' => __( "Similar to Instagram flow.", 'meow-gallery' ) ),
 			//'horizontal_slider' => array( 'name' => 'Horizontal Slider (BETA)', 'desc' => "Your photos in a horizontal slider." )

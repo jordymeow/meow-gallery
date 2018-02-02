@@ -1,8 +1,29 @@
 jQuery(document).ready(function($) {
 
+    console.log('mgl.js loaded');
+
+    if($('.wp-block-gallery').length > 0) {
+        // vital things
+        $('.wp-block-gallery').addClass('gallery meow-gallery');
+        $('.wp-block-gallery').find('figure').addClass('gallery-item');
+        $('.wp-block-gallery').find('figure').removeClass('blocks-gallery-image');
+        $('.wp-block-gallery').removeClass('wp-block-gallery');
+        // columns
+        var classes = $('.meow-gallery').attr('class').split(/\s+/);
+        $.each(classes, function(index, item) {
+            if (item.indexOf('columns') !== -1) {
+                var columns_number = item.split('columns-')[1];
+                $('.meow-gallery').addClass('gallery-columns-'+columns_number);
+            }
+        });
+    }
+
+    // Captions always visible
+    // $('.gallery-item').addClass('caption-always-visible');
+
     // Check if there is a wordpress gallery on the page
     var gallery_exists = false;
-    if ($('.gallery').length > 0) {
+    if ($('.gallery').length > 0 || $('.wp-block-gallery').length > 0) {
 
         gallery_exists = true;
 

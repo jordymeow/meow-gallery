@@ -96,17 +96,17 @@ class Meow_Gallery_Run {
 			 	$dom->loadHTML( $div );
 			$divs = $dom->getElementsByTagName('div');
 			if ( !empty( $divs ) ) {
-				$divs = iterator_to_array( $divs ) ;
-				$class = $divs[0]->getAttribute( 'class' );
-				$divs[0]->setAttribute( 'class', 'meow-gallery ' . $class );
-				$divs[0]->setAttribute( 'style', 'display: none;' );
+				$mainDiv = $divs->item(0);
+				$class = $mainDiv->getAttribute( 'class' );
+				$mainDiv->setAttribute( 'class', 'meow-gallery ' . $class );
+				$mainDiv->setAttribute( 'style', 'display: none;' );
 				if ( !empty( $this->atts['layout'] ) ) {
 					$layout = $this->atts['layout'];
-					$divs[0]->setAttribute( 'data-mgl-layout', $layout );
+					$mainDiv->setAttribute( 'data-mgl-layout', $layout );
 				}
 				if ( !empty( $this->atts['infinite-loading'] ) ) {
 					$infinite = $this->atts['infinite-loading'];
-					$divs[0]->setAttribute( 'data-mgl-infinite-loading', $infinite );
+					$mainDiv->setAttribute( 'data-mgl-infinite-loading', $infinite );
 				}
 				$div = $dom->saveHtml();
 				$div = str_replace( '</div>', '', $div );

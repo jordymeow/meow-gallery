@@ -19,6 +19,10 @@ class Meow_Gallery_Core {
     new Meow_Gallery_Run( $this->admin );
 	}
 
+	static function installed() {
+		return true;
+	}
+
 }
 
 ?>

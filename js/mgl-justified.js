@@ -1,5 +1,7 @@
 jQuery(document).ready(function($) {
 
+    console.log('mgl-justified loaded');
+
     window.MglJustified = function (parameters) {
         var gutter = parameters.gutter;
         var rowHeight = parameters.rowHeight;
@@ -7,6 +9,7 @@ jQuery(document).ready(function($) {
         var galleries_number = parameters.context.galleries_number;
 
         this.run = function($gallery) {
+
             $gallery.addClass('justified');
 
             $gallery.find('figcaption').hide();
@@ -21,31 +24,24 @@ jQuery(document).ready(function($) {
                     $item.addClass('not-loaded');
                 });
 
+                // Apply layout to first batch
                 $gallery.imagesLoaded(function() {
+
                     $gallery.justifiedGallery({
-                        selector: '.gallery-item',
-                        rowHeight: rowHeight,
-                        margins: gutter,
-                        border: 0,
-                        waitThumbnailsLoad: false
+                        selector: 'figure, .gallery-item',
+                        rowHeight: mgl.settings.justified.row_height,
+                        margins: mgl.settings.justified.gutter,
+                        waitThumbnailsLoad: false,
+                        border: 0
+                    }).on('jg.complete', function() {
+                        $gallery.find('.gallery-item.not-loaded').fadeIn().removeClass('not-loaded');
                     });
 
-                    $gallery.justifiedGallery().on('jg.complete', function(e) {
-                        setTimeout(function() {
-                            $gallery.find('.gallery-item').each(function(index) {
-                                var $galleryItem = $(this);
-                                setTimeout(function() {
-                                    $galleryItem.fadeIn(500).removeClass('not-loaded');
-                                }, 100*index);
-                            });
-                        }, 10);
-                    });
-
-                    $('.mgl-infinite-spinner').hide();
                 });
-
             }
             else {
+                console.log('mgl-justified: infinite loading enabled');
+                console.log(Meowapps_justified_infinite_loading)
                 if(typeof Meowapps_justified_infinite_loading === "function") {
                     Meowapps_justified_infinite_loading(mgl.settings.infinite_loading, $gallery);
                 }

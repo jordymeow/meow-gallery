@@ -108,9 +108,9 @@
     padding: 5px;
     opacity: 0;
     left: 0; }
-  .gallery.masonry .gallery-item:hover {
+  .gallery.masonry .gallery-item:hover, .gallery.masonry .gallery-item.caption-always-visible {
     overflow: hidden; }
-    .gallery.masonry .gallery-item:hover figcaption {
+    .gallery.masonry .gallery-item:hover figcaption, .gallery.masonry .gallery-item.caption-always-visible figcaption {
       opacity: 1;
       transition: .3s; }
 .gallery.horizontal-slider-gallery {
@@ -170,5 +170,3 @@
   40% {
     -webkit-transform: scale(1);
     transform: scale(1); } }
-
-/*# sourceMappingURL=mgl.css.map */

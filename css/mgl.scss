@@ -16,6 +16,7 @@
 
         img {
             max-width: none !important;
+            margin: 0 !important;
         }
 
         &.not-loaded {
@@ -219,7 +220,7 @@
             left: 0;
         }
 
-        .gallery-item:hover {
+        .gallery-item:hover, .gallery-item.caption-always-visible {
             overflow: hidden;
 
             figcaption {

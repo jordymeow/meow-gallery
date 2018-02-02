@@ -31,15 +31,18 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
         include( dirname( __FILE__ ) . '/updater.php' );
       $this->is_registered();
       $license_key = $this->license && isset( $this->license['key'] ) ? $this->license['key'] : "";
-      $edd_updater = new EDD_SL_Plugin_Updater( 'https://store.meowapps.com', $mainfile, array(
-      	'version' => $version,
-      	'license' => $license_key,
-      	'item_name' => $item,
-      	'wp_override' => true,
-      	'author' => 'Jordy Meow',
-      	'url' => get_site_url(),
-        'beta' => false
-      ) );
+      $edd_updater = new EDD_SL_Plugin_Updater(
+        ( get_option( 'force_sslverify', false ) ? 'https' : 'http' ) . '://store.meowapps.com', $mainfile,
+        array(
+        	'version' => $version,
+        	'license' => $license_key,
+        	'item_name' => $item,
+        	'wp_override' => true,
+        	'author' => 'Jordy Meow',
+        	'url' => strtolower( get_site_url() ),
+          'beta' => false
+        )
+      );
 
       // Override filters and actions to add Pro in the Admin
       add_filter( $this->prefix . '_meowapps_license_input', array( $this, 'license_input' ), 10, 2 );
@@ -98,12 +101,13 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			delete_option( $prefix . '_license', "" );
 			if ( empty( $subscr_id ) )
 				return false;
-      $url = 'https://store.meowapps.com/?edd_action=activate_license' .
+      $url = ( get_option( 'force_sslverify', false ) ? 'https' : 'http' ) .
+        '://store.meowapps.com/?edd_action=activate_license' .
         '&item_name=' . urlencode( $this->item ) .
-        '&license=' . $subscr_id . '&url=' . get_site_url() . '&cache=' . bin2hex( openssl_random_pseudo_bytes( 4 ) );
+        '&license=' . $subscr_id . '&url=' . strtolower( get_site_url() ) . '&cache=' . bin2hex( openssl_random_pseudo_bytes( 4 ) );
 			$response = wp_remote_get( $url, array(
           'user-agent' => "MeowApps",
-          'sslverify' => false,
+          'sslverify' => get_option( 'force_sslverify', false ),
           'timeout' => 45,
           'method' => 'GET'
         )
