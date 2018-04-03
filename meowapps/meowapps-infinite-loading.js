@@ -1,7 +1,5 @@
 jQuery(document).ready(function($) {
 
-    console.log('pro loaded');
-
     if($('.gallery, .wp-block-gallery').length > 0) {
 
             var loader_exists = false;
@@ -83,6 +81,8 @@ jQuery(document).ready(function($) {
                         transitionDuration: 0,
                     });
                     removeLoader();
+
+                    $('.gallery-item').removeClass('not-loaded');
 
                     setTimeout(function() {
                         readyToLoad = true;

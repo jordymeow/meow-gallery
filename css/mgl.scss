@@ -1,9 +1,16 @@
 // Removing captions !
 .meow-gallery {
     opacity: 0;
+    padding: 0 !important;
+    list-style: none !important;
 
     &.js-loaded {
         opacity: 1;
+    }
+
+    li {
+        display: inline-block;
+        list-style: none;
     }
 }
 

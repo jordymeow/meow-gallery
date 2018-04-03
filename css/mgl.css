@@ -1,7 +1,12 @@
 .meow-gallery {
-  opacity: 0; }
+  opacity: 0;
+  padding: 0 !important;
+  list-style: none !important; }
   .meow-gallery.js-loaded {
     opacity: 1; }
+  .meow-gallery li {
+    display: inline-block;
+    list-style: none; }
 
 .gallery .gallery-item {
   opacity: 1 !important;
@@ -108,9 +113,9 @@
     padding: 5px;
     opacity: 0;
     left: 0; }
-  .gallery.masonry .gallery-item:hover {
+  .gallery.masonry .gallery-item:hover, .gallery.masonry .gallery-item.caption-always-visible {
     overflow: hidden; }
-    .gallery.masonry .gallery-item:hover figcaption {
+    .gallery.masonry .gallery-item:hover figcaption, .gallery.masonry .gallery-item.caption-always-visible figcaption {
       opacity: 1;
       transition: .3s; }
 .gallery.horizontal-slider-gallery {

@@ -420,7 +420,7 @@ class EDD_SL_Plugin_Updater {
 
 			$request = wp_remote_post( $this->api_url, array(
 				'timeout' => 15,
-				//'sslverify' => false,
+				'sslverify' => get_option( 'force_sslverify', false ),
 				'body' => $api_params
 				)
 			);
@@ -480,7 +480,7 @@ class EDD_SL_Plugin_Updater {
 			'value'   => json_encode( $value )
 		);
 
-		update_option( $cache_key, $data );
+		update_option( $cache_key, $data, 'no' );
 
 	}
 

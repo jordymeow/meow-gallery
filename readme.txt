@@ -1,9 +1,9 @@
 === Meow Gallery Pro ===
 Contributors: TigrouMeow, kywyz
-Tags: gallery, masonry, justified, grid, photo gallery, image gallery
+Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 3.5
-Tested up to: 4.9
-Stable tag: 1.0.7
+Tested up to: 4.9.4
+Stable tag: 1.1.2
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,7 +26,10 @@ Nothing yet.
 
 == Changelog ==
 
-= 1.0.7 =
+= 1.1.2 =
+* Fix: Gutenberg compatibility.
+
+= 1.1.0 =
 * Fix: Issue with Infinite.
 
 = 1.0.6 =

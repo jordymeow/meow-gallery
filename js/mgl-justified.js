@@ -26,7 +26,6 @@ jQuery(document).ready(function($) {
 
                 // Apply layout to first batch
                 $gallery.imagesLoaded(function() {
-
                     $gallery.justifiedGallery({
                         selector: 'figure, .gallery-item',
                         rowHeight: mgl.settings.justified.row_height,
@@ -40,8 +39,6 @@ jQuery(document).ready(function($) {
                 });
             }
             else {
-                console.log('mgl-justified: infinite loading enabled');
-                console.log(Meowapps_justified_infinite_loading)
                 if(typeof Meowapps_justified_infinite_loading === "function") {
                     Meowapps_justified_infinite_loading(mgl.settings.infinite_loading, $gallery);
                 }
