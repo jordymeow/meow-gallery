@@ -276,7 +276,7 @@
 }
 .mgl-tiles {
   position: relative;
-  display: block;
+  display: block !important;
   width: 100%;
 }
 .mgl-tiles .mgl-row {
