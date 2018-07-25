@@ -1,3 +1,6 @@
+.mgl-tiles {
+  display: block !important;
+}
 .mgl-layout-1-i {
   grid-template-columns: [col1-start] 33.33% [col2-start];
   grid-template-rows: [row1-start] auto [row1-end];
