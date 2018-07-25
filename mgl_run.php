@@ -7,73 +7,58 @@ class Meow_Gallery_Run {
 	public function __construct( $admin ) {
 		$this->admin = $admin;
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 10, 3 );
-		add_filter( 'gallery_style', array( $this, 'gallery_style' ), 10, 1 );
-		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 10, 1 );
-		add_filter( 'use_default_gallery_style', '__return_false' );
+		add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 50, 3 );
 		add_shortcode( 'gallery', array( $this, 'gallery' ) );
-
-		// For now:
-		add_theme_support( 'html5', array( 'gallery', 'caption' ) );
+		require_once dirname( __FILE__ ) . '/builders/tiles.php';
+		require_once dirname( __FILE__ ) . '/builders/justified.php';
+		require_once dirname( __FILE__ ) . '/builders/masonry.php';
+		require_once dirname( __FILE__ ) . '/builders/square.php';
 	}
 
 	function enqueue_scripts() {
 		global $mgl_version;
-    wp_register_script( 'imagesLoaded', plugins_url( '/js/imagesloaded.min.js', __FILE__ ),
-			array( 'jquery' ), $mgl_version, false );
-		wp_register_script( 'justifiedGallery', plugins_url( '/js/jquery.justifiedGallery.min.js', __FILE__ ),
-			array('jquery'), $mgl_version, false );
-    wp_register_script( 'masonry', plugins_url( '/js/masonry.min.js', __FILE__ ),
-			array('jquery'), $mgl_version, false );
-		wp_register_script( 'mgl-masonry', plugins_url( '/js/mgl-masonry.js', __FILE__ ),
-			array('jquery', 'masonry'), $mgl_version, false );
-		wp_register_script( 'mgl-justified', plugins_url( '/js/mgl-justified.js', __FILE__ ),
-			array('jquery', 'justifiedGallery', 'imagesLoaded' ), $mgl_version, false );
-		wp_register_script( 'mgl-instagram', plugins_url( '/js/mgl-instagram.js', __FILE__ ),
-			array('jquery', 'imagesLoaded' ), $mgl_version, false );
-		wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ),
-				array( 'jquery', 'mgl-masonry', 'mgl-justified', 'mgl-instagram' ), $mgl_version, false );
-
-		wp_localize_script('mgl-js', 'mgl', array(
-			//'url_api' => get_site_url() . '/wp-json/mgl/v1/',
-			'settings' => array(
-				'layout' => get_option( 'mgl_layout', 'masonry' ),
-				'infinite_loading' => array(
-					'enabled' => get_option( 'mgl_infinite', false ) && $this->admin->is_registered(),
-					'animated' => get_option( 'mgl_infinite_animation', true ),
-					'batch_size' => get_option( 'mgl_infinite_batch_size', 20 ),
-					'loader' => array(
-						'enabled' => get_option( 'mgl_infinite_loader', true ),
-						'color' => get_option( 'mgl_infinite_loader_color', '#444444' )
-					)
-				),
-				'masonry' => array(
-					'columns' => get_option( 'mgl_masonry_columns', 3 ),
-					'display_captions' => get_option( 'mgl_masonry_display_captions', false ),
-					'gutter' => get_option( 'mgl_masonry_gutter', 10 )
-				),
-				'justified' => array(
-					'gutter' => get_option( 'mgl_justified_gutter', 10 ),
-					'row_height' => get_option( 'mgl_justified_row_height', 120 )
-				),
-				'instagram' => array(
-					'gutter' => get_option( 'mgl_instagram_gutter', 10 )
-				),
-				'horizontal_slider' => array(
-					'slider_height' => 400, // in px
-					'slider_width' => 100, // in %
-					'gutter' => 10, // in px
-				)
-			)
-		) );
-    wp_enqueue_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css',
-			null, $mgl_version );
-		wp_enqueue_style( 'justifiedGallery-css', plugin_dir_url( __FILE__ ) . 'css/justifiedGallery.min.css',
-			null, $mgl_version );
+		// wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ), null, $mgl_version, false );
+		// wp_localize_script('mgl-js', 'mgl', array(
+		// 	'settings' => array(
+		// 		'layout' => get_option( 'mgl_layout', 'tiles' ),
+		// 		'tiles' => array (
+		// 			'gutter' => get_option( 'mgl_tiles_gutter', 10 ),
+		// 			'row_height' => get_option( 'mgl_tiles_row_height', 200 )
+		// 		),
+		// 		'justified' => array (
+		// 			'gutter' => get_option( 'mgl_justified_gutter', 10 ),
+		// 			'row_height' => get_option( 'mgl_justified_row_height', 200 )
+		// 		),
+		// 		'masonry' => array (
+		// 			'gutter' => get_option( 'mgl_masonry_gutter', 10 ),
+		// 			'columns' => get_option( 'mgl_masonry_columns', 200 )
+		// 		),
+		// 		'square' => array (
+		// 			'gutter' => get_option( 'mgl_square_gutter', 10 ),
+		// 			'columns' => get_option( 'mgl_square_columns', 5 )
+		// 		),
+		// 		'slider' => array (
+		// 			'nav_enabled' => get_option( 'mgl_slider_nav_enabled', true ),
+		// 			'nav_height' => get_option( 'mgl_slider_nav_height', 80 ),
+		// 			'image_height' => get_option( 'mgl_slider_image_height', 500 )
+		// 		),
+		// 		'infinite_loading' => array(
+		// 			'enabled' => get_option( 'mgl_infinite', false ) && $this->admin->is_registered(),
+		// 			'animated' => get_option( 'mgl_infinite_animation', true ),
+		// 			'batch_size' => get_option( 'mgl_infinite_batch_size', 20 ),
+		// 			'loader' => array(
+		// 				'enabled' => get_option( 'mgl_infinite_loader', true ),
+		// 				'color' => get_option( 'mgl_infinite_loader_color', '#444444' )
+		// 			)
+		// 		)
+		// 	)
+		// ) );
+		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css', null, $mgl_version );
+		wp_register_style( 'mgl-tiles-css', plugin_dir_url( __FILE__ ) . 'css/tiles.css', array( 'mgl-css' ), $mgl_version );
+		wp_register_style( 'mgl-justified-css', plugin_dir_url( __FILE__ ) . 'css/justified.css', array( 'mgl-css' ), $mgl_version );
+		wp_register_style( 'mgl-masonry-css', plugin_dir_url( __FILE__ ) . 'css/masonry.css', array( 'mgl-css' ), $mgl_version );
+		wp_register_style( 'mgl-square-css', plugin_dir_url( __FILE__ ) . 'css/square.css', array( 'mgl-css' ), $mgl_version );
 	}
-
-	// Overrides the WP Gallery
-	// With a new class and style
 
 	private $atts;
 	private $gallery_process = false;
@@ -87,60 +72,28 @@ class Meow_Gallery_Run {
 		return $result;
 	}
 
-	function gallery_style( $div ) {
-		try {
-			$dom = new DOMDocument();
-			if ( defined( LIBXML_HTML_NOIMPLIED ) && defined( LIBXML_HTML_NODEFDTD ) )
-				$dom->loadHTML( $div, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
-			else
-			 	$dom->loadHTML( $div );
-			$divs = $dom->getElementsByTagName('div');
-			if ( !empty( $divs ) ) {
-				$mainDiv = $divs->item(0);
-				$class = $mainDiv->getAttribute( 'class' );
-				$mainDiv->setAttribute( 'class', 'meow-gallery ' . $class );
-				$mainDiv->setAttribute( 'style', 'display: none;' );
-				if ( !empty( $this->atts['layout'] ) ) {
-					$layout = $this->atts['layout'];
-					$mainDiv->setAttribute( 'data-mgl-layout', $layout );
-				}
-				if ( !empty( $this->atts['infinite-loading'] ) ) {
-					$infinite = $this->atts['infinite-loading'];
-					$mainDiv->setAttribute( 'data-mgl-infinite-loading', $infinite );
-				}
-				$div = $dom->saveHtml();
-				$div = str_replace( '</div>', '', $div );
-				return $div;
-			}
-		}
-		catch ( Exception $e ) {
-			error_log( "Meow Gallery caught an exception: " . $e->getMessage() );
-		}
-		return $div;
-	}
-
-	function wp_get_attachment_image_attributes( $attr ) {
-		if ( $this->gallery_process ) {
-			if ( isset( $attr['sizes'] ) ) {
-				$attr['data-mgl-sizes'] = $attr['sizes'];
-				unset( $attr['sizes'] );
-			}
-			if ( isset( $attr['src'] ) ) {
-			  $attr['data-mgl-src'] = $attr['src'];
-				$attr['src'] = '//:0';
-			}
-			if ( isset( $attr['srcset'] ) ) {
-				$attr['data-mgl-srcset'] = $attr['srcset'];
-				unset( $attr['srcset'] );
-			}
-		}
-		return $attr;
-	}
-
 	function gallery( $atts ) {
+		$atts = apply_filters( 'shortcode_atts_gallery', $atts, array(), array() );
+		$images = [];
+		if ( isset( $atts['ids'] ) )
+			$images = $atts['ids'];
+		if ( isset( $atts['include'] ) )
+			$images = implode( $atts['include'], ',' );
+		if ( empty( $images ) )
+			return "<p>The gallery is empty.</p>";
+		$layout = ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' ) ? $atts['mgl-layout'] : get_option( 'mgl_layout', 'tiles' );
 		$this->gallery_process = true;
-		$result = gallery_shortcode( $atts );
+		$layoutClass = 'Meow_' . ucfirst( $layout ) . '_Generator';
+		if ( !class_exists( $layoutClass ) ) {
+			error_log( "Meow Gallery: Class $layoutClass does not exist." );
+			return;
+		}
+		wp_enqueue_style( 'mgl-' . $layout . '-css' );
+		$infinite = get_option( 'mgl_infinite', false ) && $this->admin->is_registered();
+		$gen = new $layoutClass( $atts, $infinite );
+		$result = $gen->build( $images );
 		$this->gallery_process = false;
+		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		return $result;
 	}
 

@@ -2,38 +2,67 @@
 
 class MeowAppsPro_MGL_Core {
 
-  private $prefix = 'mgl';
-  private $item = 'Meow Gallery Pro';
-  private $admin = null;
-  private $core = null;
-  private $version = null;
+	private $prefix = 'mgl';
+	private $item = 'Meow Gallery Pro';
+	private $admin = null;
+	private $core = null;
+	private $version = null;
 
-  public function __construct( $prefix, $mainfile, $domain, $version, $core, $admin  ) {
-    // Pro Admin (license, update system, etc...)
-    $this->prefix = $prefix;
-    $this->mainfile = $mainfile;
-    $this->domain = $domain;
-    $this->core = $core;
-    $this->admin = $admin;
-    $this->version = $version;
-    new MeowApps_Admin_Pro( $prefix, $mainfile, $domain, $this->item, $version );
+	public function __construct( $prefix, $mainfile, $domain, $version, $core, $admin  ) {
+		// Pro Admin (license, update system, etc...)
+		$this->prefix = $prefix;
+		$this->mainfile = $mainfile;
+		$this->domain = $domain;
+		$this->core = $core;
+		$this->admin = $admin;
+		$this->version = $version;
+		new MeowApps_Admin_Pro( $prefix, $mainfile, $domain, $this->item, $version );
 
-    // Overrides for the Pro
-    add_filter( 'mgl_plugin_title', array( $this, 'plugin_title' ), 10, 1 );
+		// Overrides for the Pro
+		add_filter( 'mgl_plugin_title', array( $this, 'plugin_title' ), 10, 1 );
 
-    // Additional functions for Pro
-    add_action( 'init', array( $this, 'init' ) );
-  }
+		// Additional functions for Pro
+		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'mgl_slider_gallery_created', array( $this, 'slider_created' ) );
 
-  function init() {
-    if ( !is_admin() ) {
-        wp_enqueue_script( 'mgl-masonry-infinite-loading', plugins_url( '/meowapps-infinite-loading.js', __FILE__ ),
-        		array( 'jquery' ), $this->version, false );
-    }
-  }
+		// Infinite
+		if ( get_option( 'mgl_infinite', false ) )
+			add_action( 'mgl_gallery_written', array( $this, 'gallery_written' ), 10, 2 );
+	}
 
-  function plugin_title( $string ) {
-      return $string . " (Pro)";
-  }
+	function init() {
+		if ( !is_admin() ) {
+			require_once dirname( __FILE__ ) . '/builders/slider.php';
+			$infinite = get_option( 'mgl_infinite', false );
+			wp_register_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.css', null, $this->version );
+			wp_register_script( 'mgl-infinite-js', plugins_url( '/js/vanilla-atts-infinite.js', __FILE__ ), array( 'jquery' ), 
+				$this->version, false );
+			if ( $infinite )
+				wp_enqueue_script( 'mgl-infinite-js' );
+		}
+	}
+
+	function gallery_written( $html, $layout ) {
+		if ( $layout == 'masonry' || $layout == 'slider' )
+			return $html;
+		$xml = simplexml_load_string( $html );
+		$subxml = $xml->xpath( '//img' );
+		foreach ( $subxml as $s ) {
+			$s['mgl-src'] = $s['src'];
+			$s['src'] = plugin_dir_url( __FILE__ ) . '../img/1x1.png';
+			$s['mgl-srcset'] = $s['srcset'];
+			$s['srcset'] = '';
+			$s['class'] .= ' mgl-lazy';
+		}
+		return $xml->asXml();
+	}
+
+	function slider_created() {
+		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $this->version, false );
+	}
+
+	function plugin_title( $string ) {
+			return $string . " (Pro)";
+	}
 
 }

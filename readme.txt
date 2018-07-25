@@ -2,14 +2,14 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 3.5
-Tested up to: 4.9.4
-Stable tag: 1.1.2
+Tested up to: 4.9.7
+Stable tag: 2.0.0
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
 == Description ==
 
-Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default. More information on https://meowapps.com/meow-gallery/.
+Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Tiles layout by default. More information on https://meowapps.com/meow-gallery/.
 
 == Installation ==
 
@@ -25,6 +25,11 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 2.0.0 =
+* Update: Complete recoding of the Meow Gallery! Harder, Better, Faster, Stronger.
+* Add: Add Meow Gallery setting in the Gallery Block in Gutenberg.
+* Fix: Gutenberg compatibility.
 
 = 1.1.2 =
 * Fix: Gutenberg compatibility.
