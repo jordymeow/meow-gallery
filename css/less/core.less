@@ -1,0 +1,38 @@
+// out: false, compress: true, sourceMap: false, main: style.less
+
+.mgl-hidden {
+	display: none;
+}
+
+.mgl-item {
+	position: relative;
+	overflow: hidden;
+
+	figcaption {
+		background: rgba(0,0,0,.8);
+		font-size: 12px;
+
+		p {
+			color: white;
+			line-height: 1.2em;
+		}
+
+		p:first-letter {
+			float: unset !important;
+			font-family: inherit !important;
+			font-size: unset;
+			font-size: 1em !important;
+			line-height: 1em !important;
+			padding: 0 !important;
+		}
+	}
+}
+
+.mgl-lazy {
+	opacity: 1;
+	transition: opacity 0.35s;
+}
+
+.mgl-lazy[mgl-src] {
+	opacity: 0;
+}

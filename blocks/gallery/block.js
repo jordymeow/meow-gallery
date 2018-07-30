@@ -1,4 +1,4 @@
-(function() {
+(function () {
 
 	const { __ } = wp.i18n;
 	const { registerBlockType, BlockControls, Editable, InspectorControls } = wp.blocks;
@@ -25,7 +25,7 @@
 
 	const blockEdit = createHigherOrderComponent(function blockEdit(BlockEdit) {
 
-		return function( props, setAttributes ) {
+		return function (props, setAttributes) {
 			const attributes = props.attributes;
 			const el = createElement;
 			return el(
@@ -59,7 +59,7 @@
 								el(
 									SelectControl,
 									{
-										label: __( 'Layouts (Meow Gallery)', 'meow-gallery' ),
+										label: __('Layouts (Meow Gallery)', 'meow-gallery'),
 										value: attributes.mglLayout ? attributes.mglLayout : 'native',
 										onChange: function (value) {
 											props.setAttributes({ mglLayout: value });

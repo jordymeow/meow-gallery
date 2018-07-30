@@ -1,15 +1,16 @@
-// out: ../tiles.css
+// out: false, compress: true, sourceMap: false, main: style.less
 
-@import 'tiles-layouts/_1-image';
-@import 'tiles-layouts/_2-images';
-@import 'tiles-layouts/_3-images';
-@import 'tiles-layouts/_4-images';
+@import 'tiles/_1-image';
+@import 'tiles/_2-images';
+@import 'tiles/_3-images';
+@import 'tiles/_4-images';
+@import 'tiles/_5-images';
 
 .mgl-tiles {
 	position: relative;
 	display: block !important;
 	width: 100%;
-	
+
 	.mgl-row {
 		display: grid;
 		position: relative;
@@ -54,14 +55,14 @@
 					bottom: 0;
 					opacity: 0;
 					width: 100%;
-			
+
 					p {
 						margin: 0 !important;
 						padding: 10px;
 						box-sizing: border-box;
 					}
 				}
-			
+
 				&:hover {
 					figcaption {
 						bottom: 0;

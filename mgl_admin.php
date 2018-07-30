@@ -140,7 +140,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		<div class="wrap">
 			<?php echo $this->display_title( "Meow Gallery" , "By Jordy Meow & Thomas Kim");  ?>
 			<p><?php echo _e( "This gallery plugin is designed for photographers, by photographers. If you have ideas or feature requests, don't hesitate to contact us.", 'meow-gallery' ) ?></p>
-			
+
 			<div class="section group">
 				<div class="meow-box col span_2_of_2">
 					<h3><?php echo _e( "How to use", 'meow-gallery' ) ?></h3>
@@ -265,17 +265,18 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				'desc' => __( "Flickr-like, row-based.", 'meow-gallery' ) ),
 			'square' => array( 'name' => __( 'Square', 'meow-gallery' ),
 				'desc' => __( "Instagram-like, all squares.", 'meow-gallery' ) ),
-			'slider' => array( 'name' => __( 'Slider (Pro)', 'meow-gallery' ), 
+			'slider' => array( 'name' => __( 'Slider (Pro)', 'meow-gallery' ),
 				'desc' => "Slider, carousel-like, one by one." ),
-			'none' => array( 'name' => __( 'None', 'meow-gallery' ), 
+			'none' => array( 'name' => __( 'None', 'meow-gallery' ),
 				'desc' => "Only active if a layout is explicitely set." )
 		);
 		$html = '';
 		foreach ( $layouts as $key => $arg )
 			$html .= '<div style="padding-bottom: 10px; margin-bottom: 8px;">' . ( $key !== 'none' ? ( '<img width="50" style="float: right; margin-top: -6px;"
-				src="' . plugin_dir_url(__FILE__) . 'img/layout-' . $key . '.png" />' ) : 
+				src="' . plugin_dir_url(__FILE__) . 'img/layout-' . $key . '.png" />' ) :
 				'<div style=\'margin-right: 20px; width: 40px; float: right; height: 50px;\'>
 				</div>' ) . '<input type="radio" class="radio" id="mgl_layout" name="mgl_layout" value="' . $key . '"' .
+				disabled( $key !== 'slider' || $this->is_registered(), false, false ) .
 				checked( $key, get_option( 'mgl_layout', 'tiles' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				( empty( $arg ) ? '' : '<br/><small>' . $arg['desc'] . '</small>' ) .
@@ -327,7 +328,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		$html .= '<br /><span class="description">' . __( "Ideal number of columns.", 'meow-gallery' ) . '</span>';
 		echo $html;
 	}
-	
+
 	function admin_justified_gutter_callback( $args ) {
 		$value = get_option( 'mgl_justified_gutter', 5 );
 		$html = '<input type="number" style="width: 100%;" id="mgl_justified_gutter" name="mgl_justified_gutter" value="' .
@@ -396,8 +397,8 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 	}
 
 	function admin_infinite_callback( $args ) {
-		$html = '<input ' . disabled( $this->is_registered(), false, false ) .
-			' type="checkbox" id="mgl_infinite" name="mgl_infinite" value="1" ' .
+		$html = '<input ' . disabled( $this->is_registered(), false, false ) . '
+			type="checkbox" id="mgl_infinite" name="mgl_infinite" value="1" ' .
 			checked( 1, get_option( 'mgl_infinite' ), false ) . '/>';
 		$html .= '<label>' . __( 'Enabled (Pro)', 'meow-gallery' ) . '</label><br /><small>' . __( 'Photos will be loaded progressively, as the user scrolls down. Ideal for galleries with many photos, for a faster website. ', 'meow-gallery' ) . '</small>';
 		echo $html;

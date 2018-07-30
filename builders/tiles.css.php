@@ -14,7 +14,7 @@
 
 	@media screen and (max-width: 600px) {
 		<?= $class_id ?> .mgl-row {
-			height: 150px;
+			height: 100px;
 		}
 
 		figcaption {

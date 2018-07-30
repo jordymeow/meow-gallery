@@ -1,0 +1,393 @@
+// main: ../layout-tiles.less
+
+.mgl-layout-5-ioooo {
+    @columns: "[col1-start] 20%  [col2-start] 40%  [col3-start] 40% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start;
+        grid-row: row2-start ;
+    }
+    .d {
+        grid-column: col3-start ;
+        grid-row: row1-start / row2-start;
+    }
+    .e {
+        grid-column: col3-start ;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-5-ooioo {
+    @columns: "[col1-start] 40%  [col2-start] 20%  [col3-start] 40% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start ;
+        grid-row: row1-start / row2-start;
+    }
+    .e {
+        grid-column: col3-start ;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-5-ooooi {
+    @columns: "[col1-start] 40%  [col2-start] 40%  [col3-start] 20% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .d {
+        grid-column: col2-start ;
+        grid-row: row2-start;
+    }
+    .e {
+        grid-column: col3-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-iiooo {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 20% [col4-start] 40% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-start;
+    }
+    .d {
+        grid-column: col3-start / col4-start ;
+        grid-row: row2-start;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-iooio {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 20% [col4-start] 40% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row2-start;
+    }
+    .d {
+        grid-column: col3-start / col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-ooiio {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 20% [col4-start] 40% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start / col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-ooioi {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 40% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start / col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-oooii {
+    @columns: "[col1-start] 20%  [col2-start] 40%  [col3-start] 20% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start / col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-oiioo {
+    @columns: "[col1-start] 40%  [col2-start] 20%  [col3-start] 20% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col4-start;
+        grid-row: row1-start / row2-start;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-5-oiooi {
+    @columns: "[col1-start] 40%  [col2-start] 20%  [col3-start] 20% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-start;
+    }
+    .d {
+        grid-column: col3-start / col4-start;
+        grid-row: row2-start;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-iiioo {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 20% [col4-start] 40% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col4-start;
+        grid-row: row1-start / row2-start;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-5-iiooi {
+    @columns: "[col1-start] 20%  [col2-start] 20%  [col3-start] 40% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-start;
+    }
+    .d {
+        grid-column: col3-start / col4-start;
+        grid-row: row2-start;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-iooii {
+    @columns: "[col1-start] 20%  [col2-start] 40%  [col3-start] 20% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row2-start;
+    }
+    .d {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-5-ooiii {
+    @columns: "[col1-start] 40%  [col2-start] 20%  [col3-start] 20% [col4-start] 20% [col4-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start / col4-start;
+        grid-row: row1-start / row2-end;
+    }
+    .e {
+        grid-column: col4-start ;
+        grid-row: row1-start / row2-end;
+    }
+}

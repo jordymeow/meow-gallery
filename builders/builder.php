@@ -5,6 +5,7 @@ abstract class Meow_Gallery_Generator {
 	public $id = null;
 	public $layout = 'none';
 	public $class_id = 'mgl-gallery-none';
+	public $size = 'large';
 	public $ids = [];
 	public $atts = [];
 	public $data = [];
@@ -16,13 +17,14 @@ abstract class Meow_Gallery_Generator {
 	public function __construct( $atts, $infinite ) {
 		$wpUploadDir = wp_upload_dir();
 		$this->id = uniqid();
+		$this->size = isset( $atts['size'] ) ? $atts['size'] : $this->size;
 		$this->infinite = $infinite;
 		$this->atts = $atts;
 		$this->class_id = 'mgl-gallery-' . $this->id;
 		$this->updir = trailingslashit( $wpUploadDir['baseurl'] );
 		$this->captions_enabled = get_option( 'mgl_captions_enabled', false );
 	}
-	
+
 	function prepare_data( $idsStr ) {
 		global $wpdb;
 		$res = $wpdb->get_results( "SELECT p.ID id, p.post_excerpt caption, m.meta_value meta
@@ -46,7 +48,7 @@ abstract class Meow_Gallery_Generator {
 	function build_next_cell( $id, $data ) {
 		$src = $this->updir . $data['meta']['file'];
 		$caption = $this->captions_enabled ? $data['caption'] : '';
-		$imgSrc = wp_get_attachment_image( $id, 'full' );
+		$imgSrc = wp_get_attachment_image( $id, $this->size );
 		//$imgSrc = wp_image_add_srcset_and_sizes( $imgSrc, $data['meta'], $id );
 		ob_start();
 		include dirname( __FILE__ ) . '/cell.tpl.php';

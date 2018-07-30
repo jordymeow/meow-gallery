@@ -18,15 +18,16 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 			'o', 'i',
 			'oo', 'ii', 'oi', 'io',
 			'ooo', 'oii', 'ooi', 'ioo', 'oio', 'ioi', 'iio', 'iii',
-			'iooo', 'oioo', 'ooio', 'oooi', 'iiii'
+			'iooo', 'oioo', 'ooio', 'oooi', 'iiii', 'oooo',
+			'ioooo', 'ooioo', 'ooooi', 'iiooo', 'iooio', 'ooiio', 'ooioi', 'oooii', 'oiioo', 'oiooi', 'iiioo', 'iiooi', 'iooii', 'ooiii'
 		];
 	}
 
 	function inline_css() {
 		$class_id = '#' . $this->class_id;
-		$gutter = isset( $this->atts['gutter'] ) ? 
+		$gutter = isset( $this->atts['gutter'] ) ?
 			$this->atts['gutter'] : get_option( 'mgl_tiles_gutter', 10 );
-		$row_height = isset( $this->atts['row_height'] ) ? 
+		$row_height = isset( $this->atts['row_height'] ) ?
 			$this->atts['row_height'] : get_option( 'mgl_tiles_row_height', 300 );
 		ob_start();
 		include dirname( __FILE__ ) . '/tiles.css.php';
@@ -37,7 +38,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	function permutations( $items, $perms = array() ) {
 		$back = array();
 		if ( empty( $items ) ) {
-			$back[] = join( ' ', $perms ); 
+			$back[] = join( ' ', $perms );
 			return $back;
 		}
 		for ( $i = count( $items ) - 1; $i >= 0; --$i ) {
@@ -58,7 +59,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		return $layout;
 	}
 
-	function build_next_cell( $id, $data ) { 
+	function build_next_cell( $id, $data ) {
 		$html = parent::build_next_cell( $id, $data );
 		$html = str_replace( '100vw', 100 / 3 . 'vw', $html );
 		return $html;
@@ -71,23 +72,23 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 
 		while ( count( $this->ids ) > 0 ) {
 
-			// Take the 3 latest photos
-			$currentIds = array_slice( $this->ids, -3, 3, true );
-
-			// Look for exact layout 3-cols
-			$ideal = $layout = $this->get_layout( $currentIds );
-			if ( !in_array( $layout, $this->layouts ) ) {
-				// Look for exact layout 4-cols
-				$layout = $layout;
-				$currentIds = array_slice( $this->ids, -4, 4, true );
-				$layout = $this->get_layout( $currentIds );
-				if ( !in_array( $layout, $this->layouts ) )
-					$layout = null;
+			$size = 5;
+			$layout = null;
+			$ideal = "N/A";
+			while ( !$layout && $size > 0 ) {
+				// Look for exact layout $size-cols
+				$currentIds = array_slice( $this->ids, $size * -1, $size, true );
+				$ideal = $this->get_layout( $currentIds );
+				if ( in_array( $ideal, $this->layouts ) ) {
+					$layout = $ideal;
+					break;
+				}
+				$size--;
 			}
 
 			if ( !$layout ) {
 				echo( '<div style="padding: 20px; background: darkred; color: white;">
-					MEOW GALLERY ERROR. No layout for '. $ideal . '.</div>' 
+					MEOW GALLERY ERROR. No layout for '. $ideal . '.</div>'
 				);
 				$layout = $ideal;
 			}

@@ -34,11 +34,10 @@ class MeowAppsPro_MGL_Core {
 		if ( !is_admin() ) {
 			require_once dirname( __FILE__ ) . '/builders/slider.php';
 			$infinite = get_option( 'mgl_infinite', false );
-			wp_register_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.css', null, $this->version );
-			wp_register_script( 'mgl-infinite-js', plugins_url( '/js/vanilla-atts-infinite.js', __FILE__ ), array( 'jquery' ), 
-				$this->version, false );
-			if ( $infinite )
-				wp_enqueue_script( 'mgl-infinite-js' );
+			if ( $infinite ) {
+				wp_enqueue_script( 'mgl-infinite-js', plugins_url( '/js/vanilla-atts-infinite.js', __FILE__ ), array( 'jquery' ),
+					filemtime( plugin_dir_path( __FILE__ ) . 'js/vanilla-atts-infinite.js' ), false );
+			}
 		}
 	}
 
@@ -58,7 +57,10 @@ class MeowAppsPro_MGL_Core {
 	}
 
 	function slider_created() {
-		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $this->version, false );
+		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.min.css', null,
+			filemtime( plugin_dir_path( __FILE__ ) . 'slider.min.css' ) );
+		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ),
+			filemtime( plugin_dir_path( __FILE__ ) . 'js/slider.js' ), false );
 	}
 
 	function plugin_title( $string ) {

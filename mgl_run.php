@@ -15,6 +15,43 @@ class Meow_Gallery_Run {
 		require_once dirname( __FILE__ ) . '/builders/square.php';
 	}
 
+	private $atts;
+	private $gallery_process = false;
+
+	function shortcode_atts_gallery( $result, $defaults, $atts ) {
+		$this->atts = $atts;
+		if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
+			$default_size = get_option( 'mgl_default_size', 'large' );
+			$result['size'] = $default_size;
+		}
+		return $result;
+	}
+
+	function gallery( $atts ) {
+		$atts = apply_filters( 'shortcode_atts_gallery', $atts, array(), array() );
+		$images = [];
+		if ( isset( $atts['ids'] ) )
+			$images = $atts['ids'];
+		if ( isset( $atts['include'] ) )
+			$images = implode( $atts['include'], ',' );
+		if ( empty( $images ) )
+			return "<p>The gallery is empty.</p>";
+		$layout = ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' ) ? $atts['mgl-layout'] : get_option( 'mgl_layout', 'tiles' );
+		$this->gallery_process = true;
+		$layoutClass = 'Meow_' . ucfirst( $layout ) . '_Generator';
+		if ( !class_exists( $layoutClass ) ) {
+			error_log( "Meow Gallery: Class $layoutClass does not exist." );
+			return;
+		}
+		wp_enqueue_style( 'mgl-css' );
+		$infinite = get_option( 'mgl_infinite', false ) && $this->admin->is_registered();
+		$gen = new $layoutClass( $atts, $infinite );
+		$result = $gen->build( $images );
+		$this->gallery_process = false;
+		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
+		return $result;
+	}
+
 	function enqueue_scripts() {
 		global $mgl_version;
 		// wp_enqueue_script( 'mgl-js', plugins_url( '/js/mgl.js', __FILE__ ), null, $mgl_version, false );
@@ -53,48 +90,10 @@ class Meow_Gallery_Run {
 		// 		)
 		// 	)
 		// ) );
-		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/mgl.css', null, $mgl_version );
-		wp_register_style( 'mgl-tiles-css', plugin_dir_url( __FILE__ ) . 'css/tiles.css', array( 'mgl-css' ), $mgl_version );
-		wp_register_style( 'mgl-justified-css', plugin_dir_url( __FILE__ ) . 'css/justified.css', array( 'mgl-css' ), $mgl_version );
-		wp_register_style( 'mgl-masonry-css', plugin_dir_url( __FILE__ ) . 'css/masonry.css', array( 'mgl-css' ), $mgl_version );
-		wp_register_style( 'mgl-square-css', plugin_dir_url( __FILE__ ) . 'css/square.css', array( 'mgl-css' ), $mgl_version );
-	}
-
-	private $atts;
-	private $gallery_process = false;
-
-	function shortcode_atts_gallery( $result, $defaults, $atts ) {
-		$this->atts = $atts;
-		if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
-			$default_size = get_option( 'mgl_default_size', 'large' );
-			$result['size'] = $default_size;
-		}
-		return $result;
-	}
-
-	function gallery( $atts ) {
-		$atts = apply_filters( 'shortcode_atts_gallery', $atts, array(), array() );
-		$images = [];
-		if ( isset( $atts['ids'] ) )
-			$images = $atts['ids'];
-		if ( isset( $atts['include'] ) )
-			$images = implode( $atts['include'], ',' );
-		if ( empty( $images ) )
-			return "<p>The gallery is empty.</p>";
-		$layout = ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' ) ? $atts['mgl-layout'] : get_option( 'mgl_layout', 'tiles' );
-		$this->gallery_process = true;
-		$layoutClass = 'Meow_' . ucfirst( $layout ) . '_Generator';
-		if ( !class_exists( $layoutClass ) ) {
-			error_log( "Meow Gallery: Class $layoutClass does not exist." );
-			return;
-		}
-		wp_enqueue_style( 'mgl-' . $layout . '-css' );
-		$infinite = get_option( 'mgl_infinite', false ) && $this->admin->is_registered();
-		$gen = new $layoutClass( $atts, $infinite );
-		$result = $gen->build( $images );
-		$this->gallery_process = false;
-		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
-		return $result;
+		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ),
+			filemtime( plugin_dir_path( __FILE__ ) . 'js/mgl.js' ), false );
+		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null,
+			filemtime( plugin_dir_path( __FILE__ ) . 'css/style.min.css' ) );
 	}
 
 }

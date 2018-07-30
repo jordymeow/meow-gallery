@@ -5,7 +5,6 @@
 	}
 
 	<?= $class_id ?> {
-		margin: <?= -1 * ($gutter / 2) ?>px;
 		column-count: <?= $columns ?>;
 	}
 
