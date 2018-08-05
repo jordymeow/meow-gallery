@@ -1,9 +1,9 @@
 === Meow Gallery Pro ===
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
-Requires at least: 3.5
-Tested up to: 4.9.7
-Stable tag: 2.0.4
+Requires at least: 4.8
+Tested up to: 4.9.8
+Stable tag: 2.0.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -25,6 +25,11 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 2.0.6 =
+* Fix: Compatibility issue with WP/LR Sync.
+* Update: Randomize identical layouts for Tiles.
+* Fix: Function filemtime seems to fail on a few installs, so added alternative for it.
 
 = 2.0.4 =
 * Update: Enhanced Tiles layout.

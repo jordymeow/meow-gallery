@@ -69,6 +69,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery mgl-tiles">';
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
+		$ooo_v = 0;
 
 		while ( count( $this->ids ) > 0 ) {
 
@@ -86,6 +87,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 				$size--;
 			}
 
+			// Display an error if the layout does not exist
 			if ( !$layout ) {
 				echo( '<div style="padding: 20px; background: darkred; color: white;">
 					MEOW GALLERY ERROR. No layout for '. $ideal . '.</div>'
@@ -93,9 +95,16 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 				$layout = $ideal;
 			}
 
+			// Variations in order to avoid the same layout to be repeated
+			$variation = '';
+			if ( $layout === 'oooo' ) {
+				$variation = '-v' . $ooo_v;
+				$ooo_v = $ooo_v > 1 ? 0 : $ooo_v + 1;
+			}
+
 			// Create row with cells inside it (using the order in currentIds)
 			$count = 0;
-			$out .= '<div class="mgl-row mgl-layout-' . strlen( $layout ) . '-' . $layout . '">';
+			$out .= '<div class="mgl-row mgl-layout-' . strlen( $layout ) . '-' . $layout . $variation . '">';
 			while ( count( $currentIds ) > 0 ) {
 				$out .= '<div class="mgl-box ' . chr( 97 + $count++ ) . '">';
 				$id = array_pop( $this->ids );

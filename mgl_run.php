@@ -28,7 +28,7 @@ class Meow_Gallery_Run {
 	}
 
 	function gallery( $atts ) {
-		$atts = apply_filters( 'shortcode_atts_gallery', $atts, array(), array() );
+		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 		$images = [];
 		if ( isset( $atts['ids'] ) )
 			$images = $atts['ids'];
@@ -90,10 +90,11 @@ class Meow_Gallery_Run {
 		// 		)
 		// 	)
 		// ) );
-		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ),
-			filemtime( plugin_dir_path( __FILE__ ) . 'js/mgl.js' ), false );
-		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null,
-			filemtime( plugin_dir_path( __FILE__ ) . 'css/style.min.css' ) );
+
+		$physical_file = plugin_dir_path( __FILE__ ) . 'js/mgl.js';
+		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
+		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $version, false );
+		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null, $version );
 	}
 
 }

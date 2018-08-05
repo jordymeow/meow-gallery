@@ -57,10 +57,13 @@ class MeowAppsPro_MGL_Core {
 	}
 
 	function slider_created() {
-		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.min.css', null,
-			filemtime( plugin_dir_path( __FILE__ ) . 'slider.min.css' ) );
-		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ),
-			filemtime( plugin_dir_path( __FILE__ ) . 'js/slider.js' ), false );
+		global $mgl_version;
+		$physical_file = plugin_dir_path( __FILE__ ) . 'slider.min.css';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.min.css', null, $version );
+		$physical_file = plugin_dir_path( __FILE__ ) . '/js/slider.js';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $version, false );
 	}
 
 	function plugin_title( $string ) {

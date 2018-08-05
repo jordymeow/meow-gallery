@@ -47,7 +47,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 
 		function updraftplus_com_link( $url ) {
 			$url = $url . "?afref=460";
-			return $url;
+			return 'https://meow.click/updraft';
 		}
 
 		function show_meowapps_create_rating_date() {
@@ -400,7 +400,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 					</div>
 				</div>
 
-			
+
 				<?php
 
 			}

@@ -103,12 +103,189 @@
     grid-template-rows: e(@rows);
 }
 
-.mgl-layout-4-oooo {
+// main: ../layout-tiles.less
+
+.mgl-layout-4-oioo {
+    @columns: "[col1-start] 50%  [col2-start] 25%  [col3-start] 25% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-start ;
+    }
+    .d {
+        grid-column: col3-start ;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-4-oooi {
+    @columns: "[col1-start] 50%  [col2-start] 25%  [col3-start] 25% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row2-start ;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-end ;
+    }
+}
+
+.mgl-layout-4-iooo {
+    @columns: "[col1-start] 25%  [col2-start] 25%  [col3-start] 50% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row2-start ;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-end ;
+    }
+}
+
+.mgl-layout-4-ooio {
+    @columns: "[col1-start] 25%  [col2-start] 25%  [col3-start] 50% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start ;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-end ;
+    }
+}
+
+.mgl-layout-4-iiii {
+    @columns: "[col1-start] 25%  [col2-start] 25%  [col3-start] 25% [col4-start] 25% [col4-end]";
+    @rows: "[row1-start] auto [row1-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+}
+
+.mgl-layout-4-oooo-v0 {
+    @columns: "[col1-start] 30%  [col2-start] 35% [col3-start] 35% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-start;
+    }
+    .b {
+        grid-column: col1-start / col2-start;
+        grid-row: row2-start ;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-4-oooo-v1 {
+    @columns: "[col1-start] 35%  [col2-start] 30% [col3-start] 35% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .c {
+        grid-column: col2-start / col3-start;
+        grid-row: row2-start / row2-end;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-end;
+    }
+}
+
+.mgl-layout-4-oooo-v2 {
+    @columns: "[col1-start] 35%  [col2-start] 35% [col3-start] 30% [col3-end]";
+    @rows: "[row1-start] auto [row2-start] auto [row2-end]";
+    grid-template-columns: e(@columns);
+    grid-template-rows: e(@rows);
+
+    .a {
+        grid-column: col1-start / col2-start;
+        grid-row: row1-start / row2-end;
+    }
+    .b {
+        grid-column: col2-start / col3-start;
+        grid-row: row1-start / row2-end;
+    }
+    .c {
+        grid-column: col3-start;
+        grid-row: row1-start / row2-start;
+    }
+    .d {
+        grid-column: col3-start;
+        grid-row: row2-start;
+    }
+}
+
+.mgl-layout-4-oooo-v3 {
     @columns: "[col1-start] 50%  [col2-start] 50%  [col2-end]";
     @rows: "[row1-start] auto [row2-start] auto [row2-end]";
     grid-template-columns: e(@columns);
     grid-template-rows: e(@rows);
-    
+
     .a {
         grid-column: col1-start / col2-start;
         grid-row: row1-start / row2-start;
