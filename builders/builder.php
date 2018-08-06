@@ -34,7 +34,7 @@ abstract class Meow_Gallery_Generator {
 			AND p.ID IN ($idsStr)" );
 		$this->ids = explode( ',', $idsStr );
 		foreach ( $res as $r ) {
-			$this->data[$r->id] = array( 'caption' => $r->caption ,'meta' => unserialize( $r->meta ) );
+			$this->data[$r->id] = array( 'caption' => htmlspecialchars( $r->caption ),'meta' => unserialize( $r->meta ) );
 		}
 		$this->ids = array_reverse( $this->ids );
 		$cleanIds = [];
