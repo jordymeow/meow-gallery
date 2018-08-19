@@ -4,12 +4,12 @@
 		display: none;
 	}
 
-	<?= $class_id ?> {
+	<?= $class_id ?> .mgl-slider-navigation {
 		height: <?= $nav_height ?>px;
 		display: <?= $nav_enabled ? 'block' : 'none' ?>;
 	}
 
-	.mgl-slider-preview {
+	<?= $class_id ?> .mgl-slider-preview {
 		height: <?= $image_height; ?>px;
 	}
 

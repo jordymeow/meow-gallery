@@ -2,7 +2,8 @@
 
 	const { __ } = wp.i18n;
 	const { registerBlockType, BlockControls, Editable, InspectorControls } = wp.blocks;
-	const { createElement, createHigherOrderComponent } = wp.element;
+	const { createElement } = wp.element;
+	const { createHigherOrderComponent } = wp.compose;
 	const { Button, SelectControl, ToggleControl, PanelBody } = wp.components;
 
 	function hookRegisterBlockType(props) {

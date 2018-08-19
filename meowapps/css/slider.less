@@ -16,6 +16,9 @@
 	.mgl-slider-preview-image {
 		width: auto;
 		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
 		img {
 			max-width: 100%;
@@ -95,14 +98,12 @@
 .mgl-slider {
 	position: relative;
 	min-width: 100%;
-	height: 90px;
 	white-space: nowrap;
-	overflow-x: auto;
-	overflow-y: hidden;
 	-webkit-overflow-scrolling: touch;
 	font-size: 0;
 	padding-bottom: 10px;
 	text-align: center;
+	overflow: hidden;
 	//border: 2px solid blue;
 
 	.mgl-item {
@@ -135,17 +136,25 @@
 			display: none;
 		}
 	}
+
+	.mgl-slider-navigation {
+		height: 90px;
+		max-width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+		padding-bottom: 5px;
+	}
 }
 
-.mgl-slider::-webkit-scrollbar {
+.mgl-slider-navigation::-webkit-scrollbar {
 	height: 8px;
 }
 
-.mgl-slider::-webkit-scrollbar-track {
+.mgl-slider-navigation::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-.mgl-slider::-webkit-scrollbar-thumb {
+.mgl-slider-navigation::-webkit-scrollbar-thumb {
 	background: #666;
 	border-radius: 10px;
 

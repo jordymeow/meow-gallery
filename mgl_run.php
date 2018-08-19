@@ -20,8 +20,11 @@ class Meow_Gallery_Run {
 
 	function shortcode_atts_gallery( $result, $defaults, $atts ) {
 		$this->atts = $atts;
-		if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
-			$default_size = get_option( 'mgl_default_size', 'large' );
+		if ( !empty( $atts['size'] ) )
+			$result['size'] = $atts['size'];
+		else if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
+			$default_size = get_option( 'mgl_default_size' );
+			$default_size = empty( $default_size ) ? 'large' : $default_size;
 			$result['size'] = $default_size;
 		}
 		return $result;
@@ -36,7 +39,8 @@ class Meow_Gallery_Run {
 			$images = implode( $atts['include'], ',' );
 		if ( empty( $images ) )
 			return "<p>The gallery is empty.</p>";
-		$layout = ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' ) ? $atts['mgl-layout'] : get_option( 'mgl_layout', 'tiles' );
+		$layout = ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' ) ?
+			$atts['mgl-layout'] : get_option( 'mgl_layout', 'tiles' );
 		$this->gallery_process = true;
 		$layoutClass = 'Meow_' . ucfirst( $layout ) . '_Generator';
 		if ( !class_exists( $layoutClass ) ) {

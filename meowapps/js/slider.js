@@ -3,7 +3,9 @@ jQuery(document).ready(function($) {
     $('.mgl-gallery.mgl-slider').each(function(index) {
         var $gallery = $(this);
         $gallery.attr('gallery-index', index);
-        $gallery.before('<div class="mgl-slider-preview" gallery-index="'+index+'"><div class="mgl-slider-preview-image"></div></div>');
+        $gallery_clone = $gallery.clone().attr('id', '').attr('class', 'mgl-slider-navigation');
+        $gallery.html($gallery_clone);
+        $gallery.prepend('<div class="mgl-slider-preview" gallery-index="'+index+'"><div class="mgl-slider-preview-image"></div></div>');
         $slider_preview = $('.mgl-slider-preview[gallery-index="'+index+'"]');
         $slider_preview.prepend('<div class="nav-prev"><span class="chevron left"></span></div><div class="nav-next"><span class="chevron right"></span></div>')
         var $items = $gallery.find('.mgl-item');
