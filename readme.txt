@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 4.9.8
-Stable tag: 2.0.8
+Stable tag: 2.0.9
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,7 +26,7 @@ Nothing yet.
 
 == Changelog ==
 
-= 2.0.8 =
+= 2.0.9 =
 * Fix: For Gutenberg last update compatibility.
 
 = 2.0.7 =
