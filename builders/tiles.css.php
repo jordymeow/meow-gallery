@@ -1,11 +1,11 @@
 <style>
 
 	.mgl-tiles {
-		display: none;
+		display: <?= ($isPreview ? 'block' : 'none') ?>;
 	}
 
-	<?= $class_id ?> .mgl-row {
-		height: <?= $row_height ?>px;
+	<?= $class_id ?> {
+		margin: <?= -1 * ( $gutter / 2 ) ?>px;
 	}
 
 	<?= $class_id ?> .mgl-box {

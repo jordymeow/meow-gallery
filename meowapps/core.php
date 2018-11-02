@@ -26,8 +26,9 @@ class MeowAppsPro_MGL_Core {
 		add_action( 'mgl_slider_gallery_created', array( $this, 'slider_created' ) );
 
 		// Infinite
-		if ( get_option( 'mgl_infinite', false ) )
+		if ( !$this->is_rest() && get_option( 'mgl_infinite', false ) ) {
 			add_action( 'mgl_gallery_written', array( $this, 'gallery_written' ), 10, 2 );
+		}
 	}
 
 	function init() {
@@ -39,6 +40,15 @@ class MeowAppsPro_MGL_Core {
 					filemtime( plugin_dir_path( __FILE__ ) . 'js/vanilla-atts-infinite.js' ), false );
 			}
 		}
+		//TODO: A bit untidy, but Gutenberg needs to be able to generate the slider and needs the CSS to be loaded.
+		if ( is_admin() ) {
+			require_once dirname( __FILE__ ) . '/builders/slider.php';
+			$this->slider_created();
+		}
+	}
+
+	function is_rest() {
+		return strpos( $_SERVER[ 'REQUEST_URI' ], 'meow_gallery/preview' ) !== false;
 	}
 
 	function gallery_written( $html, $layout ) {

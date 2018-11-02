@@ -12,12 +12,10 @@ class Meow_Gallery_Blocks {
 	}
 
 	function backend_editor() {
-
-		// Section Header
-		$physical_file = plugin_dir_path( __FILE__ ) . 'blocks/gallery/block.js';
+		$physical_file = plugin_dir_path( __FILE__ ) . 'blocks/dist/index.js';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
 		wp_register_script(
-			'mgl-gallery-js', plugin_dir_url( __FILE__ ) . 'blocks/gallery/block.js',
+			'mgl-gallery-js', plugin_dir_url( __FILE__ ) . 'blocks/dist/index.js',
 			array( 'wp-editor', 'wp-i18n', 'wp-element' ), $version
 		);
 		register_block_type( 'meow-gallery/gallery', array(

@@ -2,8 +2,8 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
-Tested up to: 4.9.8
-Stable tag: 2.0.9
+Tested up to: 5.0
+Stable tag: 2.2.0
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -25,6 +25,9 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 2.2.0 =
+* Info: Huge update for Gutenberg and WordPress 5. Try it :)
 
 = 2.0.9 =
 * Fix: For Gutenberg last update compatibility.

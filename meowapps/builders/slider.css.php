@@ -1,7 +1,7 @@
 <style>
 
 	.mgl-slider {
-		display: none;
+		display: <?= ($isPreview ? 'block' : 'none') ?>;
 	}
 
 	<?= $class_id ?> .mgl-slider-navigation {
@@ -11,6 +11,10 @@
 
 	<?= $class_id ?> .mgl-slider-preview {
 		height: <?= $image_height; ?>px;
+	}
+
+	<?= $class_id ?> .mgl-item {
+		margin-right: <?= $gutter; ?>px;
 	}
 
 </style>

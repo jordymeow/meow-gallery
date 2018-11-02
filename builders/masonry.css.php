@@ -1,11 +1,12 @@
 <style>
 
 	.mgl-masonry {
-		display: none;
+		display: <?= ($isPreview ? 'block' : 'none') ?>;
 	}
 
 	<?= $class_id ?> {
 		column-count: <?= $columns ?>;
+		margin: <?= -1 * ( $gutter / 2 ) ?>px;
 	}
 
 	<?= $class_id ?> .mgl-item {
@@ -21,7 +22,7 @@
 			column-count: 2;
 		}
 	}
-	
+
 	@media screen and (max-width: 600px) {
 		<?= $class_id ?> {
 			column-count: 1;

@@ -4,26 +4,34 @@ require_once dirname( __FILE__ ) . '/builder.php';
 
 class Meow_Justified_Generator extends Meow_Gallery_Generator {
 
-	public function __construct( $atts, $infinite ) {
-		parent::__construct( $atts, $infinite );
+	public function __construct( $atts, $infinite, $isPreview = false ) {
+		parent::__construct( $atts, $infinite, $isPreview );
 		$this->layout = 'justified';
 	}
 
 	function inline_css() {
 		$class_id = '#' . $this->class_id;
-		$gutter = isset( $this->atts['gutter'] ) ? 
+		$gutter = isset( $this->atts['gutter'] ) ?
 			$this->atts['gutter'] : get_option( 'mgl_justified_gutter', 10 );
-		$row_height = isset( $this->atts['row_height'] ) ? 
-			$this->atts['row_height'] : get_option( 'mgl_justified_row_height', 300 );
+		$isPreview = $this->isPreview;
 		ob_start();
 		include dirname( __FILE__ ) . '/justified.css.php';
 		$html = ob_get_clean();
 		return $html;
 	}
 
-	function build_next_cell( $id, $data ) { 
+	function build_next_cell( $id, $data ) {
 		$html = parent::build_next_cell( $id, $data );
-		$html = str_replace( '100vw', 100 / 2 . 'vw', $html );
+		$style_vars = '--w: ' . $data['meta']['width'] . '; --h: ' . $data['meta']['height'];
+		$html = str_replace( 'class="mgl-item"', 'class="mgl-item" style="' . $style_vars . '"', $html );
+		return $html;
+	}
+
+	function build( $idsStr ) {
+		$html = parent::build( $idsStr );
+		$row_height = isset( $this->atts['row-height'] ) ?
+			$this->atts['row-height'] : get_option( 'mgl_justified_row_height', 200 );
+		$html = str_replace( ' mgl-justified', ' mgl-justified" style="--rh: ' . $row_height . 'px', $html );
 		return $html;
 	}
 

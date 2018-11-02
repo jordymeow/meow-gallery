@@ -15,12 +15,12 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 	function admin_notices() {
 	}
 
-
 	function common_url( $file ) {
 		return trailingslashit( plugin_dir_url( __FILE__ ) ) . 'common/' . $file;
 	}
 
 	function app_menu() {
+		global $mgl_version;
 
 		// SUBMENU > Settings
 		add_submenu_page( 'meowapps-main-menu', 'Gallery', 'Gallery', 'manage_options',
@@ -54,6 +54,11 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		$layout = get_option( 'mgl_layout', 'tiles' );
 		$infinite = get_option( 'mgl_infinite', false ) && $this->is_registered();
 
+		// Preview in gutenberg need the CSS and JS
+		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null, $mgl_version );
+		wp_enqueue_style( 'mgl-css' );
+		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $mgl_version, false );
+
 		if ( $infinite ) {
 			add_settings_section( 'mgl_infinite', null, null, 'mgl_settings_infinite-menu' );
 			add_settings_field( 'mgl_infinite_batch_size', __( "Batch Size", 'meow-gallery' ),
@@ -80,10 +85,6 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			array( $this, 'admin_tiles_gutter_callback' ),
 			'mgl_settings_tiles-menu', 'mgl_tiles' );
 		register_setting( 'mgl_settings_tiles', 'mgl_tiles_gutter' );
-		add_settings_field( 'mgl_tiles_row_height', __( "Row Height", 'meow-gallery' ),
-			array( $this, 'admin_tiles_row_height_callback' ),
-			'mgl_settings_tiles-menu', 'mgl_tiles' );
-		register_setting( 'mgl_settings_tiles', 'mgl_tiles_row_height' );
 
 		// Masonry
 		add_settings_section( 'mgl_masonry', null, null, 'mgl_settings_masonry-menu' );
@@ -308,13 +309,6 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		echo $html;
 	}
 
-	function admin_tiles_row_height_callback( $args ) {
-		$value = get_option( 'mgl_tiles_row_height', 300 );
-		$html = '<input type="number" style="width: 100%;" id="mgl_tiles_row_height" name="mgl_tiles_row_height" value="' . $value . '" />';
-		$html .= '<br /><span class="description">' . __( "Ideal height of each row (in pixels).", 'meow-gallery' ) . '</span>';
-		echo $html;
-	}
-
 	function admin_masonry_gutter_callback( $args ) {
 		$value = get_option( 'mgl_masonry_gutter', 5 );
 		$html = '<input type="number" style="width: 100%;" id="mgl_masonry_gutter" name="mgl_masonry_gutter" value="' . $value . '" />';
@@ -338,7 +332,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 	}
 
 	function admin_justified_row_height_callback( $args ) {
-		$value = get_option( 'mgl_justified_row_height', 300 );
+		$value = get_option( 'mgl_justified_row_height', 200 );
 		$html = '<input type="number" style="width: 100%;" id="mgl_justified_row_height" name="mgl_justified_row_height" value="' .
 			$value . '" />';
 		$html .= '<br /><span class="description">' . __( "Ideal height of each row (in pixels).", 'meow-gallery' ) . '</span>';

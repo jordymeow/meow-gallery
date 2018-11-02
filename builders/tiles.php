@@ -9,8 +9,8 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	public $layouts = [];
 	public $layout = [];
 
-	public function __construct( $atts, $infinite ) {
-		parent::__construct( $atts, $infinite );
+	public function __construct( $atts, $infinite, $isPreview = false ) {
+		parent::__construct( $atts, $infinite, $isPreview );
 	}
 
 	function prepare_layouts() {
@@ -27,8 +27,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		$class_id = '#' . $this->class_id;
 		$gutter = isset( $this->atts['gutter'] ) ?
 			$this->atts['gutter'] : get_option( 'mgl_tiles_gutter', 10 );
-		$row_height = isset( $this->atts['row_height'] ) ?
-			$this->atts['row_height'] : get_option( 'mgl_tiles_row_height', 300 );
+		$isPreview = $this->isPreview;
 		ob_start();
 		include dirname( __FILE__ ) . '/tiles.css.php';
 		$html = ob_get_clean();
@@ -66,7 +65,8 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	}
 
 	function build( $idsStr ) {
-		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery mgl-tiles">';
+		$classAlign = $this->align === 'wide' ? (' align' . $this->align) : '';
+		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery' . $classAlign . ' mgl-tiles">';
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
 		$ooo_v = 0;
@@ -104,7 +104,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 
 			// Create row with cells inside it (using the order in currentIds)
 			$count = 0;
-			$out .= '<div class="mgl-row mgl-layout-' . strlen( $layout ) . '-' . $layout . $variation . '">';
+			$out .= '<div class="mgl-row mgl-layout-' . strlen( $layout ) . '-' . $layout . $variation . '" data-tiles-layout="'. $layout . $variation .'">';
 			while ( count( $currentIds ) > 0 ) {
 				$out .= '<div class="mgl-box ' . chr( 97 + $count++ ) . '">';
 				$id = array_pop( $this->ids );

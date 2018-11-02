@@ -1,10 +1,10 @@
 <style>
 
 	.mgl-square {
-		display: none;
+		display: <?= ($isPreview ? 'block' : 'none') ?>;
 	}
 
-	<?php 
+	<?php
 	$columns_in_percentage = "20%";
 
 	switch($columns) {
@@ -25,6 +25,10 @@
 			break;
 	}
 	?>
+
+	<?= $class_id ?> {
+		margin: <?= -1 * ( $gutter / 2 ) ?>px;
+	}
 
 	<?= $class_id ?> .mgl-item {
 		width: <?= $columns_in_percentage ?>;

@@ -6,23 +6,28 @@ abstract class Meow_Gallery_Generator {
 	public $layout = 'none';
 	public $class_id = 'mgl-gallery-none';
 	public $size = 'large';
+	public $align = null;
 	public $ids = [];
 	public $atts = [];
 	public $data = [];
+	public $isPreview = false;
 	public $updir = null;
-	public $captions_enabled = null;
+	public $captions = false;
 
 	abstract function inline_css();
 
-	public function __construct( $atts, $infinite ) {
+	public function __construct( $atts, $infinite, $isPreview = false ) {
 		$wpUploadDir = wp_upload_dir();
 		$this->id = uniqid();
 		$this->size = isset( $atts['size'] ) ? $atts['size'] : $this->size;
 		$this->infinite = $infinite;
 		$this->atts = $atts;
+		$this->align = isset( $atts['align'] ) ? $atts['align'] : $this->align;
+		$this->isPreview = $isPreview;
 		$this->class_id = 'mgl-gallery-' . $this->id;
 		$this->updir = trailingslashit( $wpUploadDir['baseurl'] );
-		$this->captions_enabled = get_option( 'mgl_captions_enabled', false );
+		$this->captions = isset( $atts['captions'] ) ? $atts['captions'] : get_option( 'mgl_captions_enabled', false );
+		$this->captions = $this->captions === 'false' ? false : $this->captions;
 	}
 
 	function prepare_data( $idsStr ) {
@@ -47,8 +52,10 @@ abstract class Meow_Gallery_Generator {
 
 	function build_next_cell( $id, $data ) {
 		$src = $this->updir . $data['meta']['file'];
-		$caption = $this->captions_enabled ? $data['caption'] : '';
+		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'] );
+		$caption = $this->captions ? $data['caption'] : '';
 		$imgSrc = wp_get_attachment_image( $id, $this->size );
+		$isPreview = $this->isPreview;
 		//$imgSrc = wp_image_add_srcset_and_sizes( $imgSrc, $data['meta'], $id );
 		ob_start();
 		include dirname( __FILE__ ) . '/cell.tpl.php';
@@ -57,7 +64,8 @@ abstract class Meow_Gallery_Generator {
 	}
 
 	function build( $idsStr ) {
-		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery mgl-' . $this->layout . '">';
+		$classAlign = $this->align === 'wide' ? (' align' . $this->align) : '';
+		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery' . $classAlign . ' mgl-' . $this->layout . '">';
 		$this->prepare_data( $idsStr );
 		//add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 		while ( count( $this->ids ) > 0 ) {
