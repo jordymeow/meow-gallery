@@ -164,7 +164,7 @@ class GalleryEdit extends Component {
 		const { isBusy } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview,
-			captions, wplrCollection, wplrFolder } = attributes;
+			captions, wplrCollection, wplrFolder, linkTo } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
 
 		const controls = (
@@ -241,6 +241,12 @@ class GalleryEdit extends Component {
 								{ value: 'slider', label: 'Slider' }
 							]}>
 						</SelectControl>
+						<SelectControl
+							label={ __( 'Link To' ) }
+							value={ linkTo }
+							onChange={ this.setLinkTo }
+							options={ linkOptions }
+						/>
 						{wplrCollections}
 						{ images.length > 1 && !useDefaults && <RangeControl
 							label={ __( 'Gutter' ) } value={ gutter } min={ 0 } max={ 100 }
@@ -262,12 +268,6 @@ class GalleryEdit extends Component {
 							label={ __( 'Use Default Settings' ) } checked={ useDefaults }
 							onChange={ value => this.setUseDefaults(value) }
 						/> }
-						{/* <SelectControl
-							label={ __( 'Link To' ) }
-							value={ linkTo }
-							onChange={ this.setLinkTo }
-							options={ linkOptions }
-						/> */}
 					</PanelBody>
 				</InspectorControls>
 				{ noticeUI }

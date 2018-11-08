@@ -9,6 +9,10 @@ const blockAttributes = {
 		type: 'array',
 		default: []
 	},
+	linkTo: {
+		type: 'string',
+		default: 'none',
+	},
 	layout: {
 		type: 'string',
 		default: 'tiles'
@@ -48,7 +52,7 @@ const blockAttributes = {
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, gutter, captions, wplrCollection, wplrFolder } = attributes;
+	const { align, useDefaults, images, layout, gutter, captions, wplrCollection, wplrFolder, linkTo } = attributes;
 	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
 	if (layout)
@@ -63,6 +67,8 @@ const buildCoreAttributes = function(attributes) {
 		attrs += `wplr-collection="${wplrCollection}" `;
 	if (wplrFolder)
 		attrs += `wplr-folder="${wplrFolder}" `;
+	if (linkTo && linkTo !== 'none')
+		attrs += `link="${linkTo}" `;
 	if (align)
 		attrs += `align="${align}" `;
 	return attrs.trim();

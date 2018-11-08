@@ -8,6 +8,7 @@ abstract class Meow_Gallery_Generator {
 	public $size = 'large';
 	public $align = null;
 	public $ids = [];
+	public $link = null;
 	public $atts = [];
 	public $data = [];
 	public $isPreview = false;
@@ -22,6 +23,7 @@ abstract class Meow_Gallery_Generator {
 		$this->size = isset( $atts['size'] ) ? $atts['size'] : $this->size;
 		$this->infinite = $infinite;
 		$this->atts = $atts;
+		$this->link = isset( $atts['link'] ) ? $atts['link'] : null;
 		$this->align = isset( $atts['align'] ) ? $atts['align'] : $this->align;
 		$this->isPreview = $isPreview;
 		$this->class_id = 'mgl-gallery-' . $this->id;
@@ -55,6 +57,11 @@ abstract class Meow_Gallery_Generator {
 		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'] );
 		$caption = $this->captions ? $data['caption'] : '';
 		$imgSrc = wp_get_attachment_image( $id, $this->size );
+		$linkUrl = null;
+		if ( $this->link === 'attachment' )
+			$linkUrl = get_permalink( (int)$id );
+		else if ( $this->link === 'media' )
+			$linkUrl = $src;
 		$isPreview = $this->isPreview;
 		//$imgSrc = wp_image_add_srcset_and_sizes( $imgSrc, $data['meta'], $id );
 		ob_start();

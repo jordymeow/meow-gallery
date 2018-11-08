@@ -1,7 +1,7 @@
 <figure class="mgl-item">
 	<div class="mgl-icon">
-		<?php if ( !$isPreview ): ?>
-			<a href="<?= $src ?>">
+		<?php if ( !$isPreview && $linkUrl ): ?>
+			<a href="<?= $linkUrl ?>">
 					<?= $imgSrc ?>
 			</a>
 		<?php else: ?>
