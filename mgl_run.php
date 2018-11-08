@@ -7,29 +7,19 @@ class Meow_Gallery_Run {
 	public function __construct( $admin ) {
 		$this->admin = $admin;
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 50, 3 );
+		//add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 50, 3 );
+		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 		add_shortcode( 'gallery', array( $this, 'gallery' ) );
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 		require_once dirname( __FILE__ ) . '/builders/tiles.php';
 		require_once dirname( __FILE__ ) . '/builders/justified.php';
 		require_once dirname( __FILE__ ) . '/builders/masonry.php';
 		require_once dirname( __FILE__ ) . '/builders/square.php';
+		require_once dirname( __FILE__ ) . '/builders/cascade.php';
 	}
 
 	private $atts;
 	private $gallery_process = false;
-
-	function shortcode_atts_gallery( $result, $defaults, $atts ) {
-		$this->atts = $atts;
-		if ( !empty( $atts['size'] ) )
-			$result['size'] = $atts['size'];
-		else if ( empty( $defaults['size'] ) || $defaults['size'] == 'thumbnail' ) {
-			$default_size = get_option( 'mgl_default_size' );
-			$default_size = empty( $default_size ) ? 'large' : $default_size;
-			$result['size'] = $default_size;
-		}
-		return $result;
-	}
 
 	function rest_api_init () {
 		register_rest_route( 'meow_gallery', '/preview', array(
@@ -38,12 +28,28 @@ class Meow_Gallery_Run {
 		) );
 	}
 
-	function preview(WP_REST_Request $request) {
+	// Use by the Gutenberg block
+	function preview( WP_REST_Request $request ) {
 		$params = $request->get_body();
 		$params = json_decode( $params );
 		$params->ids = implode( ',', $params->ids );
 		$atts = (array) $params;
 		return $this->gallery( $atts, true );
+	}
+
+	// Rewrite the sizes attributes of the src-set for each image
+	function wp_get_attachment_image_attributes( $attr, $attachment, $size ) {
+		if (!$this->gallery_process)
+			return $attr;
+		if ($this->gallery_layout === 'tiles')
+			$attr['sizes'] = '25vw';
+		else if ($this->gallery_layout === 'masonry')
+			$attr['sizes'] = '25vw';
+		else if ($this->gallery_layout === 'square')
+			$attr['sizes'] = '25vw';
+		else if ($this->gallery_layout === 'cascade')
+			$attr['sizes'] = '75vw';
+		return $attr;
 	}
 
 	function gallery( $atts, $isPreview = false ) {
@@ -68,7 +74,7 @@ class Meow_Gallery_Run {
 		else
 			$layout = get_option( 'mgl_layout', 'tiles' );
 
-
+		// Start the process of building the gallery
 		$this->gallery_process = true;
 		if ( $layout === 'none' ) {
 			error_log( "Meow Gallery: A gallery is set to default layout, but there is none (check your settings)." );
@@ -79,6 +85,7 @@ class Meow_Gallery_Run {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
 			return "<p class='meow-error'><b>Meow Gallery:</b> The layout $layout is not available in this version.</p>";
 		}
+		$this->gallery_layout = $layout;
 		wp_enqueue_style( 'mgl-css' );
 		$infinite = get_option( 'mgl_infinite', false ) && $this->admin->is_registered();
 		$gen = new $layoutClass( $atts, $infinite, $isPreview );

@@ -29,6 +29,14 @@ const blockAttributes = {
 		type: 'number',
 		default: 3
 	},
+	wplrCollection: {
+		type: 'string',
+		default: ''
+	},
+	wplrFolder: {
+		type: 'string',
+		default: ''
+	},
 	gutter: {
 		type: 'number',
 		default: 10
@@ -40,7 +48,7 @@ const blockAttributes = {
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, gutter, captions } = attributes;
+	const { align, useDefaults, images, layout, gutter, captions, wplrCollection, wplrFolder } = attributes;
 	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
 	if (layout)
@@ -51,17 +59,23 @@ const buildCoreAttributes = function(attributes) {
 		let boolCaptions = captions ? 'true' : 'false';
 		attrs += `captions="${boolCaptions}" `;
 	}
+	if (wplrCollection)
+		attrs += `wplr-collection="${wplrCollection}" `;
+	if (wplrFolder)
+		attrs += `wplr-folder="${wplrFolder}" `;
 	if (align)
 		attrs += `align="${align}" `;
 	return attrs.trim();
 };
 
 const buildShortcode = function(attributes) {
-	const { useDefaults, layout, rowHeight, columns, linkTo } = attributes;
+	const { useDefaults, layout, rowHeight, columns, wplrCollection, linkTo } = attributes;
 	const attrs = buildCoreAttributes(attributes);
 	if (useDefaults)
 		return `[gallery ${attrs}][/gallery]`;
 	if (layout === 'tiles')
+		return `[gallery ${attrs}][/gallery]`;
+	if (layout === 'cascade')
 		return `[gallery ${attrs}][/gallery]`;
 	if (layout === 'masonry')
 		return `[gallery ${attrs} columns="${columns}"][/gallery]`;

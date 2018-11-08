@@ -62,6 +62,18 @@ class GalleryEdit extends Component {
 		this.onRefresh({ 'rowHeight': value });
 	}
 
+	setWplrCollection(value) {
+		if (!value || value === '') {
+			this.props.setAttributes({ 'wplrCollection': '', 'wplrFolder': '' });
+			this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
+			return;
+		}
+		const col = mgl_gallery_block_params.wplr_collections.find(x => x.wp_col_id === value);
+		col.is_folder = col.is_folder === '1';
+		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
+		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
+	}
+
 	setColumns(value) {
 		this.props.setAttributes({ columns: value });
 		this.onRefresh({ columns: value });
@@ -75,7 +87,7 @@ class GalleryEdit extends Component {
 	async onRefresh(newAttributes = {}) {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const ids = attributes.images.map(x => x.id);
-		const { layout, useDefaults, gutter, columns, rowHeight, captions } = attributes;
+		const { layout, useDefaults, gutter, columns, rowHeight, captions, wplrCollection, wplrFolder } = attributes;
 		this.setState( { isBusy: true } );
 		const response = await fetch( `${wpApiSettings.root}meow_gallery/preview`, {
 			cache: 'no-cache',
@@ -84,7 +96,8 @@ class GalleryEdit extends Component {
 			redirect: 'follow',
 			referrer: 'no-referrer',
 			body: useDefaults ? JSON.stringify({ ids, layout }) :
-				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight, captions })
+				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight,
+					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
 		})
 		.then(returned => {
 				this.setState({ isBusy: false });
@@ -150,7 +163,8 @@ class GalleryEdit extends Component {
 	render() {
 		const { isBusy } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
-		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, captions } = attributes;
+		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview,
+			captions, wplrCollection, wplrFolder } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
 
 		const controls = (
@@ -160,7 +174,7 @@ class GalleryEdit extends Component {
 					<MediaUpload
 						onSelect={ this.onSelectImages } allowedTypes={ ALLOWED_MEDIA_TYPES } multiple gallery
 						value={ images.map( ( img ) => img.id ) }
-						render={ ( { open } ) => (
+						render={ ({ open }) => (
 							<IconButton className="components-toolbar__control" label={ __( 'Edit Gallery' ) }
 								icon="edit" onClick={ open } />
 						)}
@@ -190,6 +204,24 @@ class GalleryEdit extends Component {
 			);
 		}
 
+		let wplrCollections = '';
+		if (window.mgl_gallery_block_params && mgl_gallery_block_params.wplr_collections) {
+			let categories = mgl_gallery_block_params.wplr_collections.map(x => {
+				return {
+					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
+					value: x.wp_col_id,
+					disabled: x.is_folder === 'true'
+				};
+			});
+			categories.unshift({ label: 'None', value: '' });
+			wplrCollections = (
+				<SelectControl
+					label={__('LR Folder or Collection', 'meow-gallery')}
+					value={wplrCollection ? wplrCollection : wplrFolder}
+					onChange={value => this.setWplrCollection(value)}
+					options={categories}>
+				</SelectControl>)
+		}
 		return (
 			<Fragment>
 				{ controls }
@@ -205,9 +237,11 @@ class GalleryEdit extends Component {
 								{ value: 'masonry', label: 'Masonry' },
 								{ value: 'justified', label: 'Justified' },
 								{ value: 'square', label: 'Square' },
+								{ value: 'cascade', label: 'Cascade' },
 								{ value: 'slider', label: 'Slider' }
 							]}>
 						</SelectControl>
+						{wplrCollections}
 						{ images.length > 1 && !useDefaults && <RangeControl
 							label={ __( 'Gutter' ) } value={ gutter } min={ 0 } max={ 100 }
 							onChange={ value => this.setGutter(value) }

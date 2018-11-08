@@ -120,6 +120,13 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			'mgl_settings_square-menu', 'mgl_square' );
 		register_setting( 'mgl_settings_square', 'mgl_square_columns' );
 
+		// Tiles
+		add_settings_section( 'mgl_cascade', null, null, 'mgl_settings_cascade-menu' );
+		add_settings_field( 'mgl_cascade_gutter', __( "Gutter", 'meow-gallery' ),
+			array( $this, 'admin_cascade_gutter_callback' ),
+			'mgl_settings_cascade-menu', 'mgl_cascade' );
+		register_setting( 'mgl_settings_cascade', 'mgl_cascade_gutter' );
+
 		// Slider
 		add_settings_section( 'mgl_slider', null, null, 'mgl_settings_slider-menu' );
 		add_settings_field( 'mgl_slider_image_height', __( "Image Height", 'meow-gallery' ),
@@ -219,6 +226,16 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 								</form>
 							</div>
 
+							<input name="tabs" type="radio" id="mgl-tab-cascade" class="meow-tabs-input"/>
+							<label for="mgl-tab-cascade" class="meow-tabs-label">Cascade</label>
+							<div class="inside">
+								<form method="post" action="options.php">
+									<?php settings_fields( 'mgl_settings_cascade' ); ?>
+									<?php do_settings_sections( 'mgl_settings_cascade-menu' ); ?>
+									<?php submit_button(); ?>
+								</form>
+							</div>
+
 							<input name="tabs" type="radio" id="mgl-tab-slider" class="meow-tabs-input"/>
 							<label for="mgl-tab-slider" class="meow-tabs-label">Slider</label>
 							<div class="inside">
@@ -266,6 +283,8 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				'desc' => __( "Flickr-like, row-based.", 'meow-gallery' ) ),
 			'square' => array( 'name' => __( 'Square', 'meow-gallery' ),
 				'desc' => __( "Instagram-like, all squares.", 'meow-gallery' ) ),
+			'cascade' => array( 'name' => __( 'Cascade', 'meow-gallery' ),
+				'desc' => __( "Portraits are coupled together.", 'meow-gallery' ) ),
 			'slider' => array( 'name' => __( 'Slider (Pro)', 'meow-gallery' ),
 				'desc' => "Slider, carousel-like, one by one." ),
 			'none' => array( 'name' => __( 'None', 'meow-gallery' ),
@@ -305,6 +324,13 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 	function admin_tiles_gutter_callback( $args ) {
 		$value = get_option( 'mgl_tiles_gutter', 5 );
 		$html = '<input type="number" style="width: 100%;" id="mgl_tiles_gutter" name="mgl_tiles_gutter" value="' . $value . '" />';
+		$html .= '<br /><span class="description">' . __( "Space between the photos (in pixels).", 'meow-gallery' ) . '</span>';
+		echo $html;
+	}
+
+	function admin_cascade_gutter_callback( $args ) {
+		$value = get_option( 'mgl_cascade_gutter', 5 );
+		$html = '<input type="number" style="width: 100%;" id="mgl_cascade_gutter" name="mgl_cascade_gutter" value="' . $value . '" />';
 		$html .= '<br /><span class="description">' . __( "Space between the photos (in pixels).", 'meow-gallery' ) . '</span>';
 		echo $html;
 	}

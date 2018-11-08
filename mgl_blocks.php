@@ -27,13 +27,14 @@ class Meow_Gallery_Blocks {
 			'before'
 		);
 
-		// Params
-		// $hierarchy = $this->core->get_hierarchy();
-		// $folders = $this->core->hierarchy_to_folders( $hierarchy );
-		// wp_localize_script( 'mwt-folders-js', 'mwt_block_params', array(
-		// 	'logo' => trailingslashit( plugin_dir_url( __FILE__ ) ) . '../img/meowapps.png',
-		// 	'folders' => $folders
-		// ) );
+		global $wplr;
+		if ( $wplr ) {
+			$collections = $wplr->read_collections_recursively();
+			$wplr->read_collections_recursively();
+			wp_localize_script( 'mgl-gallery-js', 'mgl_gallery_block_params', array(
+				'wplr_collections' => $collections
+			) );
+		}
 	}
 
 }

@@ -1,15 +1,15 @@
 // out: false, compress: true, sourceMap: false, main: style.less
 
-@import 'tiles/_1-image';
-@import 'tiles/_2-images';
-@import 'tiles/_3-images';
-@import 'tiles/_4-images';
-@import 'tiles/_5-images';
-
 .mgl-tiles {
 	position: relative;
 	display: block !important;
 	width: 100%;
+
+	@import 'tiles/_1-image';
+	@import 'tiles/_2-images';
+	@import 'tiles/_3-images';
+	@import 'tiles/_4-images';
+	@import 'tiles/_5-images';
 
 	.mgl-row {
 		display: grid;
