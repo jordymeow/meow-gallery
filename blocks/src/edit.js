@@ -4,6 +4,13 @@ const { IconButton, Icon, DropZone, FormFileUpload, PanelBody, RangeControl,
 	CheckboxControl, SelectControl, Toolbar, withNotices } = wp.components;
 const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUpload } = wp.editor;
 
+const meowGalleryIcon = (<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<rect width="20" height="20" />
+		<path d="M16.6667 3.33334V13.3333H6.66667V3.33334H16.6667ZM16.6667 1.66667H6.66667L5 3.33334V13.3333L6.66667 15H16.6667L18.3333 13.3333V3.33334L16.6667 1.66667Z" fill="#2D4B6D"/>
+		<path d="M10 10L10.8333 11.6667L13.3333 9.16667L15.8333 12.5H7.5L10 10Z" fill="#1ABC9C"/>
+		<path d="M1.66667 5V16.6667L3.33333 18.3333H15V16.6667H3.33333V5H1.66667Z" fill="#2D4B6D"/>
+</svg>)
+
 const linkOptions = [
 	{ value: 'attachment', label: __( 'Attachment Page' ) },
 	{ value: 'media', label: __( 'Media File' ) },
@@ -57,6 +64,12 @@ class GalleryEdit extends Component {
 		this.onRefresh({ gutter: value });
 	}
 
+	setGalleryEmpty() {
+		this.props.setAttributes({ 'images': [], htmlPreview: '' });
+		if (this.props.attributes.wplrCollection || this.props.attributes.wplrFolder)
+			this.onRefresh({ 'images': [] });
+	}
+
 	setRowHeight(value) {
 		this.props.setAttributes({ 'rowHeight': value });
 		this.onRefresh({ 'rowHeight': value });
@@ -64,8 +77,9 @@ class GalleryEdit extends Component {
 
 	setWplrCollection(value) {
 		if (!value || value === '') {
-			this.props.setAttributes({ 'wplrCollection': '', 'wplrFolder': '' });
-			this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
+			this.props.setAttributes({ 'wplrCollection': '', 'wplrFolder': '', htmlPreview: '' });
+			if (this.props.attributes.images.length)
+				this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
 			return;
 		}
 		const col = mgl_gallery_block_params.wplr_collections.find(x => x.wp_col_id === value);
@@ -88,6 +102,7 @@ class GalleryEdit extends Component {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const ids = attributes.images.map(x => x.id);
 		const { layout, useDefaults, gutter, columns, rowHeight, captions, wplrCollection, wplrFolder } = attributes;
+		console.log(this.props.attributes);
 		this.setState( { isBusy: true } );
 		const response = await fetch( `${wpApiSettings.root}meow_gallery/preview`, {
 			cache: 'no-cache',
@@ -95,7 +110,8 @@ class GalleryEdit extends Component {
 			method: 'POST',
 			redirect: 'follow',
 			referrer: 'no-referrer',
-			body: useDefaults ? JSON.stringify({ ids, layout }) :
+			body: useDefaults ?
+				JSON.stringify({ ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }) :
 				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight,
 					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
 		})
@@ -166,10 +182,11 @@ class GalleryEdit extends Component {
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview,
 			captions, wplrCollection, wplrFolder, linkTo } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
+		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder;
 
 		const controls = (
 			<BlockControls>
-			{!!images.length && (
+			{hasImagesToShow && (
 				<Toolbar>
 					<MediaUpload
 						onSelect={ this.onSelectImages } allowedTypes={ ALLOWED_MEDIA_TYPES } multiple gallery
@@ -179,30 +196,14 @@ class GalleryEdit extends Component {
 								icon="edit" onClick={ open } />
 						)}
 					/>
+					<IconButton className="components-toolbar__control" label={ __( 'Remove all' ) }
+						icon="minus" onClick={() => this.setGalleryEmpty()} />
 					<IconButton className="components-toolbar__control" label={ __( 'Refresh' ) }
 						icon="controls-repeat" onClick={() => this.onRefresh()} />
 				</Toolbar>
 			)}
 			</BlockControls>
 		);
-
-		if ( images.length === 0 ) {
-			return (
-				<Fragment>
-					{ controls }
-					<MediaPlaceholder icon="format-gallery" className={ className } multiple accept="image/*"
-						labels={ {
-							title: __( 'Gallery' ),
-							instructions: __( 'Drag images, upload new ones or select files from your library.' ),
-						} }
-						onSelect={ this.onSelectImages }
-						allowedTypes={ ALLOWED_MEDIA_TYPES }
-						notices={ noticeUI }
-						onError={ noticeOperations.createErrorNotice }
-					/>
-				</Fragment>
-			);
-		}
 
 		let wplrCollections = '';
 		if (window.mgl_gallery_block_params && mgl_gallery_block_params.wplr_collections) {
@@ -222,9 +223,21 @@ class GalleryEdit extends Component {
 					options={categories}>
 				</SelectControl>)
 		}
+
 		return (
 			<Fragment>
 				{ controls }
+				{ !hasImagesToShow &&
+					<MediaPlaceholder icon={meowGalleryIcon} className={ className } multiple accept="image/*"
+						labels={ {
+							title: __( 'Meow Gallery' ),
+							instructions: __( 'Drag images, upload new ones or select files from your library. If WP/LR Sync is installed, you can directly select a collection or a folder from Lightroom.' ),
+						} }
+						onSelect={ this.onSelectImages }
+						allowedTypes={ ALLOWED_MEDIA_TYPES }
+						notices={ noticeUI }
+						onError={ noticeOperations.createErrorNotice }
+					/> }
 				<InspectorControls>
 					<PanelBody title={ __( 'Gallery Settings' ) }>
 						<SelectControl
@@ -248,23 +261,23 @@ class GalleryEdit extends Component {
 							options={ linkOptions }
 						/>
 						{wplrCollections}
-						{ images.length > 1 && !useDefaults && <RangeControl
+						{ hasImagesToShow && !useDefaults && <RangeControl
 							label={ __( 'Gutter' ) } value={ gutter } min={ 0 } max={ 100 }
 							onChange={ value => this.setGutter(value) }
 						/> }
-						{ images.length > 1 && !useDefaults && (layout === 'masonry' || layout === 'square') && <RangeControl
+						{ hasImagesToShow && !useDefaults && (layout === 'masonry' || layout === 'square') && <RangeControl
 							label={ __( 'Columns' ) } value={columns} min={2} max={5}
 							onChange={ value => this.setColumns(value) }
 						/> }
-						{ images.length > 1 && !useDefaults && (layout === 'justified') && <RangeControl
+						{ hasImagesToShow && !useDefaults && (layout === 'justified') && <RangeControl
 							label={ __( 'Row Height' ) } value={rowHeight} min={50} max={500}
 							onChange={ value => this.setRowHeight(value) }
 						/> }
-						{ images.length > 1 && !useDefaults && <CheckboxControl
+						{ hasImagesToShow && !useDefaults && <CheckboxControl
 							label={ __( 'Captions' ) } checked={ captions }
 							onChange={ value => this.setCaptions(value) }
 						/> }
-						{ images.length > 1 && <CheckboxControl
+						{ hasImagesToShow && <CheckboxControl
 							label={ __( 'Use Default Settings' ) } checked={ useDefaults }
 							onChange={ value => this.setUseDefaults(value) }
 						/> }
@@ -276,16 +289,16 @@ class GalleryEdit extends Component {
 					{isBusy && (<div className={'mgl-gtb-container' + (isBusy ? ' mgl-busy' : '')}>
 						<span className='components-spinner' style={{  }} /></div>)}
 					{htmlPreview && (<div dangerouslySetInnerHTML={{__html: htmlPreview}}></div>)}
-					{!htmlPreview && (<p>Please <a style={{cursor: 'pointer'}}
+					{hasImagesToShow && !htmlPreview && (<p>Please <a style={{cursor: 'pointer'}}
 						onClick={() => this.onRefresh()}>click here</a> to refresh the preview.</p>)}
-					{images.length === 0 && isSelected &&
+					{/* {!hasImagesToShow && isSelected &&
 						<div className="blocks-gallery-item has-add-item-button">
 							<FormFileUpload multiple isLarge className="block-library-gallery-add-item-button"
 								onChange={ this.uploadFromFiles } accept="image/*" icon="insert">
 								{ __( 'Upload an image' ) }
 							</FormFileUpload>
 						</div>
-					}
+					} */}
 				</div>
 			</Fragment>
 		);

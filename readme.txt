@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.0.4
+Stable tag: 3.0.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,10 +26,12 @@ Nothing yet.
 
 == Changelog ==
 
+= 3.0.6 =
+* Add: Compatibility with WP/LR Sync. Collections from Lightroom are now accessible from the Meow Gallery Gutenberg Block.
+
 = 3.0.4 =
 * Add: LinkTo in the block.
 * Add: Cascade layout.
-* Add: Select a LR collection directly from the Meow Gallery block.
 * Info: Huge update for Gutenberg and WordPress 5. Try it :)
 
 = 2.0.9 =
