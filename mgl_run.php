@@ -58,9 +58,15 @@ class Meow_Gallery_Run {
 		if ( isset( $atts['ids'] ) )
 			$images = $atts['ids'];
 		if ( isset( $atts['include'] ) )
-			$images = implode( $atts['include'], ',' );
+			$images = $atts['include'];
 		if ( empty( $images ) )
 			return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
+
+		if ( $isPreview ) {
+			$check = explode( ',', $images );
+			$check = array_slice( $check, 0, 40 );
+			$images = implode( ',', $check );
+		}
 
 		//DEBUG: Display $atts
 		//error_log( print_r( $atts, 1 ) );

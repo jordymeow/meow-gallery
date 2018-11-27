@@ -21,11 +21,23 @@ class Meow_Gallery_Blocks {
 		register_block_type( 'meow-gallery/gallery', array(
 			'editor_script' => 'mgl-gallery-js'
 		));
-		wp_add_inline_script(
-			'mgl-gallery-js',
-			'wp.i18n.setLocaleData( ' . json_encode( gutenberg_get_jed_locale_data( 'meow-gallery' ) ) . ', "meow-gallery" );',
-			'before'
-		);
+
+		// // For WordPress 5
+		// if ( function_exists( 'wp_get_jed_locale_data' ) ) {
+		// 	wp_add_inline_script(
+		// 		'mgl-gallery-js',
+		// 		'wp.i18n.setLocaleData( ' . json_encode( wp_get_jed_locale_data( 'meow-gallery' ) ) . ', "meow-gallery" );',
+		// 		'before'
+		// 	);
+		// }
+		// // For Gutenberg Beta Plugin
+		// else if ( function_exists( 'gutenberg_get_jed_locale_data' ) ) {
+		// 	wp_add_inline_script(
+		// 		'mgl-gallery-js',
+		// 		'wp.i18n.setLocaleData( ' . json_encode( gutenberg_get_jed_locale_data( 'meow-gallery' ) ) . ', "meow-gallery" );',
+		// 		'before'
+		// 	);
+		// }
 
 		global $wplr;
 		if ( $wplr ) {
