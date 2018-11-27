@@ -57,8 +57,10 @@ class Meow_Gallery_Run {
 		$images = [];
 		if ( isset( $atts['ids'] ) )
 			$images = $atts['ids'];
-		if ( isset( $atts['include'] ) )
-			$images = $atts['include'];
+		if ( isset( $atts['include'] ) ) {
+			$images = is_array( $atts['include'] ) ? implode( $atts['include'], ',' ) : $atts['include'];
+			$atts['include'] = $images;
+		}
 		if ( empty( $images ) )
 			return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
 
@@ -98,6 +100,8 @@ class Meow_Gallery_Run {
 		$result = $gen->build( $images );
 		$this->gallery_process = false;
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
+		$result = apply_filters( 'post_gallery', $result, $atts );
+
 		return $result;
 	}
 

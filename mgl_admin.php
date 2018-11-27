@@ -26,7 +26,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		add_submenu_page( 'meowapps-main-menu', 'Gallery', 'Gallery', 'manage_options',
 			'mgl_settings-menu', array( $this, 'admin_settings' ) );
 
-		// SUBMENU > Settings > Settings
+		// SUBMENU > Settings > Layouts
 		add_settings_section( 'mgl_settings', null, null, 'mgl_settings-menu' );
 		add_settings_field( 'mgl_layout', __( "Default Layout", 'meow-gallery' ),
 			array( $this, 'admin_layout_callback' ),
@@ -43,41 +43,48 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			'mgl_settings-menu', 'mgl_settings' );
 		register_setting( 'mgl_settings', 'mgl_infinite' );
 
-		$color = get_option( 'mgl_infinite_loader_color', '#444' );
-		if ( empty( $color ) )
-			update_option( 'mgl_infinite_loader_color', '#444' );
-		$batch = get_option( 'mgl_infinite_batch_size', 20 );
-		if ( empty( $batch ) )
-			update_option( 'mgl_infinite_batch_size', 20 );
-		$batch = get_option( 'mgl_infinite_batch_size', 20 );
+		// $color = get_option( 'mgl_infinite_loader_color', '#444' );
+		// if ( empty( $color ) )
+		// 	update_option( 'mgl_infinite_loader_color', '#444' );
+		// $batch = get_option( 'mgl_infinite_batch_size', 20 );
+		// if ( empty( $batch ) )
+		// 	update_option( 'mgl_infinite_batch_size', 20 );
+		// $batch = get_option( 'mgl_infinite_batch_size', 20 );
 
 		$layout = get_option( 'mgl_layout', 'tiles' );
 		$infinite = get_option( 'mgl_infinite', false ) && $this->is_registered();
+
+		// Animations
+		add_settings_section( 'mgl_animation', null, null, 'mgl_settings_animation-menu' );
+		add_settings_field( 'mgl_animation_hover', __( "Hover Effect", 'meow-gallery' ),
+			array( $this, 'admin_animation_hover_callback' ),
+			'mgl_settings_animation-menu', 'mgl_animation' );
+		register_setting( 'mgl_settings_animation', 'mgl_animation_hover' );
 
 		// Preview in gutenberg need the CSS and JS
 		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null, $mgl_version );
 		wp_enqueue_style( 'mgl-css' );
 		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $mgl_version, false );
 
-		if ( $infinite ) {
-			add_settings_section( 'mgl_infinite', null, null, 'mgl_settings_infinite-menu' );
-			add_settings_field( 'mgl_infinite_batch_size', __( "Batch Size", 'meow-gallery' ),
-				array( $this, 'admin_infinite_batch_size_callback' ),
-				'mgl_settings_infinite-menu', 'mgl_infinite' );
-			add_settings_field( 'mgl_infinite_animation', __( "Animation", 'meow-gallery' ),
-				array( $this, 'admin_infinite_animation_callback' ),
-				'mgl_settings_infinite-menu', 'mgl_infinite' );
-			add_settings_field( 'mgl_infinite_loader', __( "Loader", 'meow-gallery' ),
-				array( $this, 'admin_infinite_loader_callback' ),
-				'mgl_settings_infinite-menu', 'mgl_infinite' );
-			add_settings_field( 'mgl_infinite_loader_color', __( "Loader Color", 'meow-gallery' ),
-				array( $this, 'admin_infinite_loader_color_callback' ),
-				'mgl_settings_infinite-menu', 'mgl_infinite' );
-			register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader' );
-			register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader_color' );
-			register_setting( 'mgl_settings_infinite', 'mgl_infinite_animation' );
-			register_setting( 'mgl_settings_infinite', 'mgl_infinite_batch_size' );
-		}
+		// if ( $infinite ) {
+		// 	add_settings_section( 'mgl_infinite', null, null, 'mgl_settings_infinite-menu' );
+		// 	add_settings_field( 'mgl_infinite_batch_size', __( "Batch Size", 'meow-gallery' ),
+		// 		array( $this, 'admin_infinite_batch_size_callback' ),
+		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
+		// 	add_settings_field( 'mgl_infinite_animation', __( "Animation", 'meow-gallery' ),
+		// 		array( $this, 'admin_infinite_animation_callback' ),
+		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
+		// 	add_settings_field( 'mgl_infinite_loader', __( "Loader", 'meow-gallery' ),
+		// 		array( $this, 'admin_infinite_loader_callback' ),
+		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
+		// 	add_settings_field( 'mgl_infinite_loader_color', __( "Loader Color", 'meow-gallery' ),
+		// 		array( $this, 'admin_infinite_loader_color_callback' ),
+		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
+		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader' );
+		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader_color' );
+		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_animation' );
+		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_batch_size' );
+		// }
 
 		// Tiles
 		add_settings_section( 'mgl_tiles', null, null, 'mgl_settings_tiles-menu' );
@@ -179,6 +186,19 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				<div class="meow-col meow-span_1_of_2">
 
 					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
+
+					<!--
+					<div class="meow-box">
+						<form method="post" action="options.php">
+							<h3><?php _e( "Animations", 'meow-gallery' ); ?></h3>
+							<div class="inside">
+								<?php settings_fields( 'mgl_settings_animation' ); ?>
+								<?php do_settings_sections( 'mgl_settings_animation-menu' ); ?>
+								<?php submit_button(); ?>
+							</div>
+						</form>
+					</div>
+					-->
 
 					<div class="meow-box">
 
@@ -442,6 +462,19 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		$value = get_option( 'mgl_slider_nav_height', 80 );
 		$html = '<input type="number" style="width: 100%;" id="mgl_slider_nav_height" name="mgl_slider_nav_height" value="' . $value . '" />';
 		$html .= '<br /><span class="description">' . __( "Ideal height of the navigation bar.", 'meow-gallery' ) . '</span>';
+		echo $html;
+	}
+
+	function admin_animation_hover_callback( $args ) {
+		$origins = array(
+			'soft-zoom' => array( 'name' => 'Soft Zoom' ),
+			'none' => array( 'name' => 'None' ),
+		);
+		$html = '';
+		foreach ( $origins as $key => $arg )
+			$html .= '<input type="radio" class="radio" id="mwl_caption_origin" name="mwl_caption_origin" value="' . $key . '"' .
+				checked( $key, get_option( 'mwl_caption_origin', 'caption' ), false ) . ' > '  .
+				( empty( $arg ) ? 'None' : $arg['name'] ) . '<br />';
 		echo $html;
 	}
 
