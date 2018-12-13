@@ -134,7 +134,7 @@
 	padding: 10px 10px;
 }
 
-.meow-box p.submit {
+.meow-box p.submit, .meow-box div.submit {
 	text-align: right;
 	margin: 10px -10px -10px -10px;
 	padding: 7px 10px 10px 0px !important;

@@ -4,8 +4,10 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 
 	class MeowApps_Admin {
 
+		public static $logo = 'data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxIiB2aWV3Qm94PSIwIDAgMTY1IDE2NSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8c3R5bGU+CiAgICAuc3Qye2ZpbGw6IzgwNDYyNX0uc3Qze2ZpbGw6I2ZkYTk2MH0KICA8L3N0eWxlPgogIDxwYXRoIGQ9Ik03MiA3YTc2IDc2IDAgMCAxIDg0IDkxQTc1IDc1IDAgMSAxIDcyIDd6IiBmaWxsPSIjNGE2YjhjIi8+CiAgPHBhdGggZD0iTTQ4IDQ4YzIgNSAyIDEwIDUgMTQgNSA4IDEzIDE3IDIyIDIwbDEtMTBjMS0yIDMtMyA1LTNoMTNjMiAwIDQgMSA1IDNsMyA5IDQtMTBjMi0zIDYtMiA5LTJoMTFjMyAyIDMgNSAzIDhsMiAzN2MwIDMtMSA3LTQgOGgtMTJjLTIgMC0zLTItNS00LTEgMS0yIDMtNCAzLTUgMS05IDEtMTMtMS0zIDItNSAyLTkgMnMtOSAxLTEwLTNjLTItNC0xLTggMC0xMi04LTMtMTUtNy0yMi0xMi03LTctMTUtMTQtMjAtMjMtMy00LTUtOC01LTEzIDEtNCAzLTEwIDYtMTMgNC0zIDEyLTIgMTUgMnoiIGZpbGw9IiMxMDEwMTAiLz4KICA8cGF0aCBjbGFzcz0ic3QyIiBkPSJNNDMgNTFsNCAxMS02IDVoLTZjLTMtNS0zLTExIDAtMTYgMi0yIDYtMyA4IDB6Ii8+CiAgPHBhdGggY2xhc3M9InN0MyIgZD0iTTQ3IDYybDMgNmMwIDMgMCA0LTIgNnMtNCAyLTcgMmwtNi05aDZsNi01eiIvPgogIDxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik01MCA2OGw4IDljLTMgMy01IDYtOSA4bC04LTljMyAwIDUgMCA3LTJzMy0zIDItNnoiLz4KICA8cGF0aCBkPSJNODIgNzRoMTJsNSAxOCAzIDExIDgtMjloMTNsMiA0MmgtOGwtMS0yLTEtMzEtMTAgMzItNyAxLTktMzMtMSAyOS0xIDRoLThsMy00MnoiIGZpbGw9IiNmZmYiLz4KICA8cGF0aCBjbGFzcz0ic3QzIiBkPSJNNTggNzdsNSA1Yy0xIDQtMiA4LTcgOGwtNy01YzQtMiA2LTUgOS04eiIvPgogIDxwYXRoIGNsYXNzPSJzdDIiIGQ9Ik02MyA4Mmw5IDUtNiA5LTEwLTZjNSAwIDYtNCA3LTh6Ii8+CiAgPHBhdGggY2xhc3M9InN0MyIgZD0iTTcyIDg3bDMgMS0xIDExLTgtMyA2LTEweiIvPgo8L3N2Zz4K';
+
 		public static $loaded = false;
-		public static $admin_version = "1.6";
+		public static $admin_version = "1.8";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -151,8 +153,8 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			}
 			?>
 			<h1 style="line-height: 16px;">
-				<img width="36" style="margin-right: 10px; float: left; position: relative; top: -5px;"
-					src="<?php echo $this->meowapps_logo_url(); ?>"><?php echo $title; ?><br />
+				<img width="42" style="margin-right: 10px; float: left; position: relative; top: -5px;"
+					src="<?php echo MeowApps_Admin::$logo ?>"><?php echo $title; ?><br />
 				<span style="font-size: 12px"><?php echo $author; ?></span>
 			</h1>
 			<div style="clear: both;"></div>
@@ -174,8 +176,8 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			// Creates standard menu if it does NOT exist
 			global $submenu;
 			if ( !isset( $submenu[ 'meowapps-main-menu' ] ) ) {
-				add_menu_page( 'Meow Apps', 'Meow Apps', 'manage_options', 'meowapps-main-menu',
-					array( $this, 'admin_meow_apps' ), 'dashicons-camera', 82 );
+				add_menu_page( 'Meow Apps', '<img style="width: 24px; margin-left: -30px; position: absolute; margin-top: -3px;" src="' . MeowApps_Admin::$logo . '" />Meow Apps', 'manage_options', 'meowapps-main-menu',
+					array( $this, 'admin_meow_apps' ), '', 82 );
 				add_submenu_page( 'meowapps-main-menu', __( 'Dashboard', 'meowapps' ),
 					__( 'Dashboard', 'meowapps' ), 'manage_options',
 					'meowapps-main-menu', array( $this, 'admin_meow_apps' ) );

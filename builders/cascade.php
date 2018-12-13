@@ -44,7 +44,7 @@ class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 
 	function build( $idsStr ) {
 		$classAlign = $this->align === 'wide' ? (' align' . $this->align) : '';
-		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery' . $classAlign . ' mgl-cascade">';
+		$out = '<div id="' . $this->class_id . '"  class="' . $this->build_classes() . ' mgl-cascade">';
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
 		$ooo_v = 0;

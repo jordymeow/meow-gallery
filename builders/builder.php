@@ -14,6 +14,7 @@ abstract class Meow_Gallery_Generator {
 	public $isPreview = false;
 	public $updir = null;
 	public $captions = false;
+	public $animation = null;
 
 	abstract function inline_css();
 
@@ -30,6 +31,11 @@ abstract class Meow_Gallery_Generator {
 		$this->updir = trailingslashit( $wpUploadDir['baseurl'] );
 		$this->captions = isset( $atts['captions'] ) ? $atts['captions'] : get_option( 'mgl_captions_enabled', false );
 		$this->captions = $this->captions === 'false' ? false : $this->captions;
+		$this->animation = null;
+		if ( isset( $atts['animation'] ) && $atts['animation'] != 'default' )
+			$this->animation = $atts['animation'];
+		else
+			$this->animation = get_option( 'mgl_animation', null );
 	}
 
 	function prepare_data( $idsStr ) {
@@ -70,9 +76,21 @@ abstract class Meow_Gallery_Generator {
 		return $html;
 	}
 
+	function build_classes() {
+		$classes = 'mgl-gallery';
+
+		// Align
+		$classes .= $this->align === 'wide' ? (' align' . $this->align) : '';
+
+		// Animation
+		if ( $this->animation )
+			$classes .= ' is-animated ' . $this->animation;
+
+		return $classes;
+	}
+
 	function build( $idsStr ) {
-		$classAlign = $this->align === 'wide' ? (' align' . $this->align) : '';
-		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery' . $classAlign . ' mgl-' . $this->layout . '">';
+		$out = '<div id="' . $this->class_id . '"  class="' . $this->build_classes() . ' mgl-' . $this->layout . '">';
 		$this->prepare_data( $idsStr );
 		//add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 		while ( count( $this->ids ) > 0 ) {

@@ -32,59 +32,29 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			array( $this, 'admin_layout_callback' ),
 			'mgl_settings-menu', 'mgl_settings' );
 		register_setting( 'mgl_settings', 'mgl_layout' );
-
 		add_settings_field( 'mgl_captions_enabled', __( "Captions", 'meow-gallery' ),
 			array( $this, 'admin_display_captions_callback' ),
 			'mgl_settings-menu', 'mgl_settings' );
 		register_setting( 'mgl_settings', 'mgl_captions_enabled' );
 
-		add_settings_field( 'mgl_infinite', __ ( "Infinite & Lazy", 'meow-gallery' ),
-			array( $this, 'admin_infinite_callback' ),
-			'mgl_settings-menu', 'mgl_settings' );
-		register_setting( 'mgl_settings', 'mgl_infinite' );
-
-		// $color = get_option( 'mgl_infinite_loader_color', '#444' );
-		// if ( empty( $color ) )
-		// 	update_option( 'mgl_infinite_loader_color', '#444' );
-		// $batch = get_option( 'mgl_infinite_batch_size', 20 );
-		// if ( empty( $batch ) )
-		// 	update_option( 'mgl_infinite_batch_size', 20 );
-		// $batch = get_option( 'mgl_infinite_batch_size', 20 );
-
-		$layout = get_option( 'mgl_layout', 'tiles' );
-		$infinite = get_option( 'mgl_infinite', false ) && $this->is_registered();
-
 		// Animations
 		add_settings_section( 'mgl_animation', null, null, 'mgl_settings_animation-menu' );
-		add_settings_field( 'mgl_animation_hover', __( "Hover Effect", 'meow-gallery' ),
-			array( $this, 'admin_animation_hover_callback' ),
+		add_settings_field( 'mgl_animation', __( "Default Animation", 'meow-gallery' ),
+			array( $this, 'admin_animation_callback' ),
 			'mgl_settings_animation-menu', 'mgl_animation' );
-		register_setting( 'mgl_settings_animation', 'mgl_animation_hover' );
+		register_setting( 'mgl_settings_animation', 'mgl_animation' );
+
+		// Optimization
+		add_settings_section( 'mgl_optimization', null, null, 'mgl_settings_optimization-menu' );
+		add_settings_field( 'mgl_infinite', __ ( "Infinite & Lazy", 'meow-gallery' ),
+			array( $this, 'admin_infinite_callback' ),
+			'mgl_settings_optimization-menu', 'mgl_optimization' );
+		register_setting( 'mgl_settings_optimization', 'mgl_infinite' );
 
 		// Preview in gutenberg need the CSS and JS
 		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null, $mgl_version );
 		wp_enqueue_style( 'mgl-css' );
 		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $mgl_version, false );
-
-		// if ( $infinite ) {
-		// 	add_settings_section( 'mgl_infinite', null, null, 'mgl_settings_infinite-menu' );
-		// 	add_settings_field( 'mgl_infinite_batch_size', __( "Batch Size", 'meow-gallery' ),
-		// 		array( $this, 'admin_infinite_batch_size_callback' ),
-		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
-		// 	add_settings_field( 'mgl_infinite_animation', __( "Animation", 'meow-gallery' ),
-		// 		array( $this, 'admin_infinite_animation_callback' ),
-		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
-		// 	add_settings_field( 'mgl_infinite_loader', __( "Loader", 'meow-gallery' ),
-		// 		array( $this, 'admin_infinite_loader_callback' ),
-		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
-		// 	add_settings_field( 'mgl_infinite_loader_color', __( "Loader Color", 'meow-gallery' ),
-		// 		array( $this, 'admin_infinite_loader_color_callback' ),
-		// 		'mgl_settings_infinite-menu', 'mgl_infinite' );
-		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader' );
-		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_loader_color' );
-		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_animation' );
-		// 	register_setting( 'mgl_settings_infinite', 'mgl_infinite_batch_size' );
-		// }
 
 		// Tiles
 		add_settings_section( 'mgl_tiles', null, null, 'mgl_settings_tiles-menu' );
@@ -160,7 +130,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				<div class="meow-box col span_2_of_2">
 					<h3><?php echo _e( "How to use", 'meow-gallery' ) ?></h3>
 					<div class="inside">
-						<?php echo _e( "Meow Gallery works with the core <a target='_blank' href='https://codex.wordpress.org/The_WordPress_Gallery'>WordPress Gallery</a>, the official <a target='_blank' href='https://codex.wordpress.org/Gallery_Shortcode'>Gallery Shortcode</a>, and the Gutenberg Gallery. Here, you can set the default settings but you can override them for each gallery in your website.", 'meow-gallery' ) ?>
+						<?php echo _e( "Meow Gallery works with the core <a target='_blank' href='https://codex.wordpress.org/The_WordPress_Gallery'>WordPress Gallery</a>, the official <a target='_blank' href='https://codex.wordpress.org/Gallery_Shortcode'>Gallery Shortcode</a>, and the Gutenberg Gallery can be converted to it. Here, you can set the default settings but you can override them for each gallery in your website. Please get the <a target='_blank' href='https://meowapps.com/plugin/meow-gallery/'>Pro version</a> to help us, and you will get animations, optimizations, and an additional layout :)", 'meow-gallery' ) ?>
 					</div>
 				</div>
 			</div>
@@ -180,25 +150,6 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 							</div>
 						</form>
 					</div>
-
-				</div>
-
-				<div class="meow-col meow-span_1_of_2">
-
-					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
-
-					<!--
-					<div class="meow-box">
-						<form method="post" action="options.php">
-							<h3><?php _e( "Animations", 'meow-gallery' ); ?></h3>
-							<div class="inside">
-								<?php settings_fields( 'mgl_settings_animation' ); ?>
-								<?php do_settings_sections( 'mgl_settings_animation-menu' ); ?>
-								<?php submit_button(); ?>
-							</div>
-						</form>
-					</div>
-					-->
 
 					<div class="meow-box">
 
@@ -269,18 +220,39 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 						</div>
 					</div>
 
-					<?php if ( get_option( 'mgl_infinite', false ) && 1 == 2 && $this->is_registered() ): ?>
+				</div>
+
+				<div class="meow-col meow-span_1_of_2">
+
+					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
+
 					<div class="meow-box">
 						<form method="post" action="options.php">
-							<h3><?php _e( "Infinite Loading", 'meow-gallery' ); ?></h3>
+							<h3><?php _e( "Animation", 'meow-gallery' ); ?></h3>
 							<div class="inside">
-								<?php settings_fields( 'mgl_settings_infinite' ); ?>
-								<?php do_settings_sections( 'mgl_settings_infinite-menu' ); ?>
+								<?php if ( !$this->is_registered() ): ?>
+								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
+								<?php endif; ?>
+								<?php settings_fields( 'mgl_settings_animation' ); ?>
+								<?php do_settings_sections( 'mgl_settings_animation-menu' ); ?>
 								<?php submit_button(); ?>
 							</div>
 						</form>
 					</div>
-					<?php endif; ?>
+
+					<div class="meow-box">
+						<form method="post" action="options.php">
+							<h3><?php _e( "Optimization / Speed", 'meow-gallery' ); ?></h3>
+							<div class="inside">
+								<?php if ( !$this->is_registered() ): ?>
+								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
+								<?php endif; ?>
+								<?php settings_fields( 'mgl_settings_optimization' ); ?>
+								<?php do_settings_sections( 'mgl_settings_optimization-menu' ); ?>
+								<?php submit_button(); ?>
+							</div>
+						</form>
+					</div>
 
 				</div>
 
@@ -406,41 +378,11 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		echo $html;
 	}
 
-	function admin_infinite_batch_size_callback( $args ) {
-		$value = get_option( 'mgl_infinite_batch_size', 20 );
-		$html = '<input type="number" style="width: 100%;" id="mgl_infinite_batch_size" name="mgl_infinite_batch_size" value="' .
-			$value . '" />';
-		$html .= '<br /><span class="description">' . __( "Space between the photos (in pixels).", 'meow-gallery' ) . '</span>';
-		echo $html;
-	}
-
-	function admin_infinite_animation_callback( $args ) {
-		$html = '<input type="checkbox" id="mgl_infinite_animation" name="mgl_infinite_animation" value="1" ' .
-			checked( 1, get_option( 'mgl_infinite_animation', true ), false ) . '/>';
-		$html .= '<label>' . __( 'Enabled', 'meow-gallery' ) . '</label><br /><small>' . __( 'Fade-in the newly loaded photos.', 'meow-gallery' ) . '</small>';
-		echo $html;
-	}
-
-	function admin_infinite_loader_callback( $args ) {
-		$html = '<input type="checkbox" id="mgl_infinite_loader" name="mgl_infinite_loader" value="1" ' .
-			checked( 1, get_option( 'mgl_infinite_loader', true ), false ) . '/>';
-		$html .= '<label>' . __( 'Enabled', 'meow-gallery' ) . '</label><br /><small>' . __( 'Display a loader when the next batch of photos is being loaded.', 'meow-gallery' ) . '</small>';
-		echo $html;
-	}
-
-	function admin_infinite_loader_color_callback( $args ) {
-		$value = get_option( 'mgl_infinite_loader_color', '#444' );
-		$html = '<input type="text" style="width: 100%;" id="mgl_infinite_loader_color" name="mgl_infinite_loader_color" value="' .
-			$value . '" />';
-		$html .= '<br /><span class="description">' . __( 'Color of the loader ("#444" by default).', 'meow-gallery' ) . '</span>';
-		echo $html;
-	}
-
 	function admin_infinite_callback( $args ) {
 		$html = '<input ' . disabled( $this->is_registered(), false, false ) . '
 			type="checkbox" id="mgl_infinite" name="mgl_infinite" value="1" ' .
 			checked( 1, get_option( 'mgl_infinite' ), false ) . '/>';
-		$html .= '<label>' . __( 'Enabled (Pro)', 'meow-gallery' ) . '</label><br /><small>' . __( 'Photos will be loaded progressively, as the user scrolls down. Ideal for galleries with many photos, for a faster website. ', 'meow-gallery' ) . '</small>';
+		$html .= '<label>' . __( 'Enabled', 'meow-gallery' ) . '</label><br /><small>' . __( 'Photos will be loaded progressively, as the user scrolls down. Ideal for galleries with many photos, for a faster website. ', 'meow-gallery' ) . '</small>';
 		echo $html;
 	}
 
@@ -465,15 +407,20 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		echo $html;
 	}
 
-	function admin_animation_hover_callback( $args ) {
+	function admin_animation_callback( $args ) {
 		$origins = array(
-			'soft-zoom' => array( 'name' => 'Soft Zoom' ),
+			'zoom-out' => array( 'name' => 'Zoom Out' ),
+			'zoom-in' => array( 'name' => 'Zoom In' ),
+			'fade-out' => array( 'name' => 'Fade Out' ),
+			'fade-in' => array( 'name' => 'Fade In' ),
+			'colorize' => array( 'name' => 'Colorize' ),
+			'highlight' => array( 'name' => 'Highlight' ),
 			'none' => array( 'name' => 'None' ),
 		);
 		$html = '';
 		foreach ( $origins as $key => $arg )
-			$html .= '<input type="radio" class="radio" id="mwl_caption_origin" name="mwl_caption_origin" value="' . $key . '"' .
-				checked( $key, get_option( 'mwl_caption_origin', 'caption' ), false ) . ' > '  .
+			$html .= '<input type="radio" class="radio" id="mgl_animation" name="mgl_animation" value="' . $key . '"' .
+				checked( $key, get_option( 'mgl_animation', 'caption' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) . '<br />';
 		echo $html;
 	}

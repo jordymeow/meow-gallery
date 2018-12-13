@@ -24,6 +24,14 @@ const blockAttributes = {
 		type: 'string',
 		default: 'tiles'
 	},
+	animation: {
+		type: 'animation',
+		default: ''
+	},
+	useDefaults: {
+		type: 'string',
+		default: 'default'
+	},
 	htmlPreview: {
 		type: 'text',
 		default: null
@@ -59,11 +67,13 @@ const blockAttributes = {
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, gutter, captions, wplrCollection, wplrFolder, linkTo } = attributes;
+	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo } = attributes;
 	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
 	if (layout)
 		attrs += `layout="${layout}" `;
+	if (!useDefaults && animation)
+		attrs += `animation="${animation}" `;
 	if (!useDefaults && gutter)
 		attrs += `gutter="${gutter}" `;
 	if (!useDefaults) {
@@ -82,7 +92,7 @@ const buildCoreAttributes = function(attributes) {
 };
 
 const buildShortcode = function(attributes) {
-	const { useDefaults, layout, rowHeight, columns, wplrCollection, linkTo } = attributes;
+	const { useDefaults, layout, rowHeight, columns } = attributes;
 	const attrs = buildCoreAttributes(attributes);
 	if (useDefaults)
 		return `[gallery ${attrs}][/gallery]`;

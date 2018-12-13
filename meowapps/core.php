@@ -32,19 +32,22 @@ class MeowAppsPro_MGL_Core {
 	}
 
 	function init() {
+		global $mgl_version;
+
 		if ( !is_admin() ) {
-			require_once dirname( __FILE__ ) . '/builders/slider.php';
 			$infinite = get_option( 'mgl_infinite', false );
 			if ( $infinite ) {
 				wp_enqueue_script( 'mgl-infinite-js', plugins_url( '/js/vanilla-atts-infinite.js', __FILE__ ), array( 'jquery' ),
 					filemtime( plugin_dir_path( __FILE__ ) . 'js/vanilla-atts-infinite.js' ), false );
 			}
 		}
-		//TODO: A bit untidy, but Gutenberg needs to be able to generate the slider and needs the CSS to be loaded.
-		if ( is_admin() ) {
-			require_once dirname( __FILE__ ) . '/builders/slider.php';
-			$this->slider_created();
-		}
+		require_once dirname( __FILE__ ) . '/builders/slider.php';
+		$physical_file = plugin_dir_path( __FILE__ ) . 'style-pro.min.css';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'style-pro.min.css', null, $version );
+		$physical_file = plugin_dir_path( __FILE__ ) . '/js/slider.js';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $version, false );
 	}
 
 	function is_rest() {
@@ -64,16 +67,6 @@ class MeowAppsPro_MGL_Core {
 			$s['class'] .= ' mgl-lazy';
 		}
 		return $xml->asXml();
-	}
-
-	function slider_created() {
-		global $mgl_version;
-		$physical_file = plugin_dir_path( __FILE__ ) . 'slider.min.css';
-		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
-		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'slider.min.css', null, $version );
-		$physical_file = plugin_dir_path( __FILE__ ) . '/js/slider.js';
-		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
-		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $version, false );
 	}
 
 	function plugin_title( $string ) {

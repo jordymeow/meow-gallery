@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.1.0
+Stable tag: 3.2.0
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -25,6 +25,10 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 3.2.0 =
+* Update: Little fixes.
+* Add: Added animations.
 
 = 3.1.0 =
 * Update: Added a filter which is also used by the standard WP Gallery for compatibility with other plugins.

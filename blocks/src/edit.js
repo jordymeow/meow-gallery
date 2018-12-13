@@ -98,11 +98,16 @@ class GalleryEdit extends Component {
 		this.onRefresh({ layout });
 	}
 
+	setAnimation(animation) {
+		this.props.setAttributes({ animation: animation });
+		this.onRefresh({ animation });
+	}
+
 	async onRefresh(newAttributes = {}) {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const ids = attributes.images.map(x => x.id);
-		const { layout, useDefaults, gutter, columns, rowHeight, captions, wplrCollection, wplrFolder } = attributes;
-		console.log(this.props.attributes);
+		const { layout, useDefaults, animation, gutter, columns, rowHeight,
+			captions, wplrCollection, wplrFolder } = attributes;
 		this.setState( { isBusy: true } );
 		const response = await fetch( `${wpApiSettings.root}meow_gallery/preview`, {
 			cache: 'no-cache',
@@ -112,7 +117,7 @@ class GalleryEdit extends Component {
 			referrer: 'no-referrer',
 			body: useDefaults ?
 				JSON.stringify({ ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }) :
-				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight,
+				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight, animation,
 					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
 		})
 		.then(returned => {
@@ -179,7 +184,7 @@ class GalleryEdit extends Component {
 	render() {
 		const { isBusy } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
-		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview,
+		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation,
 			captions, wplrCollection, wplrFolder, linkTo } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
 		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder;
@@ -254,6 +259,22 @@ class GalleryEdit extends Component {
 								{ value: 'slider', label: 'Slider' }
 							]}>
 						</SelectControl>
+						{ hasImagesToShow && !useDefaults &&
+							<SelectControl
+								label={__('Animation', 'meow-gallery')}
+								value={animation}
+								onChange={(value) => this.setAnimation(value)}
+								options={[
+									{ value: 'default', label: 'Default' },
+									{ value: 'zoom-out', label: 'Zoom Out' },
+									{ value: 'zoom-in', label: 'Zoom In' },
+									{ value: 'fade-out', label: 'Fade Out' },
+									{ value: 'fade-in', label: 'Fade In' },
+									{ value: 'colorize', label: 'Colorize' },
+									{ value: 'highlight', label: 'Highlight' }
+								]}>
+							</SelectControl>
+						}
 						<SelectControl
 							label={ __( 'Link To' ) }
 							value={ linkTo }

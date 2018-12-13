@@ -6,6 +6,7 @@
 
 	<?= $class_id ?> {
 		margin: <?= -1 * ( $gutter / 2 ) ?>px;
+		width: calc(100% + <?= $gutter ?>px);
 	}
 
 	<?= $class_id ?> .mgl-box {
