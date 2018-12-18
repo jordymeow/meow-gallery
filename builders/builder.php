@@ -84,13 +84,13 @@ abstract class Meow_Gallery_Generator {
 
 		// Animation
 		if ( $this->animation )
-			$classes .= ' is-animated ' . $this->animation;
+			$classes .= ' is-animated ' . $this->animation;
 
 		return $classes;
 	}
 
 	function build( $idsStr ) {
-		$out = '<div id="' . $this->class_id . '"  class="' . $this->build_classes() . ' mgl-' . $this->layout . '">';
+		$out = '<div id="' . $this->class_id . '" class="' . $this->build_classes() . ' mgl-' . $this->layout . '">';
 		$this->prepare_data( $idsStr );
 		//add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 		while ( count( $this->ids ) > 0 ) {

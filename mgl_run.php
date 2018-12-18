@@ -10,6 +10,7 @@ class Meow_Gallery_Run {
 		//add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 50, 3 );
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 		add_shortcode( 'gallery', array( $this, 'gallery' ) );
+		add_shortcode( 'meow-gallery', array( $this, 'gallery' ) );
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 		require_once dirname( __FILE__ ) . '/builders/tiles.php';
 		require_once dirname( __FILE__ ) . '/builders/justified.php';

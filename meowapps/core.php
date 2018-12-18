@@ -23,7 +23,6 @@ class MeowAppsPro_MGL_Core {
 
 		// Additional functions for Pro
 		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'mgl_slider_gallery_created', array( $this, 'slider_created' ) );
 
 		// Infinite
 		if ( !$this->is_rest() && get_option( 'mgl_infinite', false ) ) {
