@@ -55,7 +55,7 @@ class Meow_Gallery_Run {
 
 	function gallery( $atts, $isPreview = false ) {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
-		$images = [];
+		$images = array();
 		if ( isset( $atts['ids'] ) )
 			$images = $atts['ids'];
 		if ( isset( $atts['include'] ) ) {

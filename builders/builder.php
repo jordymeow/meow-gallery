@@ -7,10 +7,10 @@ abstract class Meow_Gallery_Generator {
 	public $class_id = 'mgl-gallery-none';
 	public $size = 'large';
 	public $align = null;
-	public $ids = [];
+	public $ids = array();
 	public $link = null;
-	public $atts = [];
-	public $data = [];
+	public $atts = array();
+	public $data = array();
 	public $isPreview = false;
 	public $updir = null;
 	public $captions = false;
@@ -50,7 +50,7 @@ abstract class Meow_Gallery_Generator {
 			$this->data[$r->id] = array( 'caption' => htmlspecialchars( $r->caption ),'meta' => unserialize( $r->meta ) );
 		}
 		$this->ids = array_reverse( $this->ids );
-		$cleanIds = [];
+		$cleanIds = array();
 		foreach ( $this->ids as $id ) {
 			if ( isset( $this->data[$id] ) )
 				array_push( $cleanIds, $id );

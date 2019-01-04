@@ -4,8 +4,8 @@ require_once dirname( __FILE__ ) . '/builder.php';
 
 class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 
-	public $layouts = [];
-	public $layout = [];
+	public $layouts = array();
+	public $layout = array();
 
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		parent::__construct( $atts, $infinite, $isPreview );

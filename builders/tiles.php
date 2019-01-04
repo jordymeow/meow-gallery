@@ -6,8 +6,8 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 
 	public $min_columns = 3;
 	public $max_columns = 4;
-	public $layouts = [];
-	public $layout = [];
+	public $layouts = array();
+	public $layout = array();
 
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		parent::__construct( $atts, $infinite, $isPreview );
@@ -37,7 +37,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	function permutations( $items, $perms = array() ) {
 		$back = array();
 		if ( empty( $items ) ) {
-			$back[] = join( ' ', $perms );
+			array_push( $back, join( ' ', $perms ) );
 			return $back;
 		}
 		for ( $i = count( $items ) - 1; $i >= 0; --$i ) {
