@@ -155,6 +155,10 @@ jQuery(document).ready(function($) {
 			'box': 'b',
 			'orientation': 'portrait'
 		},
+		'iiioo': {
+			'box': 'a',
+			'orientation': 'portrait'
+		},
 		'iiooi': {
 			'box': 'a',
 			'orientation': 'portrait'

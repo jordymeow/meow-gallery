@@ -50,6 +50,8 @@ class Meow_Gallery_Run {
 			$attr['sizes'] = '25vw';
 		else if ($this->gallery_layout === 'cascade')
 			$attr['sizes'] = '75vw';
+		else if ($this->gallery_layout === 'justified')
+			$attr['sizes'] = '25vw';
 		return $attr;
 	}
 
