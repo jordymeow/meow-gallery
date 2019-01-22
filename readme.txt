@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.2.5
+Stable tag: 3.2.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,7 +26,8 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.2.5 =
+= 3.2.6 =
+* Add: New filters (https://meowapps.com/meow-gallery-tutorial/#Customize_the_Meow_Gallery).
 * Fix: Tiles layout issue.
 
 = 3.2.4 =

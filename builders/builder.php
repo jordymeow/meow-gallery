@@ -60,16 +60,24 @@ abstract class Meow_Gallery_Generator {
 
 	function build_next_cell( $id, $data ) {
 		$src = $this->updir . $data['meta']['file'];
-		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'] );
+		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'], $id );
 		$caption = $this->captions ? $data['caption'] : '';
+
+		// Gets everything:
 		$imgSrc = wp_get_attachment_image( $id, $this->size );
+
+		// Gets everything manually (this is not working for some reason):
+		// $img = get_the_post_thumbnail_url( $id );
+		// $img_srcset = wp_get_attachment_image_srcset( $id );
+		// $img_sizes = wp_get_attachment_image_sizes( $id );
+		// $imgSrc = '<img src="' . $img . '" srcset="' . esc_attr( $img_srcset ) . '" sizes="' . esc_attr( $img_sizes ) . '" />';
+
 		$linkUrl = null;
 		if ( $this->link === 'attachment' )
 			$linkUrl = get_permalink( (int)$id );
 		else if ( $this->link === 'media' )
 			$linkUrl = $src;
 		$isPreview = $this->isPreview;
-		//$imgSrc = wp_image_add_srcset_and_sizes( $imgSrc, $data['meta'], $id );
 		ob_start();
 		include dirname( __FILE__ ) . '/cell.tpl.php';
 		$html = ob_get_clean();

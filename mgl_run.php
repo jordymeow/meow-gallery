@@ -42,16 +42,20 @@ class Meow_Gallery_Run {
 	function wp_get_attachment_image_attributes( $attr, $attachment, $size ) {
 		if (!$this->gallery_process)
 			return $attr;
-		if ($this->gallery_layout === 'tiles')
-			$attr['sizes'] = '25vw';
-		else if ($this->gallery_layout === 'masonry')
-			$attr['sizes'] = '25vw';
-		else if ($this->gallery_layout === 'square')
-			$attr['sizes'] = '25vw';
-		else if ($this->gallery_layout === 'cascade')
-			$attr['sizes'] = '75vw';
-		else if ($this->gallery_layout === 'justified')
-			$attr['sizes'] = '25vw';
+		$sizes = null;
+		if ( $this->gallery_layout === 'tiles' )
+			$sizes = '25vw';
+		else if ( $this->gallery_layout === 'masonry' )
+			$sizes = '25vw';
+		else if ( $this->gallery_layout === 'square' )
+			$sizes = '25vw';
+		else if ( $this->gallery_layout === 'cascade' )
+			$sizes = '75vw';
+		else if ( $this->gallery_layout === 'justified' )
+			$sizes = '(max-width: 800px) 80vw, 25vw';
+		$sizes = apply_filters( 'mgl_sizes', $sizes, $this->gallery_layout, $attachment, $attr );
+		if ( !empty( $sizes ) )
+			$attr['sizes'] = $sizes;
 		return $attr;
 	}
 
