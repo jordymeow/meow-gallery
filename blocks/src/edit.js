@@ -158,11 +158,11 @@ class GalleryEdit extends Component {
 			console.log('Meow Gallery: mglCalculateRow does not exist.');
 	}
 
-	refreshSlider() {
-		if (window.mglInitSliders)
-			mglInitSliders();
+	refreshCarousel() {
+		if (window.mglInitCarousels)
+			mglInitCarousels();
 		else
-			console.log('Meow Gallery: mglInitSliders does not exist.');
+			console.log('Meow Gallery: mglInitCarousels does not exist.');
 	}
 
 	componentDidMount() {
@@ -170,15 +170,15 @@ class GalleryEdit extends Component {
 			this.props.setAttributes({ layout: 'tiles' });
 		if (this.props.attributes.layout === 'tiles')
 			this.refreshTiles();
-		if (this.props.attributes.layout === 'slider')
-			this.refreshSlider();
+		if (this.props.attributes.layout === 'carousel')
+			this.refreshCarousel();
 	}
 
 	componentDidUpdate( prevProps ) {
 		if (this.props.attributes.layout === 'tiles')
 			this.refreshTiles();
-		if (this.props.attributes.layout === 'slider')
-			this.refreshSlider();
+		if (this.props.attributes.layout === 'carousel')
+			this.refreshCarousel();
 	}
 
 	render() {
@@ -256,7 +256,7 @@ class GalleryEdit extends Component {
 								{ value: 'justified', label: 'Justified' },
 								{ value: 'square', label: 'Square' },
 								{ value: 'cascade', label: 'Cascade' },
-								{ value: 'slider', label: 'Slider' }
+								{ value: 'carousel', label: 'Carousel' }
 							]}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&

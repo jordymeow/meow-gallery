@@ -7,7 +7,6 @@ class Meow_Gallery_Run {
 	public function __construct( $admin ) {
 		$this->admin = $admin;
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		//add_filter( 'shortcode_atts_gallery', array( $this, 'shortcode_atts_gallery' ), 50, 3 );
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 		add_shortcode( 'gallery', array( $this, 'gallery' ) );
 		add_shortcode( 'meow-gallery', array( $this, 'gallery' ) );
@@ -44,15 +43,15 @@ class Meow_Gallery_Run {
 			return $attr;
 		$sizes = null;
 		if ( $this->gallery_layout === 'tiles' )
-			$sizes = '25vw';
+			$sizes = '50vw';
 		else if ( $this->gallery_layout === 'masonry' )
-			$sizes = '25vw';
+			$sizes = '50vw';
 		else if ( $this->gallery_layout === 'square' )
-			$sizes = '25vw';
+			$sizes = '33vw';
 		else if ( $this->gallery_layout === 'cascade' )
-			$sizes = '75vw';
+			$sizes = '80vw';
 		else if ( $this->gallery_layout === 'justified' )
-			$sizes = '(max-width: 800px) 80vw, 25vw';
+			$sizes = '(max-width: 800px) 80vw, 50vw';
 		$sizes = apply_filters( 'mgl_sizes', $sizes, $this->gallery_layout, $attachment, $attr );
 		if ( !empty( $sizes ) )
 			$attr['sizes'] = $sizes;

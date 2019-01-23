@@ -1,165 +1,122 @@
 // main: style-pro.less
 
-.mgl-slider {
+.mgl-carousel {
+ 	position: relative;
 	display: block !important;
-}
+	margin-bottom: 40px; // for the dots
 
-.mgl-slider-preview {
-	position: relative;
-	width: 100%;
-	height: 600px;
-	margin-bottom: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	&.no-dots-nav {
+		margin-bottom: 0;
+	}
 
-	.mgl-slider-preview-image {
-		width: auto;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	.owl-stage {
+		display: -webkit-box;
+		display: -moz-box;
+		display: -ms-box;
+		display: box;
+	}
 
-		img {
-			max-width: 100%;
-			max-height: 100%;
-			width: auto;
+	&.loaded {
+
+		.mgl-item {
+			opacity: 1;
 		}
 	}
 
-	.chevron::before {
-		border-style: solid;
-		border-width: 1px 1px 0 0;
-		border-color: white;
-		content: '';
-		display: inline-block;
-		height: 30px;
-		position: relative;
-		transform: rotate(-45deg);
-		width: 30px;
-	}
-	.chevron::after {
-		border-style: solid;
-		border-width: 1px 1px 0 0;
-		border-color: black;
-		content: '';
-		display: inline-block;
-		height: 30px;
-		position: relative;
-		transform: rotate(-45deg);
-		width: 30px;
+	.mgl-item {
+    margin: 0;
+		padding: 0;
+		opacity: 0;
+
+		.mgl-icon {
+		
+			.mgl-img-container {
+
+				img {	
+					height: 100%;
+					width: auto !important;
+				}
+			}
+		}
+
+		@media screen and (max-width: 660px) {
+			.mgl-icon {
+			
+				.mgl-img-container {
+					height: 100%;
+					display: flex;
+					align-items: center;
+					
+					img {	
+						height: auto;
+						width: 100%;
+					}
+				}
+			}
+		}
+
+		figcaption {
+			display: block;
+			position: absolute;
+			left: 0;
+			opacity: 0;
+			z-index: 9;
+			width: 100%;
+			bottom: 0;
+			padding: 5px;
+			box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+
+			p {
+				margin: 0;
+				padding: 10px;
+				box-sizing: border-box;
+			}
+		}
+
+		&:hover figcaption {
+			bottom: 0;
+			opacity: 1;
+			transition: .3s;
+		}
 	}
 
-	.chevron.left:before, .chevron.left:after {
-		transform: rotate(-135deg);
-	}
-
-	.chevron.left:after {
-		margin-left: -28px;
-	}
-
-	.chevron.right:before, .chevron.right:after {
-		transform: rotate(45deg);
-	}
-
-	.chevron.right:after {
-		margin-left: -28px;
-	}
-
-	.nav-prev {
+	.owl-dots {
 		position: absolute;
-		left: 0;
-		height: 100%;
-		width: 70px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		width: 100%;
 	}
 
-	.nav-next {
+	.customNextBtn, .customPrevBtn {
 		position: absolute;
-		right: 0;
-		height: 100%;
-		width: 70px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
+		top: 50%;
+		transform: translateY(-50%);
+		width: 40px;
+		height: 60px;
+		background: rgba(255,255,255,.9);
+		border-radius: 8px;
+		line-height: 60px;
+		text-align: center;
+		opacity: 0.8;
+		cursor: pointer;
 
-	.nav-prev, .nav-next {
-		opacity: .5;
+		svg {
+			display: inline-block;
+			height: 40px;
+			margin-top: 10px;
+			line-height: 60px;
+		}
 
 		&:hover {
 			opacity: 1;
 		}
 	}
-}
 
-.mgl-slider {
-	position: relative;
-	min-width: 100%;
-	white-space: nowrap;
-	-webkit-overflow-scrolling: touch;
-	font-size: 0;
-	padding-bottom: 10px;
-	text-align: center;
-	overflow: hidden;
-	//border: 2px solid blue;
-
-	.mgl-item {
-		display: inline-block;
-		height: 100%;
-		margin: 0;
-		margin-right: 10px;
-		opacity: .4;
-		filter: grayscale(1);
-
-		.mgl-icon {
-			height: 100%;
-
-			img {
-				height: 100%;
-				width: auto;
-			}
-		}
-
-		&:last-of-type {
-			margin: 0;
-		}
-
-		&.active {
-			opacity: 1;
-			filter: grayscale(0);
-			transition: .3s;
-		}
-
-		figcaption {
-			display: none;
-		}
+	.customPrevBtn {
+		left: 20px;
 	}
 
-	.mgl-slider-navigation {
-		height: 90px;
-		max-width: 100%;
-		overflow-x: auto;
-		overflow-y: hidden;
-		padding-bottom: 5px;
-	}
-}
-
-.mgl-slider-navigation::-webkit-scrollbar {
-	height: 8px;
-}
-
-.mgl-slider-navigation::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.mgl-slider-navigation::-webkit-scrollbar-thumb {
-	background: #666;
-	border-radius: 10px;
-
-	&:hover {
-		background: #333;
+	.customNextBtn {
+		right: 20px;
 	}
 }

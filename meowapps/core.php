@@ -40,13 +40,31 @@ class MeowAppsPro_MGL_Core {
 					filemtime( plugin_dir_path( __FILE__ ) . 'js/vanilla-atts-infinite.js' ), false );
 			}
 		}
-		require_once dirname( __FILE__ ) . '/builders/slider.php';
+		require_once dirname( __FILE__ ) . '/builders/carousel.php';
+		// Owl Carousel main CSS
+		$physical_file = plugin_dir_path( __FILE__ ) . 'owlcarousel.css';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_style( 'owl-carousel-css', plugin_dir_url( __FILE__ ) . 'owlcarousel.css', null, $version );
+		// Owl Carousel theme CSS
+		$physical_file = plugin_dir_path( __FILE__ ) . 'owltheme.default.css';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_style( 'owl-theme-css', plugin_dir_url( __FILE__ ) . 'owltheme.default.css', null, $version );
+		// Owl Carousel main JS
+		$physical_file = plugin_dir_path( __FILE__ ) . '/js/assets/owlcarousel.min.js';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_script( 'owl-carousel-js', plugins_url( '/js/assets/owlcarousel.min.js', __FILE__ ), array( 'jquery' ), $version, false );
+		// ImagesLoaded
+		$physical_file = plugin_dir_path( __FILE__ ) . '/js/assets/imagesloaded.min.js';
+		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
+		wp_enqueue_script( 'imagesloaded-js', plugins_url( '/js/assets/imagesloaded.min.js', __FILE__ ), array( 'jquery' ), $version, false );
+		// Custom Pro CSS
 		$physical_file = plugin_dir_path( __FILE__ ) . 'style-pro.min.css';
 		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
-		wp_enqueue_style( 'mgl-slider-css', plugin_dir_url( __FILE__ ) . 'style-pro.min.css', null, $version );
-		$physical_file = plugin_dir_path( __FILE__ ) . '/js/slider.js';
+		wp_enqueue_style( 'mgl-carousel-css', plugin_dir_url( __FILE__ ) . 'style-pro.min.css', null, $version );
+		// Custom Pro JS
+		$physical_file = plugin_dir_path( __FILE__ ) . '/js/carousel.js';
 		$version = file_exists( $physical_file ) ? $physical_file : $mgl_version;
-		wp_enqueue_script( 'mgl-slider-js', plugins_url( '/js/slider.js', __FILE__ ), array( 'jquery' ), $version, false );
+		wp_enqueue_script( 'mgl-carousel-js', plugins_url( '/js/carousel.js', __FILE__ ), array( 'jquery', 'owl-carousel-js', 'imagesloaded-js' ), $version, false );
 	}
 
 	function is_rest() {
@@ -54,7 +72,7 @@ class MeowAppsPro_MGL_Core {
 	}
 
 	function gallery_written( $html, $layout ) {
-		if ( $layout == 'masonry' || $layout == 'slider' )
+		if ( $layout == 'masonry' || $layout == 'carousel' )
 			return $html;
 		$xml = simplexml_load_string( $html );
 		$subxml = $xml->xpath( '//img' );

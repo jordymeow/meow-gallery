@@ -104,20 +104,24 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			'mgl_settings_cascade-menu', 'mgl_cascade' );
 		register_setting( 'mgl_settings_cascade', 'mgl_cascade_gutter' );
 
-		// Slider
-		add_settings_section( 'mgl_slider', null, null, 'mgl_settings_slider-menu' );
-		add_settings_field( 'mgl_slider_image_height', __( "Image Height", 'meow-gallery' ),
-			array( $this, 'admin_slider_image_height_callback' ),
-			'mgl_settings_slider-menu', 'mgl_slider' );
-		register_setting( 'mgl_settings_slider', 'mgl_slider_image_height' );
-		add_settings_field( 'mgl_slider_nav_enabled', __( "Navigation", 'meow-gallery' ),
-			array( $this, 'admin_slider_nav_enabled_callback' ),
-			'mgl_settings_slider-menu', 'mgl_slider' );
-		register_setting( 'mgl_settings_slider', 'mgl_slider_nav_enabled' );
-		add_settings_field( 'mgl_slider_nav_height', __( "Navigation Height", 'meow-gallery' ),
-			array( $this, 'admin_slider_nav_height_callback' ),
-			'mgl_settings_slider-menu', 'mgl_slider' );
-		register_setting( 'mgl_settings_slider', 'mgl_slider_nav_height' );
+		// Carousel
+		add_settings_section( 'mgl_carousel', null, null, 'mgl_settings_carousel-menu' );
+		add_settings_field( 'mgl_carousel_gutter', __( "Gutter", 'meow-gallery' ),
+			array( $this, 'admin_carousel_gutter_callback' ),
+			'mgl_settings_carousel-menu', 'mgl_carousel' );
+		register_setting( 'mgl_settings_carousel', 'mgl_carousel_gutter' );
+		add_settings_field( 'mgl_carousel_image_height', __( "Height", 'meow-gallery' ),
+			array( $this, 'admin_carousel_image_height_callback' ),
+			'mgl_settings_carousel-menu', 'mgl_carousel' );
+		register_setting( 'mgl_settings_carousel', 'mgl_carousel_image_height' );
+		add_settings_field( 'mgl_carousel_arrow_nav_enabled', __( "Arrow Navigation", 'meow-gallery' ),
+			array( $this, 'admin_carousel_arrow_nav_enabled_callback' ),
+			'mgl_settings_carousel-menu', 'mgl_carousel' );
+		register_setting( 'mgl_settings_carousel', 'mgl_carousel_arrow_nav_enabled' );
+		add_settings_field( 'mgl_carousel_dot_nav_enabled', __( "Dot Navigation", 'meow-gallery' ),
+			array( $this, 'admin_carousel_dot_nav_enabled_callback' ),
+			'mgl_settings_carousel-menu', 'mgl_carousel' );
+		register_setting( 'mgl_settings_carousel', 'mgl_carousel_dot_nav_enabled' );
 	}
 
 	function admin_settings() {
@@ -207,12 +211,12 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 								</form>
 							</div>
 
-							<input name="tabs" type="radio" id="mgl-tab-slider" class="meow-tabs-input"/>
-							<label for="mgl-tab-slider" class="meow-tabs-label">Slider</label>
+							<input name="tabs" type="radio" id="mgl-tab-carousel" class="meow-tabs-input"/>
+							<label for="mgl-tab-carousel" class="meow-tabs-label">carousel</label>
 							<div class="inside">
 								<form method="post" action="options.php">
-									<?php settings_fields( 'mgl_settings_slider' ); ?>
-									<?php do_settings_sections( 'mgl_settings_slider-menu' ); ?>
+									<?php settings_fields( 'mgl_settings_carousel' ); ?>
+									<?php do_settings_sections( 'mgl_settings_carousel-menu' ); ?>
 									<?php submit_button(); ?>
 								</form>
 							</div>
@@ -277,23 +281,23 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				'desc' => __( "Instagram-like, all squares.", 'meow-gallery' ) ),
 			'cascade' => array( 'name' => __( 'Cascade', 'meow-gallery' ),
 				'desc' => __( "Portraits are coupled together.", 'meow-gallery' ) ),
-			'slider' => array( 'name' => __( 'Slider (Pro)', 'meow-gallery' ),
-				'desc' => "Slider, carousel-like, one by one." ),
+			'carousel' => array( 'name' => __( 'Carousel (Pro)', 'meow-gallery' ),
+				'desc' => "Pretty swipeable carousel." ),
 			'none' => array( 'name' => __( 'None', 'meow-gallery' ),
 				'desc' => "Only active if a layout is explicitely set." )
 		);
 		$html = '';
 		foreach ( $layouts as $key => $arg )
-			$html .= '<div style="padding-bottom: 10px; margin-bottom: 8px;">' . ( $key !== 'none' ? ( '<img width="50" style="float: right; margin-top: -6px;"
+			$html .= '<div style="padding-bottom: 10px; margin-bottom: 8px;">' . ( $key !== 'none' ? ( '<img width="38" style="float: right; margin-top: -2px;"
 				src="' . plugin_dir_url(__FILE__) . 'img/layout-' . $key . '.png" />' ) :
 				'<div style=\'margin-right: 20px; width: 40px; float: right; height: 50px;\'>
 				</div>' ) . '<input type="radio" class="radio" id="mgl_layout" name="mgl_layout" value="' . $key . '"' .
-				disabled( $key !== 'slider' || $this->is_registered(), false, false ) .
+				disabled( $key !== 'carousel' || $this->is_registered(), false, false ) .
 				checked( $key, get_option( 'mgl_layout', 'tiles' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				( empty( $arg ) ? '' : '<br/><small>' . $arg['desc'] . '</small>' ) .
 				'</div><div style="clear: both;">';
-		$html .= '<small>' . __( 'Can be overriden by using an attribute <i>layout</i> in the shortcode of the gallery, like: [gallery layout=\'masonry\']. This value can be: tiles, justified, masonry, or square.', 'meow-gallery' ) . '<small>';
+		$html .= '<small>' . __( 'Can be overriden by using the attribute <b>layout</b> in the shortcode of the gallery, like: [gallery layout=\'masonry\']. This value can be: tiles, masonry, justified, square, cascade or carousel.', 'meow-gallery' ) . '<small>';
 		echo $html;
 	}
 
@@ -386,24 +390,30 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		echo $html;
 	}
 
-	function admin_slider_image_height_callback( $args ) {
-		$value = get_option( 'mgl_slider_image_height', 500 );
-		$html = '<input type="number" style="width: 100%;" id="mgl_slider_image_height" name="mgl_slider_image_height" value="' . $value . '" />';
-		$html .= '<br /><span class="description">' . __( "Height of the displayed image.", 'meow-gallery' ) . '</span>';
+	function admin_carousel_gutter_callback( $args ) {
+		$value = get_option( 'mgl_carousel_gutter', 5 );
+		$html = '<input type="number" style="width: 100%;" id="mgl_carousel_gutter" name="mgl_carousel_gutter" value="' . $value . '" />';
+		$html .= '<br /><span class="description">' . __( "Space between the photos (in pixels).", 'meow-gallery' ) . '</span>';
 		echo $html;
 	}
 
-	function admin_slider_nav_enabled_callback( $args ) {
-		$html = '<input type="checkbox" id="mgl_slider_nav_enabled" name="mgl_slider_nav_enabled" value="1" ' .
-			checked( 1, get_option( 'mgl_slider_nav_enabled', true ), false ) . '/>';
+	function admin_carousel_image_height_callback( $args ) {
+		$value = get_option( 'mgl_carousel_image_height', 500 );
+		$html = '<input type="number" style="width: 100%;" id="mgl_carousel_image_height" name="mgl_carousel_image_height" value="' . $value . '" />';
+		echo $html;
+	}
+
+	function admin_carousel_arrow_nav_enabled_callback( $args ) {
+		$html = '<input type="checkbox" id="mgl_carousel_arrow_nav_enabled" name="mgl_carousel_arrow_nav_enabled" value="1" ' .
+			checked( 1, get_option( 'mgl_carousel_arrow_nav_enabled', true ), false ) . '/>';
 		$html .= '<label>' . __( 'Enabled', 'meow-gallery' ) . '</label>';
 		echo $html;
 	}
 
-	function admin_slider_nav_height_callback( $args ) {
-		$value = get_option( 'mgl_slider_nav_height', 80 );
-		$html = '<input type="number" style="width: 100%;" id="mgl_slider_nav_height" name="mgl_slider_nav_height" value="' . $value . '" />';
-		$html .= '<br /><span class="description">' . __( "Ideal height of the navigation bar.", 'meow-gallery' ) . '</span>';
+	function admin_carousel_dot_nav_enabled_callback( $args ) {
+		$html = '<input type="checkbox" id="mgl_carousel_dot_nav_enabled" name="mgl_carousel_dot_nav_enabled" value="1" ' .
+			checked( 1, get_option( 'mgl_carousel_dot_nav_enabled', false ), false ) . '/>';
+		$html .= '<label>' . __( 'Enabled', 'meow-gallery' ) . '</label>';
 		echo $html;
 	}
 
