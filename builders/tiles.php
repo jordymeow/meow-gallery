@@ -7,10 +7,10 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	public $min_columns = 3;
 	public $max_columns = 4;
 	public $layouts = array();
-	public $layout = array();
 
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		parent::__construct( $atts, $infinite, $isPreview );
+		$this->layout = 'tiles';
 	}
 
 	function prepare_layouts() {

@@ -5,6 +5,7 @@ abstract class Meow_Gallery_Generator {
 	public $id = null;
 	public $layout = 'none';
 	public $class_id = 'mgl-gallery-none';
+	public $img_class = '';
 	public $size = 'large';
 	public $align = null;
 	public $ids = array();
@@ -55,7 +56,7 @@ abstract class Meow_Gallery_Generator {
 			if ( isset( $this->data[$id] ) )
 				array_push( $cleanIds, $id );
 		}
-		$this->ids = $cleanIds;
+		$this->ids = apply_filters( 'mgl_sort', $cleanIds, $this->data, $this->layout, $this->atts );
 	}
 
 	function build_next_cell( $id, $data ) {
@@ -64,7 +65,7 @@ abstract class Meow_Gallery_Generator {
 		$caption = $this->captions ? $data['caption'] : '';
 
 		// Gets everything:
-		$imgSrc = wp_get_attachment_image( $id, $this->size );
+		$imgSrc = wp_get_attachment_image( $id, $this->size, false, $this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : null );
 
 		// Gets everything manually (this is not working for some reason):
 		// $img = get_the_post_thumbnail_url( $id );

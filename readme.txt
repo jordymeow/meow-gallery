@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.2.9
+Stable tag: 3.3.0
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,6 +26,12 @@ Nothing yet.
 
 == Changelog ==
 
+= 3.3.0 =
+* Add: Filter mgl_sort to build your own customized order. Check more about this [here](https://meowapps.com/meow-gallery-tutorial/#Order_Sort).
+* Fix: JetPack Lazy.
+* Fix: Visual glitches.
+* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
+
 = 3.2.9 =
 * Update: The Slider is now the Carousel (for Pro).
 * Update: Larger sizes to avoid pixelization (if any issue, check the filters).
@@ -34,13 +40,7 @@ Nothing yet.
 
 = 3.2.4 =
 * Fix: Compatibility with PHP... 5! :) (the plugin was made for PHP 7+).
-* Note: Happy New Year everyone! This year, we will try to make everything easier, better and faster! We want you to concentrate on the content of your website. And if you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously.
-
-= 3.2.2 =
 * Fix: An invisible character was breaking the gallery attributes.
-
-= 3.2.0 =
-* Update: Little fixes.
 * Add: Added animations.
 
 = 3.1.0 =
@@ -56,8 +56,6 @@ Nothing yet.
 
 = 2.0.9 =
 * Fix: For Gutenberg last update compatibility.
-
-= 2.0.7 =
 * Fix: Convert special characters in captions to HTML entities to avoid breaking standard HTML.
 * Fix: Compatibility issue with WP/LR Sync.
 * Update: Randomize identical layouts for Tiles.
@@ -75,19 +73,12 @@ Nothing yet.
 
 = 1.1.2 =
 * Fix: Gutenberg compatibility.
-
-= 1.1.0 =
 * Fix: Issue with Infinite.
-
-= 1.0.6 =
 * Fix: Compatibility with PHP prior to 5.6.3.
 * Update: Support for WP 4.9.
 
 = 1.0.4 =
-* Fix: For older versions of PHP.
 * Add: i18n.
-
-= 1.0.2 =
 * Fix: Better Justified layout.
 * Fix: W3C validation.
 * Fix: Compatibility with prehistoric themes.
