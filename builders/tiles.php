@@ -115,7 +115,7 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		}
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
-		return $this->inline_css() . $out;
+		return '<div class="mgl-tiles-container">' . $this->inline_css() . $out . '</div>';
 	}
 
 }

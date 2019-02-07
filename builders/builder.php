@@ -101,15 +101,13 @@ abstract class Meow_Gallery_Generator {
 	function build( $idsStr ) {
 		$out = '<div id="' . $this->class_id . '" class="' . $this->build_classes() . ' mgl-' . $this->layout . '">';
 		$this->prepare_data( $idsStr );
-		//add_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 		while ( count( $this->ids ) > 0 ) {
 			$id = array_pop( $this->ids );
 			$out .= $this->build_next_cell( $id, $this->data[$id] );
 		}
-		// remove_filter( 'wp_calculate_image_srcset_meta', '__return_null' );
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
-		return $this->inline_css() . $out;
+		return '<div class="mgl-' . $this->layout . '-container">' . $this->inline_css() . $out . '</div>';
 	}
 
 }
