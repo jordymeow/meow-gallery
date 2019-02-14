@@ -52,7 +52,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		register_setting( 'mgl_settings_optimization', 'mgl_infinite' );
 
 		// Preview in gutenberg need the CSS and JS
-		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.min.css', null, $mgl_version );
+		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.css', null, $mgl_version );
 		wp_enqueue_style( 'mgl-css' );
 		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $mgl_version, false );
 
