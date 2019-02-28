@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.3.3
+Stable tag: 3.3.4
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,20 +26,17 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.3.3 =
+= 3.3.4 =
+* Fix: Added a new class to the images (might be important for other plugins).
 * Fix: A few CSS glitches were corrected.
-
-= 3.3.2 =
 * Add: Container for the gallery and its inline CSS, to avoid breaking DOM parsers.
-
-= 3.3.1 =
 * Fix: Default CSS behavior/style is missing for some theme and was affecting the Justified layout.
+* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
 = 3.3.0 =
 * Add: Filter mgl_sort to build your own customized order. Check more about this [here](https://meowapps.com/meow-gallery-tutorial/#Order_Sort).
 * Fix: JetPack Lazy.
 * Fix: Visual glitches.
-* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
 = 3.2.9 =
 * Update: The Slider is now the Carousel (for Pro).

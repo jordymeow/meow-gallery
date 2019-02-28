@@ -23,6 +23,7 @@ abstract class Meow_Gallery_Generator {
 		$wpUploadDir = wp_upload_dir();
 		$this->id = uniqid();
 		$this->size = isset( $atts['size'] ) ? $atts['size'] : $this->size;
+		$this->size =  apply_filters( 'mgl_media_size', $this->size );
 		$this->infinite = $infinite;
 		$this->atts = $atts;
 		$this->link = isset( $atts['link'] ) ? $atts['link'] : null;
@@ -65,13 +66,8 @@ abstract class Meow_Gallery_Generator {
 		$caption = $this->captions ? $data['caption'] : '';
 
 		// Gets everything:
-		$imgSrc = wp_get_attachment_image( $id, $this->size, false, $this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : null );
-
-		// Gets everything manually (this is not working for some reason):
-		// $img = get_the_post_thumbnail_url( $id );
-		// $img_srcset = wp_get_attachment_image_srcset( $id );
-		// $img_sizes = wp_get_attachment_image_sizes( $id );
-		// $imgSrc = '<img src="' . $img . '" srcset="' . esc_attr( $img_srcset ) . '" sizes="' . esc_attr( $img_sizes ) . '" />';
+		$imgSrc = wp_get_attachment_image( $id, $this->size, false,
+			$this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : array( 'class' => 'wp-image-' . $id ) );
 
 		$linkUrl = null;
 		if ( $this->link === 'attachment' )

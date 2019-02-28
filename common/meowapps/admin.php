@@ -170,7 +170,8 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 
 		function admin_serialkey_callback( $args ) {
 			$value = get_option( $this->prefix . '_pro_serial', null );
-			$html = '<input type="text" id="' . $this->prefix . '_pro_serial" name="' .
+			$hide = get_option( 'meowapps_hide_license', false );
+			$html = '<input style="width: 100%;" type="' . ( $hide ? 'password' : 'text' ) . '" id="' . $this->prefix . '_pro_serial" name="' .
 				$this->prefix . '_pro_serial" value="' . $value . '" />';
 			echo $html;
 		}
