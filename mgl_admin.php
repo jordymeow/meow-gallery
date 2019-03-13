@@ -49,6 +49,10 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		add_settings_field( 'mgl_infinite', __ ( "Infinite & Lazy", 'meow-gallery' ),
 			array( $this, 'admin_infinite_callback' ),
 			'mgl_settings_optimization-menu', 'mgl_optimization' );
+		add_settings_field( 'mgl_image_size', __ ( "Image Size", 'meow-gallery' ),
+			array( $this, 'admin_image_size_callback' ),
+			'mgl_settings_optimization-menu', 'mgl_optimization' );
+		register_setting( 'mgl_settings_optimization', 'mgl_image_size' );
 		register_setting( 'mgl_settings_optimization', 'mgl_infinite' );
 
 		// Preview in gutenberg need the CSS and JS
@@ -301,17 +305,23 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 		echo $html;
 	}
 
-	function admin_default_size_callback( $args ) {
+	function admin_image_size_callback( $args ) {
 		$layouts = array(
+			'srcset' => array( 'name' => __( 'Responsive Images (src-set)', 'meow-gallery' ), 'desc' => "" ),
 			'thumbnail' => array( 'name' => __( 'Thumbnail', 'meow-gallery' ), 'desc' => "" ),
 			'medium' => array( 'name' => __( 'Medium', 'meow-gallery' ), 'desc' => "" ),
 			'large' => array( 'name' => __( 'Large', 'meow-gallery' ), 'desc' => "" ),
 			'full' => array( 'name' => __( 'Full', 'meow-gallery' ), 'desc' => "" )
 		);
 		$html = '';
+		$image_size = get_option( 'mgl_image_size', 'srcset' );
+		if ( empty( $image_size ) ) {
+			update_option( 'mgl_image_size', 'srcset' );
+			$image_size = 'srcset';
+		}
 		foreach ( $layouts as $key => $arg )
-			$html .= '<input type="radio" class="radio" id="mgl_default_size" name="mgl_default_size" value="' . $key . '"' .
-				checked( $key, get_option( 'mgl_default_size', 'thumbnail' ), false ) . ' > '  .
+			$html .= '<input type="radio" class="radio" id="mgl_image_size" name="mgl_image_size" value="' . $key . '"' .
+				checked( $key, $image_size, false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) .
 				'<br />';
 		echo $html;

@@ -30,7 +30,7 @@ class Meow_Carousel_Generator extends Meow_Gallery_Generator {
 			$this->atts['dot_nav_enabled'] : get_option( 'mgl_carousel_dot_nav_enabled', true );
 		$attributes = "data-mgl-gutter=\"${gutter}\" data-mgl-arrow_nav=\"${arrow_nav_enabled}\" data-mgl-dot_nav=\"${dot_nav_enabled}\"";
 		$out = '<div id="' . $this->class_id . '"  class="mgl-gallery' . $classAlign . ' mgl-' . $this->layout
-			. ' owl-carousel owl-theme" ' . $attributes . '>';
+			. ' mgl-owl-carousel mgl-owl-theme" ' . $attributes . '>';
 		$this->prepare_data( $idsStr );
 		while ( count( $this->ids ) > 0 ) {
 			$id = array_pop( $this->ids );

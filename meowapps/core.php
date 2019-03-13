@@ -44,15 +44,15 @@ class MeowAppsPro_MGL_Core {
 		// Owl Carousel main CSS
 		$physical_file = plugin_dir_path( __FILE__ ) . 'owlcarousel.css';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
-		wp_enqueue_style( 'owl-carousel-css', plugin_dir_url( __FILE__ ) . 'owlcarousel.css', null, $version );
+		wp_enqueue_style( 'mgl-owl-carousel-css', plugin_dir_url( __FILE__ ) . 'owlcarousel.css', null, $version );
 		// Owl Carousel theme CSS
 		$physical_file = plugin_dir_path( __FILE__ ) . 'owltheme.default.css';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
-		wp_enqueue_style( 'owl-theme-css', plugin_dir_url( __FILE__ ) . 'owltheme.default.css', null, $version );
+		wp_enqueue_style( 'mgl-owl-theme-css', plugin_dir_url( __FILE__ ) . 'owltheme.default.css', null, $version );
 		// Owl Carousel main JS
 		$physical_file = plugin_dir_path( __FILE__ ) . '/js/assets/owlcarousel.min.js';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
-		wp_enqueue_script( 'owl-carousel-js', plugins_url( '/js/assets/owlcarousel.min.js', __FILE__ ), array( 'jquery' ), $version, false );
+		wp_enqueue_script( 'mgl-owl-carousel-js', plugins_url( '/js/assets/owlcarousel.min.js', __FILE__ ), array( 'jquery' ), $version, false );
 		// ImagesLoaded
 		$physical_file = plugin_dir_path( __FILE__ ) . '/js/assets/imagesloaded.min.js';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
@@ -64,7 +64,7 @@ class MeowAppsPro_MGL_Core {
 		// Custom Pro JS
 		$physical_file = plugin_dir_path( __FILE__ ) . '/js/carousel.js';
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
-		wp_enqueue_script( 'mgl-carousel-js', plugins_url( '/js/carousel.js', __FILE__ ), array( 'jquery', 'owl-carousel-js', 'imagesloaded-js' ), $version, false );
+		wp_enqueue_script( 'mgl-carousel-js', plugins_url( '/js/carousel.js', __FILE__ ), array( 'jquery', 'mgl-owl-carousel-js', 'imagesloaded-js' ), $version, false );
 	}
 
 	function is_rest() {

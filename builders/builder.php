@@ -65,15 +65,24 @@ abstract class Meow_Gallery_Generator {
 		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'], $id );
 		$caption = $this->captions ? $data['caption'] : '';
 
-		// Gets everything:
-		$imgSrc = wp_get_attachment_image( $id, $this->size, false,
-			$this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : array( 'class' => 'wp-image-' . $id ) );
+		$image_size = get_option( 'mgl_image_size', 'srcset' );
+		$imgSrc = null;
+		if ( empty( $image_size ) || $image_size === 'srcset' ) {
+			$imgSrc = wp_get_attachment_image( $id, $this->size, false,
+				$this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : array( 'class' => 'wp-image-' . $id ) );
+		}
+		else {
+			$info = wp_get_attachment_image_src( $id, $image_size );
+			$imgSrc = '<img src="' . $info[0] . '" class="' .
+				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '">';
+		}
 
 		$linkUrl = null;
 		if ( $this->link === 'attachment' )
 			$linkUrl = get_permalink( (int)$id );
-		else if ( $this->link === 'media' )
+		else if ( $this->link === 'media' || $this->link === 'file' )
 			$linkUrl = $src;
+		$linkUrl = apply_filters( 'mgl_link', $linkUrl, (int)$id, $data );
 		$isPreview = $this->isPreview;
 		ob_start();
 		include dirname( __FILE__ ) . '/cell.tpl.php';
@@ -85,7 +94,7 @@ abstract class Meow_Gallery_Generator {
 		$classes = 'mgl-gallery';
 
 		// Align
-		$classes .= $this->align === 'wide' ? (' align' . $this->align) : '';
+		$classes .= $this->align ? (' align' . $this->align) : '';
 
 		// Animation
 		if ( $this->animation )

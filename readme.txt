@@ -3,7 +3,7 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.0
-Stable tag: 3.3.4
+Stable tag: 3.3.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -25,6 +25,10 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 3.3.6 =
+* Add: Possibility to switch between src-set and precise image sizes (thumbnail, medium, large, full).
+* Fix: Namespace conflict with carousel.
 
 = 3.3.4 =
 * Fix: Added a new class to the images (might be important for other plugins).
