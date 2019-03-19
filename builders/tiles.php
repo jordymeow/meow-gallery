@@ -71,8 +71,20 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		$ooo_v = 0;
 
 		while ( count( $this->ids ) > 0 ) {
+			$size = 5;
+
+			// This seems to handle all issues with the solitary photo
 			$howManyLeft = count( $this->ids );
-			$size = ( $howManyLeft == 5 || $howManyLeft == 6 ) ? 3 : 5;
+			if ( $howManyLeft >= 4 && $howManyLeft <= 6) {
+				$size = $howManyLeft - 2;
+				$currentIds = array_slice( $this->ids, $size * -1, $size, true );
+				$ideal = $this->get_layout( $currentIds );
+				if ( in_array( $ideal, $this->layouts ) )
+					$size = $howManyLeft - 2;
+				else
+					$size = $howManyLeft - 3;
+			}
+
 			$layout = null;
 			$ideal = "N/A";
 			while ( !$layout && $size > 0 ) {
