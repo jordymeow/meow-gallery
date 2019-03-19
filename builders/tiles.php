@@ -71,8 +71,8 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		$ooo_v = 0;
 
 		while ( count( $this->ids ) > 0 ) {
-
-			$size = count( $this->ids ) === 5 ? 3 : 5;
+			$howManyLeft = count( $this->ids );
+			$size = ( $howManyLeft == 5 || $howManyLeft == 6 ) ? 3 : 5;
 			$layout = null;
 			$ideal = "N/A";
 			while ( !$layout && $size > 0 ) {

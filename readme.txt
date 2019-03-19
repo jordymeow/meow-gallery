@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.1
 Requires PHP: 7.0
-Stable tag: 3.3.7
+Stable tag: 3.3.8
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,7 +27,7 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.3.7 =
+= 3.3.8 =
 * Update: Avoid having one photo left alone when using the Tiles Layout.
 
 = 3.3.6 =
