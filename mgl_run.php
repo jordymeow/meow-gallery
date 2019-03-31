@@ -106,7 +106,7 @@ class Meow_Gallery_Run {
 		$result = $gen->build( $images );
 		$this->gallery_process = false;
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
-		$result = apply_filters( 'post_gallery', $result, $atts );
+		$result = apply_filters( 'post_gallery', $result, $atts, null );
 
 		return $result;
 	}

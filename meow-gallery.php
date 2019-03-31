@@ -4,7 +4,7 @@ Plugin Name: Meow Gallery Pro
 Plugin URI: https://meowapps.com
 Bitbucket Plugin URI: https://bitbucket.org/meowapps/meow-gallery/
 Description: Gallery system built for photographers, by photographers.
-Version: 3.3.9
+Version: 3.4.0
 Author: Jordy Meow, Thomas Kim
 Author URI: https://meowapps.com
 Text Domain: meow-gallery
@@ -24,7 +24,7 @@ if ( class_exists( 'Meow_Gallery_Core' ) ) {
 }
 
 global $mgl_version;
-$mgl_version = '3.3.9';
+$mgl_version = '3.4.0';
 
 // Admin
 include "mgl_admin.php";
