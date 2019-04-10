@@ -75,6 +75,8 @@ class MeowAppsPro_MGL_Core {
 		if ( $layout == 'masonry' || $layout == 'carousel' )
 			return $html;
 		$xml = simplexml_load_string( $html );
+		if ( empty( $xml ) )
+			return $html;
 		$subxml = $xml->xpath( '//img' );
 		foreach ( $subxml as $s ) {
 			$s['mgl-src'] = $s['src'];

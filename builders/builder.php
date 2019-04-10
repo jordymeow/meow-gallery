@@ -74,7 +74,7 @@ abstract class Meow_Gallery_Generator {
 		else {
 			$info = wp_get_attachment_image_src( $id, $image_size );
 			$imgSrc = '<img src="' . $info[0] . '" class="' .
-				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '">';
+				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
 		}
 
 		$linkUrl = null;
