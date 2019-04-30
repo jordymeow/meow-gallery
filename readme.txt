@@ -2,9 +2,9 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
-Tested up to: 5.1
+Tested up to: 5.2
 Requires PHP: 7.0
-Stable tag: 3.4.1
+Stable tag: 3.4.2
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,7 +27,9 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.4.1 =
+= 3.4.2 =
+* Add: Support for custom classes.
+* Fix: CSS issue for caption in some cases.
 * Fix: There were issues when using Infinite with a specific Image Size.
 
 = 3.4.0 =

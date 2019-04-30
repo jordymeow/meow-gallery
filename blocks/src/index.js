@@ -12,6 +12,10 @@ const meowGalleryIcon = (<svg width="20" height="20" viewBox="0 0 20 20" fill="n
 </svg>);
 
 const blockAttributes = {
+	customClass: {
+		type: 'string',
+		default: ''
+	},
 	images: {
 		type: 'array',
 		default: []
@@ -67,7 +71,7 @@ const blockAttributes = {
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo } = attributes;
+	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
 	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
 	if (layout)
@@ -88,28 +92,36 @@ const buildCoreAttributes = function(attributes) {
 		attrs += `link="${linkTo}" `;
 	if (align)
 		attrs += `align="${align}" `;
+	if (customClass)
+		attrs += `custom-class="${customClass}" `;
 	return attrs.trim();
 };
 
 const buildShortcode = function(attributes) {
-	const { useDefaults, layout, rowHeight, columns } = attributes;
+	const { useDefaults, layout, rowHeight, columns, customClass } = attributes;
 	const attrs = buildCoreAttributes(attributes);
+	let shortcode = '';
 	if (useDefaults)
-		return `[gallery ${attrs}][/gallery]`;
-	if (layout === 'tiles')
-		return `[gallery ${attrs}][/gallery]`;
-	if (layout === 'cascade')
-		return `[gallery ${attrs}][/gallery]`;
-	if (layout === 'masonry')
-		return `[gallery ${attrs} columns="${columns}"][/gallery]`;
-	if (layout === 'justified')
-		return `[gallery ${attrs} row-height="${rowHeight}"][/gallery]`;
-	if (layout === 'square')
-		return `[gallery ${attrs} columns="${columns}"][/gallery]`;
-	if (layout === 'slider')
-		return `[gallery ${attrs}][/gallery]`;
-	alert("This layout is not handled. Check the Console Logs.");
-	console.log('Layout could not be handled.', attributes);
+		shortcode = `[gallery ${attrs}][/gallery]`;
+	else if (layout === 'tiles')
+		shortcode = `[gallery ${attrs}][/gallery]`;
+	else if (layout === 'cascade')
+		shortcode = `[gallery ${attrs}][/gallery]`;
+	else if (layout === 'masonry')
+		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
+	else if (layout === 'justified')
+		shortcode = `[gallery ${attrs} row-height="${rowHeight}"][/gallery]`;
+	else if (layout === 'square')
+		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
+	else if (layout === 'slider')
+		shortcode = `[gallery ${attrs}][/gallery]`;
+	else {
+		alert("This layout is not handled. Check the Console Logs.");
+		console.log('Layout could not be handled.', attributes);
+	}
+	// className={ classnames(className)}
+	console.log(attributes);
+	return shortcode;
 }
 
 registerBlockType( 'meow-gallery/gallery', {
@@ -120,6 +132,9 @@ registerBlockType( 'meow-gallery/gallery', {
 	keywords: [ __( 'images' ), __( 'photos' ), __( 'lightroom' ) ],
 	attributes: blockAttributes,
 	supports: {
+		className: false,
+		customClassName: false,
+		html: true,
 		align: [ 'full', 'wide' ],
 	},
 

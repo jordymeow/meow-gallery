@@ -13,7 +13,7 @@
 	}
 
 	@media screen and (max-width: 600px) {
-		figcaption {
+		<?= $class_id ?>  figcaption {
 			display: none;
 		}
 	}

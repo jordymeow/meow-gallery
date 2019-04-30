@@ -1,7 +1,7 @@
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
 const { IconButton, Icon, DropZone, FormFileUpload, PanelBody, RangeControl,
-	CheckboxControl, SelectControl, Toolbar, withNotices } = wp.components;
+	CheckboxControl, TextControl, SelectControl, Toolbar, withNotices } = wp.components;
 const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUpload } = wp.editor;
 
 const meowGalleryIcon = (<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -57,6 +57,10 @@ class GalleryEdit extends Component {
 	setCaptions( value ) {
 		this.props.setAttributes({ captions: value });
 		this.onRefresh({ captions: value });
+	}
+
+	setCustomClass( value ) {
+		this.props.setAttributes({ customClass: value });
 	}
 
 	setGutter( value ) {
@@ -185,7 +189,7 @@ class GalleryEdit extends Component {
 		const { isBusy } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation,
-			captions, wplrCollection, wplrFolder, linkTo } = attributes;
+			captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
 		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder;
 
@@ -302,6 +306,10 @@ class GalleryEdit extends Component {
 							label={ __( 'Use Default Settings' ) } checked={ useDefaults }
 							onChange={ value => this.setUseDefaults(value) }
 						/> }
+						<TextControl
+							label={ __( 'Custom CSS Classes' ) } value={customClass}
+							onChange={ value => this.setCustomClass(value) }
+						/>
 					</PanelBody>
 				</InspectorControls>
 				{ noticeUI }

@@ -7,6 +7,7 @@ abstract class Meow_Gallery_Generator {
 	public $class_id = 'mgl-gallery-none';
 	public $img_class = '';
 	public $size = 'large';
+	public $customClass = '';
 	public $align = null;
 	public $ids = array();
 	public $link = null;
@@ -26,6 +27,7 @@ abstract class Meow_Gallery_Generator {
 		$this->size =  apply_filters( 'mgl_media_size', $this->size );
 		$this->infinite = $infinite;
 		$this->atts = $atts;
+		$this->customClass = isset( $atts['custom-class'] ) ? $atts['custom-class'] : null;
 		$this->link = isset( $atts['link'] ) ? $atts['link'] : null;
 		$this->align = isset( $atts['align'] ) ? $atts['align'] : $this->align;
 		$this->isPreview = $isPreview;
@@ -92,6 +94,9 @@ abstract class Meow_Gallery_Generator {
 
 	function build_classes() {
 		$classes = 'mgl-gallery';
+
+		// Custom Class
+		$classes .= $this->customClass ? ( ' ' . $this->customClass ) : '';
 
 		// Align
 		$classes .= $this->align ? (' align' . $this->align) : '';

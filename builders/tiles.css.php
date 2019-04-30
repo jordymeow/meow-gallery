@@ -18,7 +18,7 @@
 			height: 100px;
 		}
 
-		figcaption {
+		<?= $class_id ?> figcaption {
 			display: none;
 		}
 	}
