@@ -65,7 +65,10 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 	}
 
 	function build( $idsStr ) {
-		$out = '<div id="' . $this->class_id . '" class="' . $this->build_classes() . ' mgl-tiles">';
+
+		// Generate gallery
+		$classes = $this->build_classes();
+		$out = "<div id='{$this->class_id}' class={$classes}>";
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
 		$ooo_v = 0;
@@ -127,7 +130,12 @@ class Meow_Tiles_Generator extends Meow_Gallery_Generator {
 		}
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
-		return '<div class="mgl-tiles-container">' . $this->inline_css() . $out . '</div>';
+
+		// Generate gallery container
+		$container_classes = $this->build_container_classes();
+		$inline_css = $this->inline_css();
+		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+		return $container;
 	}
 
 }

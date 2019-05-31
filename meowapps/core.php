@@ -80,7 +80,7 @@ class MeowAppsPro_MGL_Core {
 		$subxml = $xml->xpath( '//img' );
 		foreach ( $subxml as $s ) {
 			$s['mgl-src'] = $s['src'];
-			$s['src'] = plugin_dir_url( __FILE__ ) . '../img/1x1.png';
+			$s['src'] = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 			$s['mgl-srcset'] = $s['srcset'];
 			$s['srcset'] = '';
 			$s['class'] .= ' mgl-lazy';

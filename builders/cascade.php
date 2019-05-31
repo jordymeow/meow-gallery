@@ -5,10 +5,10 @@ require_once dirname( __FILE__ ) . '/builder.php';
 class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 
 	public $layouts = array();
-	public $layout = array();
 
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		parent::__construct( $atts, $infinite, $isPreview );
+		$this->layout = 'cascade';
 	}
 
 	function prepare_layouts() {
@@ -43,8 +43,10 @@ class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 	}
 
 	function build( $idsStr ) {
-		$classAlign = $this->align === 'wide' ? (' align' . $this->align) : '';
-		$out = '<div id="' . $this->class_id . '"  class="' . $this->build_classes() . ' mgl-cascade">';
+
+		// Generate gallery
+		$classes = $this->build_classes();
+		$out = "<div id='{$this->class_id}' class={$classes}>";
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
 		$ooo_v = 0;
@@ -87,7 +89,13 @@ class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 		}
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
-		return '<div class="mgl-cascade-container">' . $this->inline_css() . $out . '</div>';
+
+		// Generate gallery container
+		$container_classes = $this->build_container_classes();
+		$inline_css = $this->inline_css();
+		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+		
+		return $container;
 	}
 
 }

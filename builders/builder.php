@@ -92,24 +92,36 @@ abstract class Meow_Gallery_Generator {
 		return $html;
 	}
 
+	function build_container_classes() {
+		$classes = 'mgl-' . $this->layout . '-container';
+		
+		// Align
+		$classes .= $this->align ? (' align' . $this->align) : '';
+
+		return '"' . $classes . '"';;
+	}
+
 	function build_classes() {
 		$classes = 'mgl-gallery';
 
+		// Layout
+		$classes .= ' mgl-' . $this->layout;
+
 		// Custom Class
 		$classes .= $this->customClass ? ( ' ' . $this->customClass ) : '';
-
-		// Align
-		$classes .= $this->align ? (' align' . $this->align) : '';
 
 		// Animation
 		if ( $this->animation )
 			$classes .= ' is-animated ' . $this->animation;
 
-		return $classes;
+		return '"' . $classes . '"';
 	}
 
 	function build( $idsStr ) {
-		$out = '<div id="' . $this->class_id . '" class="' . $this->build_classes() . ' mgl-' . $this->layout . '">';
+
+		// Generate gallery
+		$classes = $this->build_classes();
+		$out = "<div id='{$this->class_id}' class={$classes}>";
 		$this->prepare_data( $idsStr );
 		while ( count( $this->ids ) > 0 ) {
 			$id = array_pop( $this->ids );
@@ -117,7 +129,13 @@ abstract class Meow_Gallery_Generator {
 		}
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
-		return '<div class="mgl-' . $this->layout . '-container">' . $this->inline_css() . $out . '</div>';
+
+		// Generate gallery container
+		$container_classes = $this->build_container_classes();
+		$inline_css = $this->inline_css();
+		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+
+		return $container;
 	}
 
 }
