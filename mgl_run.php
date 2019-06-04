@@ -78,7 +78,7 @@ class Meow_Gallery_Run {
 
 		//DEBUG: Display $atts
 		//error_log( print_r( $atts, 1 ) );
-
+		
 		// Layout
 		$layout = 'none';
 		if ( isset( $atts['layout'] ) && $atts['layout'] != 'default' )
@@ -88,17 +88,17 @@ class Meow_Gallery_Run {
 		else
 			$layout = get_option( 'mgl_layout', 'tiles' );
 
-		// Start the process of building the gallery
-		$this->gallery_process = true;
-		if ( $layout === 'none' ) {
-			error_log( "Meow Gallery: A gallery is set to default layout, but there is none (check your settings)." );
-			return "<p class='meow-error'><b>Meow Gallery:</b> This gallery is set to the <i>Default</i> layout, but <i>None</i> has been selected as the <i>Default Layout</i> in your settings.</p>";
-		}
+		// Check the settings
+		if ( $layout === 'none' )
+			return gallery_shortcode( $atts );
 		$layoutClass = 'Meow_' . ucfirst( $layout ) . '_Generator';
 		if ( !class_exists( $layoutClass ) ) {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
 			return "<p class='meow-error'><b>Meow Gallery:</b> The layout $layout is not available in this version.</p>";
 		}
+
+		// Start the process of building the gallery
+		$this->gallery_process = true;
 		$this->gallery_layout = $layout;
 		wp_enqueue_style( 'mgl-css' );
 		$infinite = get_option( 'mgl_infinite', false ) && $this->admin->is_registered();

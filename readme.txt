@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.2
 Requires PHP: 7.0
-Stable tag: 3.4.3
+Stable tag: 3.4.4
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,7 +27,8 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.4.3 =
+= 3.4.4 =
+* Fix: Return the WordPress default gallery if None is selected (and no layout).
 * Update: Lazy doesn't use an 1x1 external image anymore, but a tiny inline SVG.
 
 = 3.4.2 =
