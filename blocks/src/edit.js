@@ -170,12 +170,16 @@ class GalleryEdit extends Component {
 	}
 
 	componentDidMount() {
-		if (!this.props.attributes.layout)
+		let { layout, images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
+		if (!layout)
 			this.props.setAttributes({ layout: 'tiles' });
-		if (this.props.attributes.layout === 'tiles')
+		if (layout === 'tiles')
 			this.refreshTiles();
-		if (this.props.attributes.layout === 'carousel')
+		if (layout === 'carousel')
 			this.refreshCarousel();
+		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
+		if (hasImagesToShow && !htmlPreview)
+			this.onRefresh();
 	}
 
 	componentDidUpdate( prevProps ) {

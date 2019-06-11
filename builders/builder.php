@@ -98,7 +98,7 @@ abstract class Meow_Gallery_Generator {
 		// Align
 		$classes .= $this->align ? (' align' . $this->align) : '';
 
-		return '"' . $classes . '"';;
+		return $classes;
 	}
 
 	function build_classes() {
@@ -114,14 +114,19 @@ abstract class Meow_Gallery_Generator {
 		if ( $this->animation )
 			$classes .= ' is-animated ' . $this->animation;
 
-		return '"' . $classes . '"';
+		return $classes;
+	}
+
+	function build_styles() {
+		return "";
 	}
 
 	function build( $idsStr ) {
 
 		// Generate gallery
 		$classes = $this->build_classes();
-		$out = "<div id='{$this->class_id}' class={$classes}>";
+		$styles = $this->build_styles();
+		$out = "<div id='{$this->class_id}' class='{$classes}' style='{$styles}'>";
 		$this->prepare_data( $idsStr );
 		while ( count( $this->ids ) > 0 ) {
 			$id = array_pop( $this->ids );
@@ -133,7 +138,7 @@ abstract class Meow_Gallery_Generator {
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();
-		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+		$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
 
 		return $container;
 	}

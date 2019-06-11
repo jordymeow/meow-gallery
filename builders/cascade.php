@@ -46,7 +46,8 @@ class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 
 		// Generate gallery
 		$classes = $this->build_classes();
-		$out = "<div id='{$this->class_id}' class={$classes}>";
+		$styles = $this->build_styles();
+		$out = "<div id='{$this->class_id}' class='{$classes}' style='{$styles}'>";
 		$this->prepare_data( $idsStr );
 		$this->prepare_layouts();
 		$ooo_v = 0;
@@ -93,7 +94,7 @@ class Meow_Cascade_Generator extends Meow_Gallery_Generator {
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();
-		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+		$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
 		
 		return $container;
 	}

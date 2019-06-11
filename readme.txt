@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.2
 Requires PHP: 7.0
-Stable tag: 3.4.4
+Stable tag: 3.4.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -26,6 +26,11 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 3.4.6 =
+* Fix: Justified layout had... issues. Sorry about that!
+* Add: Meow Gallery can now be converted into Gutenberg Gallery or (and from) Image Blocks.
+* Update: Little optimization for the rendering.
 
 = 3.4.4 =
 * Fix: Return the WordPress default gallery if None is selected (and no layout).

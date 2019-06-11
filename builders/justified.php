@@ -27,12 +27,11 @@ class Meow_Justified_Generator extends Meow_Gallery_Generator {
 		return $html;
 	}
 
-	function build( $idsStr ) {
-		$html = parent::build( $idsStr );
+	function build_styles() {
 		$row_height = isset( $this->atts['row-height'] ) ?
 			$this->atts['row-height'] : get_option( 'mgl_justified_row_height', 200 );
-		$html = str_replace( ' mgl-justified', ' mgl-justified" style="--rh: ' . $row_height . 'px', $html );
-		return $html;
+		$styles = '--rh: ' . $row_height . 'px';
+		return $styles;
 	}
 
 }

@@ -24,7 +24,8 @@ class Meow_Carousel_Generator extends Meow_Gallery_Generator {
 
 		// Generate gallery
 		$classes = $this->build_classes();
-		$out = "<div id='{$this->class_id}' class={$classes}>";
+		$styles = $this->build_styles();
+		$out = "<div id='{$this->class_id}' class='{$classes}' style='{$styles}'>";
 		$gutter = isset( $this->atts['mgl_carousel_gutter'] ) ?
 			$this->atts['mgl_carousel_gutter'] : get_option( 'mgl_carousel_gutter', 5 );
 		$arrow_nav_enabled = isset( $this->atts['arrow_nav_enabled'] ) ?
@@ -45,7 +46,7 @@ class Meow_Carousel_Generator extends Meow_Gallery_Generator {
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();
-		$container = "<div class={$container_classes}>{$inline_css}{$out}</div>";
+		$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
 
 		return $container;
 	}

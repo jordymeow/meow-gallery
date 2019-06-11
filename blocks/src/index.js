@@ -119,8 +119,6 @@ const buildShortcode = function(attributes) {
 		alert("This layout is not handled. Check the Console Logs.");
 		console.log('Layout could not be handled.', attributes);
 	}
-	// className={ classnames(className)}
-	console.log(attributes);
 	return shortcode;
 }
 
@@ -165,6 +163,36 @@ registerBlockType( 'meow-gallery/gallery', {
 					return createBlock('meow-gallery/gallery', { images: images });
 				},
 			},
-		]
+			{
+				type: 'block',
+				isMultiBlock: true,
+				blocks: [ 'core/image' ],
+				transform: ( attributes ) => {
+					const validImages = attributes.filter(x => x.id && x.url);
+					return createBlock( 'meow-gallery/gallery', {
+						images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
+					} );
+				},
+			},
+		],
+		to: [
+			{
+				type: 'block',
+				blocks: [ 'core/image' ],
+				transform: ( { images, align } ) => {
+					if ( images.length > 0 ) {
+						return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
+					}
+					return createBlock( 'core/image', { align } );
+				},
+			},
+			{
+				type: 'block',
+				blocks: [ 'core/gallery' ],
+				transform: ( { images, align } ) => {
+					return createBlock( 'core/gallery', { images, align } );
+				},
+			},
+		],
 	}
 });
