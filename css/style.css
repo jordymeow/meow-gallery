@@ -863,16 +863,24 @@
   grid-row: row1-start / row2-end;
 }
 .mgl-tiles .mgl-row {
+  display: -ms-grid;
   display: grid;
   position: relative;
   width: 100%;
   height: 300px;
+}
+@media screen and (max-width: 460px) {
+  .mgl-tiles .mgl-row {
+    display: block;
+    height: auto !important;
+  }
 }
 .mgl-tiles .mgl-row .mgl-box {
   position: relative;
   width: 100%;
   height: 100%;
   padding: 5px;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
   background-clip: content-box;
 }
@@ -895,7 +903,14 @@
   height: 100%;
   max-width: 100%;
   max-height: 100%;
+  -o-object-fit: cover;
   object-fit: cover;
+}
+@media screen and (max-width: 460px) {
+  .mgl-tiles .mgl-row .mgl-box .mgl-item .mgl-icon img {
+    position: relative;
+    height: auto;
+  }
 }
 .mgl-tiles .mgl-row .mgl-box .mgl-item figcaption {
   position: absolute;
@@ -906,11 +921,14 @@
 .mgl-tiles .mgl-row .mgl-box .mgl-item figcaption p {
   margin: 0 !important;
   padding: 10px;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
 .mgl-tiles .mgl-row .mgl-box .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
+  -webkit-transition: .3s;
+  -o-transition: .3s;
   transition: .3s;
 }
 .mgl-cascade {

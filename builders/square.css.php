@@ -35,6 +35,10 @@
 		padding-bottom: <?= $columns_in_percentage ?>;
 	}
 
+	<?= $class_id ?>.custom-gallery-class .mgl-item {
+		padding-bottom: <?= ( str_replace('%','', $columns_in_percentage) / 1.5 ) ?>% !important;
+	}
+
 	<?= $class_id ?> .mgl-item .mgl-icon {
 		padding: <?= $gutter/2 ?>px;
 	}

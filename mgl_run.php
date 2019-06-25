@@ -11,6 +11,7 @@ class Meow_Gallery_Run {
 		add_shortcode( 'gallery', array( $this, 'gallery' ) );
 		add_shortcode( 'meow-gallery', array( $this, 'gallery' ) );
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
+		add_filter( 'wpseo_sitemap_urlimages', array( $this, 'wpseo_siteimap' ), 10, 2 );
 		require_once dirname( __FILE__ ) . '/builders/tiles.php';
 		require_once dirname( __FILE__ ) . '/builders/justified.php';
 		require_once dirname( __FILE__ ) . '/builders/masonry.php';
@@ -117,6 +118,31 @@ class Meow_Gallery_Run {
 		$version = file_exists( $physical_file ) ? filemtime( $physical_file ) : $mgl_version;
 		wp_enqueue_script( 'mgl-js', plugins_url( 'js/mgl.js', __FILE__ ), array( 'jquery' ), $version, false );
 		wp_register_style( 'mgl-css', plugin_dir_url( __FILE__ ) . 'css/style.css', null, $version );
+	}
+
+	/*
+		For Yoast SEO
+	*/
+
+	function wpseo_siteimap( $images, $post_id ) {
+		$galleries = get_post_galleries( $post_id );
+		$images_ids = array();
+		foreach ( $galleries as $gallery ) {
+			preg_match_all( '/wp\-image\-([0-9]{1,16})/', $gallery, $matches );
+			if ( !empty( $matches ) ) {
+				foreach ( $matches[1] as $id )
+					array_push( $images_ids, $id );
+			}
+		}
+		$images_ids = array_unique( $images_ids );
+		foreach ( $images_ids as $id ) {
+			array_push( $images, array(
+				'src' => wp_get_attachment_url( $id ),
+				'title' => get_the_title( $id ),
+				'alt' => get_post_meta( $id, '_wp_attachment_image_alt', true )
+			) );
+		}
+		return $images;
 	}
 
 }
