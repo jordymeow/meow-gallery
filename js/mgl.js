@@ -211,6 +211,10 @@ jQuery(document).ready(function($) {
 		tilesCalculateRow();
 	});
 
+	$(document.body).on('post-load', function() {
+		tilesCalculateRow();
+	});
+
 	window.mglCalculateRow = tilesCalculateRow;
 	window.mglCalculateRow();
 });

@@ -243,7 +243,7 @@
   grid-row: row1-start / row2-end;
 }
 .mgl-tiles .mgl-layout-2-ii {
-  grid-template-columns: [col1-start] 33.33%  [col2-start] 33.33%;
+  grid-template-columns: [col1-start] 33.33%  [col2-start] 33.33% [col3-start];
   grid-template-rows: [row1-start] auto [row1-end];
 }
 .mgl-tiles .mgl-layout-2-ii .a {
@@ -791,7 +791,7 @@
   grid-row: row2-start;
 }
 .mgl-tiles .mgl-layout-5-iiooi {
-  grid-template-columns: [col1-start] 24.24%  [col2-start] 24.24%  [col3-start] 27.28% [col4-start] 27.24% [col4-end];
+  grid-template-columns: [col1-start] 24.24%  [col2-start] 24.24%  [col3-start] 27.28% [col4-start] 24.24% [col4-end];
   grid-template-rows: [row1-start] auto [row2-start] auto [row2-end];
 }
 .mgl-tiles .mgl-layout-5-iiooi .a {

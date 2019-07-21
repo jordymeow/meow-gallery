@@ -49,7 +49,7 @@
 }
 
 .mgl-layout-2-ii {
-    @columns: "[col1-start] 33.33%  [col2-start] 33.33%";
+    @columns: "[col1-start] 33.33%  [col2-start] 33.33% [col3-start]";
     @rows: "[row1-start] auto [row1-end]";
     grid-template-columns: e(@columns);
     grid-template-rows: e(@rows);
@@ -58,6 +58,7 @@
         grid-column: col1-start / col2-start;
         grid-row: row1-start / row2-end;
     }
+
     .b {
         grid-column: col2-start / col3-start;
         grid-row: row1-start / row2-end;

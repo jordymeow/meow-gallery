@@ -26,7 +26,8 @@ function mglInitCarousels($) {
 				var owl = $gallery.owlCarousel({
 					items: 1,
 					loop: true,
-					autoHeight: true
+					autoHeight: true,
+					dots: show_dots
 				});
 			}
 
