@@ -71,16 +71,18 @@ class Meow_Gallery_Run {
 		if ( empty( $images ) )
 			return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
 
-		
-		if ( isset( $atts['orderby'] ) ) {
-			require_once dirname( __FILE__ ) . '/mgl_orderby.php';
-			Meow_Gallery_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : $atts['order'] );
-		}
-
 		if ( $isPreview ) {
 			$check = explode( ',', $images );
 			$check = array_slice( $check, 0, 40 );
 			$images = implode( ',', $check );
+		}
+
+		// Ordering
+		if ( isset( $atts['orderby'] ) ) {
+			$images = explode( ',', $images );
+			require_once dirname( __FILE__ ) . '/mgl_orderby.php';
+			$images = Meow_Gallery_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : $atts['order'] );
+			$images = implode( ',', $images );
 		}
 
 		//DEBUG: Display $atts

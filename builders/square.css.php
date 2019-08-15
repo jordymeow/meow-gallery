@@ -35,6 +35,36 @@
 		padding-bottom: <?= $columns_in_percentage ?>;
 	}
 
+	<?php
+	if($columns > 2) {
+	?>
+
+	@media screen and (max-width: 460px) {
+		<?= $class_id ?> .mgl-item {
+			width: 50%;
+			padding-bottom: 50%;
+		}
+	}
+
+	<?php 
+	} 
+	?>
+
+	<?php
+	if($columns > 1) {
+	?>
+
+	@media screen and (max-width: 360px) {
+		<?= $class_id ?> .mgl-item {
+			width: 100%;
+			padding-bottom: 100%;
+		}
+	}
+
+	<?php 
+	} 
+	?>
+
 	<?= $class_id ?>.custom-gallery-class .mgl-item {
 		padding-bottom: <?= ( str_replace('%','', $columns_in_percentage) / 1.5 ) ?>% !important;
 	}
