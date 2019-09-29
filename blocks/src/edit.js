@@ -1,6 +1,6 @@
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
-const { IconButton, Icon, DropZone, FormFileUpload, PanelBody, RangeControl,
+const { IconButton, DropZone, PanelBody, RangeControl,
 	CheckboxControl, TextControl, SelectControl, Toolbar, withNotices } = wp.components;
 const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUpload } = wp.editor;
 
@@ -169,6 +169,26 @@ class GalleryEdit extends Component {
 			console.log('Meow Gallery: mglInitCarousels does not exist.');
 	}
 
+	createElementFromHTML(htmlString) {
+		var div = document.createElement('div');
+		div.innerHTML = htmlString.trim();
+		// Change this to div.childNodes to support multiple top-level nodes
+		return div.firstChild; 
+	}
+
+	refreshMap() {
+		if (window.mglInitMaps) {
+			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview);
+			if (htmlPreviewDom.getElementsByTagName('script')[0]) {
+				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
+				eval(js);
+				mglInitMaps();
+			}
+		}
+		else
+			console.log('Meow Gallery: mglInitMaps does not exist.');
+	}
+
 	componentDidMount() {
 		let { layout, images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
 		if (!layout)
@@ -177,6 +197,8 @@ class GalleryEdit extends Component {
 			this.refreshTiles();
 		if (layout === 'carousel')
 			this.refreshCarousel();
+		if (layout === 'map')
+			this.refreshMap();
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
 		if (hasImagesToShow && !htmlPreview)
 			this.onRefresh();
@@ -187,6 +209,9 @@ class GalleryEdit extends Component {
 			this.refreshTiles();
 		if (this.props.attributes.layout === 'carousel')
 			this.refreshCarousel();
+		if (this.props.attributes.layout === 'map') {
+			this.refreshMap();
+		}
 	}
 
 	render() {
@@ -264,7 +289,8 @@ class GalleryEdit extends Component {
 								{ value: 'justified', label: 'Justified' },
 								{ value: 'square', label: 'Square' },
 								{ value: 'cascade', label: 'Cascade' },
-								{ value: 'carousel', label: 'Carousel' }
+								{ value: 'carousel', label: 'Carousel' },
+								{ value: 'map', label: 'Map' }
 							]}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&

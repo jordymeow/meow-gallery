@@ -126,6 +126,59 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			array( $this, 'admin_carousel_dot_nav_enabled_callback' ),
 			'mgl_settings_carousel-menu', 'mgl_carousel' );
 		register_setting( 'mgl_settings_carousel', 'mgl_carousel_dot_nav_enabled' );
+
+		// Map (and Map Engines)
+		add_settings_section( 'mgl_map', null, null, 'mgl_settings_map-menu' );
+		add_settings_field( 'mgl_map_engine', __( "Default Engine", 'meow-gallery' ),
+			array( $this, 'admin_map_engine_callback' ),
+			'mgl_settings_map-menu', 'mgl_map' );
+		add_settings_field( 'mgl_map_height', __( "Row Height", 'meow-gallery' ),
+			array( $this, 'admin_map_height_callback' ),
+			'mgl_settings_map-menu', 'mgl_map' );
+
+		// GoogleMaps
+		add_settings_section( 'mgl_googlemaps', null, null, 'mgl_settings_googlemaps-menu' );
+		add_settings_field( 'mgl_googlemaps_token', __( "Token", 'meow-gallery' ),
+			array( $this, 'admin_googlemaps_token_callback' ),
+			'mgl_settings_googlemaps-menu', 'mgl_googlemaps' );
+		add_settings_field( 'mgl_googlemaps_style', __( "Style", 'meow-gallery' ),
+			array( $this, 'admin_googlemaps_style_callback' ),
+			'mgl_settings_googlemaps-menu', 'mgl_googlemaps' );
+		
+		// MapBox
+		add_settings_section( 'mgl_mapbox', null, null, 'mgl_settings_mapbox-menu' );
+		add_settings_field( 'mgl_mapbox_token', __( "Token", 'meow-gallery' ),
+			array( $this, 'admin_mapbox_token_callback' ),
+			'mgl_settings_mapbox-menu', 'mgl_mapbox' );
+		add_settings_field( 'mgl_mapbox_style', __( "Style", 'meow-gallery' ),
+			array( $this, 'admin_mapbox_style_callback' ),
+			'mgl_settings_mapbox-menu', 'mgl_mapbox' );
+
+		// MapTiler
+		add_settings_section( 'mgl_maptiler', null, null, 'mgl_settings_maptiler-menu' );
+		add_settings_field( 'mgl_maptiler_token', __( "Token", 'meow-gallery' ),
+			array( $this, 'admin_maptiler_token_callback' ),
+			'mgl_settings_maptiler-menu', 'mgl_maptiler' );
+		// add_settings_field( 'mgl_maptiler_style', __( "Style", 'meow-gallery' ),
+		// 	array( $this, 'admin_maptiler_style_callback' ),
+		// 	'mgl_settings_maptiler-menu', 'mgl_maptiler' );
+
+		// OpenStreetMap
+		// add_settings_section( 'mgl_openstreetmap', null, null, 'mgl_settings_openstreetmap-menu' );
+		// add_settings_field( 'mgl_openstreetmap_token', __( "Token", 'meow-gallery' ),
+		// 	array( $this, 'admin_openstreetmap_token_callback' ),
+		// 	'mgl_settings_openstreetmap-menu', 'mgl_openstreetmap' );
+
+		register_setting( 'mgl_settings_map', 'mgl_map_engine' );
+		register_setting( 'mgl_settings_map', 'mgl_map_height' );
+		register_setting( 'mgl_settings_map', 'mgl_googlemaps_token' );
+		register_setting( 'mgl_settings_map', 'mgl_googlemaps_style' );
+		register_setting( 'mgl_settings_map', 'mgl_mapbox_token' );
+		register_setting( 'mgl_settings_map', 'mgl_mapbox_style' );
+		register_setting( 'mgl_settings_map', 'mgl_maptiler_token' );
+		register_setting( 'mgl_settings_map', 'mgl_maptiler_style' );
+		//register_setting( 'mgl_settings_map_layouts', 'mgl_openstreetmap_token' );
+
 	}
 
 	function admin_settings() {
@@ -138,7 +191,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 				<div class="meow-box col span_2_of_2">
 					<h3><?php echo _e( "How to use", 'meow-gallery' ) ?></h3>
 					<div class="inside">
-						<?php echo _e( "Meow Gallery works with the core <a target='_blank' href='https://codex.wordpress.org/The_WordPress_Gallery'>WordPress Gallery</a>, the official <a target='_blank' href='https://codex.wordpress.org/Gallery_Shortcode'>Gallery Shortcode</a>, and the Gutenberg Gallery can be converted to it. Here, you can set the default settings but you can override them for each gallery in your website. Please get the <a target='_blank' href='https://meowapps.com/plugin/meow-gallery/'>Pro version</a> to help us, and you will get animations, optimizations, and an additional layout :)", 'meow-gallery' ) ?>
+						<?php echo _e( "Meow Gallery works with the core <a target='_blank' href='https://codex.wordpress.org/The_WordPress_Gallery'>WordPress Gallery</a>, the official <a target='_blank' href='https://codex.wordpress.org/Gallery_Shortcode'>Gallery Shortcode</a>, and the Gutenberg Gallery can be converted to it. Here, you can set the default settings but you can override them for each gallery in your website. Please get the <a target='_blank' href='https://meowapps.com/plugin/meow-gallery/'>Pro version</a> to help us, and you will get animations, optimizations, and additional layouts :)", 'meow-gallery' ) ?>
 					</div>
 				</div>
 			</div>
@@ -160,7 +213,40 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 					</div>
 
 					<div class="meow-box">
+						<form method="post" action="options.php">
+							<h3><?php _e( "Animation", 'meow-gallery' ); ?></h3>
+							<div class="inside">
+								<?php if ( !$this->is_registered() ): ?>
+								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
+								<?php endif; ?>
+								<?php settings_fields( 'mgl_settings_animation' ); ?>
+								<?php do_settings_sections( 'mgl_settings_animation-menu' ); ?>
+								<?php submit_button(); ?>
+							</div>
+						</form>
+					</div>
 
+					<div class="meow-box">
+						<form method="post" action="options.php">
+							<h3><?php _e( "Optimization / Speed", 'meow-gallery' ); ?></h3>
+							<div class="inside">
+								<?php if ( !$this->is_registered() ): ?>
+								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
+								<?php endif; ?>
+								<?php settings_fields( 'mgl_settings_optimization' ); ?>
+								<?php do_settings_sections( 'mgl_settings_optimization-menu' ); ?>
+								<?php submit_button(); ?>
+							</div>
+						</form>
+					</div>
+
+				</div>
+
+				<div class="meow-col meow-span_1_of_2">
+
+					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
+
+					<div class="meow-box">
 						<div class="meow-tabs">
 
 							<div style="background: #3b3b3b; height: 26px; width: 100%; margin-bottom: -26px;"></div>
@@ -225,41 +311,51 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 								</form>
 							</div>
 
+							<input name="tabs" type="radio" id="mgl-tab-map" class="meow-tabs-input"/>
+							<label for="mgl-tab-map" class="meow-tabs-label">map</label>
+							<div class="inside">	
+
+								<form method="post" action="options.php">
+
+								<?php settings_fields( 'mgl_settings_map' ); ?>
+								<?php do_settings_sections( 'mgl_settings_map-menu' ); ?>
+
+								<div class="meow-tabs">
+
+									<div style="background: #3b3b3b; height: 26px; width: 100%; margin-bottom: -26px;"></div>
+
+									<input name="tabs" type="radio" id="mgl-tab-googlemaps" checked="checked" class="meow-tabs-input"/>
+									<label for="mgl-tab-googlemaps" class="meow-tabs-label">Google Maps</label>
+									<div class="inside">
+										<?php do_settings_sections( 'mgl_settings_googlemaps-menu' ); ?>
+									</div>
+
+									<input name="tabs" type="radio" id="mgl-tab-mapbox" class="meow-tabs-input"/>
+									<label for="mgl-tab-mapbox" class="meow-tabs-label">MapBox</label>
+									<div class="inside">
+										<?php do_settings_sections( 'mgl_settings_mapbox-menu' ); ?>
+									</div>
+
+									<input name="tabs" type="radio" id="mgl-tab-maptiler" class="meow-tabs-input"/>
+									<label for="mgl-tab-maptiler" class="meow-tabs-label">MapTiler</label>
+									<div class="inside">
+										<?php do_settings_sections( 'mgl_settings_maptiler-menu' ); ?>
+									</div>
+
+									<!-- <input name="tabs" type="radio" id="mgl-tab-openstreetmap" class="meow-tabs-input"/>
+									<label for="mgl-tab-openstreetmap" class="meow-tabs-label">OpenStreetMap</label>
+									<div class="inside">
+										<?php do_settings_sections( 'mgl_settings_openstreetmap-menu' ); ?>
+									</div> -->
+
+								</div>
+
+								<?php submit_button(); ?>
+								</form>
+
+							</div>
+
 						</div>
-					</div>
-
-				</div>
-
-				<div class="meow-col meow-span_1_of_2">
-
-					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
-
-					<div class="meow-box">
-						<form method="post" action="options.php">
-							<h3><?php _e( "Animation", 'meow-gallery' ); ?></h3>
-							<div class="inside">
-								<?php if ( !$this->is_registered() ): ?>
-								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
-								<?php endif; ?>
-								<?php settings_fields( 'mgl_settings_animation' ); ?>
-								<?php do_settings_sections( 'mgl_settings_animation-menu' ); ?>
-								<?php submit_button(); ?>
-							</div>
-						</form>
-					</div>
-
-					<div class="meow-box">
-						<form method="post" action="options.php">
-							<h3><?php _e( "Optimization / Speed", 'meow-gallery' ); ?></h3>
-							<div class="inside">
-								<?php if ( !$this->is_registered() ): ?>
-								<p><?php _e( 'This is only available in the <a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro version</a>.' ); ?></p>
-								<?php endif; ?>
-								<?php settings_fields( 'mgl_settings_optimization' ); ?>
-								<?php do_settings_sections( 'mgl_settings_optimization-menu' ); ?>
-								<?php submit_button(); ?>
-							</div>
-						</form>
 					</div>
 
 				</div>
@@ -275,19 +371,29 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 	function admin_layout_callback( $args ) {
 		$layouts = array(
-			'tiles' => array( 'name' => __( 'Tiles', 'meow-gallery' ),
+			'tiles' => array( 
+				'name' => __( 'Tiles', 'meow-gallery' ),
 				'desc' => __( "Smart algorithm, row-based.", 'meow-gallery' ) ),
-			'masonry' => array( 'name' => __( 'Masonry', 'meow-gallery' ),
+			'masonry' => array( 
+				'name' => __( 'Masonry', 'meow-gallery' ),
 				'desc' => __( "Famous layout, column-based.", 'meow-gallery' ) ),
-			'justified' => array( 'name' => __( 'Justified', 'meow-gallery' ),
+			'justified' => array( 
+				'name' => __( 'Justified', 'meow-gallery' ),
 				'desc' => __( "Flickr-like, row-based.", 'meow-gallery' ) ),
-			'square' => array( 'name' => __( 'Square', 'meow-gallery' ),
+			'square' => array( 
+				'name' => __( 'Square', 'meow-gallery' ),
 				'desc' => __( "Instagram-like, all squares.", 'meow-gallery' ) ),
-			'cascade' => array( 'name' => __( 'Cascade', 'meow-gallery' ),
+			'cascade' => array( 
+				'name' => __( 'Cascade', 'meow-gallery' ),
 				'desc' => __( "Portraits are coupled together.", 'meow-gallery' ) ),
-			'carousel' => array( 'name' => __( 'Carousel (Pro)', 'meow-gallery' ),
+			'carousel' => array( 
+				'name' => __( 'Carousel (<a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro</a>)', 'meow-gallery' ),
 				'desc' => "Pretty swipeable carousel." ),
-			'none' => array( 'name' => __( 'None', 'meow-gallery' ),
+			'map' => array( 
+				'name' => __( 'Map (<a target="_blank" href="https://meowapps.com/plugin/meow-gallery/">Pro</a>)', 'meow-gallery' ),
+				'desc' => "Photos will be displayed on a map." ),
+			'none' => array( 
+				'name' => __( 'None', 'meow-gallery' ),
 				'desc' => "Only active if a layout is explicitely set." )
 		);
 		$html = '';
@@ -442,6 +548,100 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 			$html .= '<input type="radio" class="radio" id="mgl_animation" name="mgl_animation" value="' . $key . '"' .
 				checked( $key, get_option( 'mgl_animation', 'caption' ), false ) . ' > '  .
 				( empty( $arg ) ? 'None' : $arg['name'] ) . '<br />';
+		echo $html;
+	}
+
+	function admin_map_engine_callback( $args ) {
+		$origins = array(
+			'googlemaps' => array( 'name' => 'Google Maps' ),
+			'mapbox' => array( 'name' => 'MapBox' ),
+			'maptiler' => array( 'name' => 'MapTiler' ),
+			'openstreetmap' => array( 'name' => 'OpenStreetMap<small>(for development only)</small>' )
+		);
+		$html = '';
+		foreach ( $origins as $key => $arg )
+			$html .= '<input type="radio" class="radio" id="mgl_map_engine" name="mgl_map_engine" value="' . $key . '"' .
+				checked( $key, get_option( 'mgl_map_engine', 'openstreetmap' ), false ) . ' > '  .
+				( empty( $arg ) ? 'None' : $arg['name'] ) . '<br />';
+		echo $html;
+	}
+
+	function admin_map_height_callback( $args ) {
+		$value = get_option( 'mgl_map_height', 400 );
+		$html = '<input type="number" style="width: 100%;" id="mgl_map_height" name="mgl_map_height" value="' .
+			$value . '" />';
+		$html .= '<br /><span class="description">' . __( "Ideal height of the map.", 'meow-gallery' ) . '</span>';
+		echo $html;
+	}
+
+
+	function admin_openstreetmap_token_callback( $args ) {
+		$value = get_option( 'mgl_openstreetmap_token', "" );
+		$html = '<input type="text" style="width: 100%;" id="mgl_openstreetmap_token" name="mgl_openstreetmap_token" value="' . $value . '" />';
+		echo $html;
+	}
+
+	function admin_mapbox_token_callback( $args ) {
+		$value = get_option( 'mgl_mapbox_token', "" );
+		$html = '<input type="text" style="width: 100%;" id="mgl_mapbox_token" name="mgl_mapbox_token" value="' . $value . '" />';
+		$html .= '<br /><span class="description">' . __( "You can get a token for MapBox <a href='https://account.mapbox.com/access-tokens/' target='_blank'>here</a>", 'meow-gallery' ) . '.</span>';
+		echo $html;
+	}
+
+	function admin_googlemaps_token_callback( $args ) {
+		$value = get_option( 'mgl_googlemaps_token', "" );
+		$html = '<input type="text" style="width: 100%;" id="mgl_googlemaps_token" name="mgl_googlemaps_token" value="' . $value . '" />';
+		$html .= '<br /><span class="description">' . __( "You can get a token for Google Maps <a href='https://developers.google.com/maps/documentation/javascript/get-api-key' target='_blank'>here</a>", 'meow-gallery' ) . '.</span>';
+		echo $html;
+	}
+
+	function admin_maptiler_token_callback( $args ) {
+		$value = get_option( 'mgl_maptiler_token', "" );
+		$html = '<input type="text" style="width: 100%;" id="mgl_maptiler_token" name="mgl_maptiler_token" value="' . $value . '" />';
+		$html .= '<br /><span class="description">' . __( "You can get a token for MapTiles <a href='https://cloud.maptiler.com/' target='_blank'>here</a>", 'meow-gallery' ) . '.</span>';
+		echo $html;
+	}
+
+	function create_default_googlemaps_style( $force = false ) {
+		$style = get_option( 'mgl_googlemaps_style', "" );
+		if ( $force || empty( $style ) ) {
+			$style = '[]';
+			update_option( 'mwl_map_style', $style );
+		}
+		return $style;
+	}
+
+	function create_default_mapbox_style( $force = false ) {
+		$style = get_option( 'mgl_mapbox_style', "" );
+		if ( $force || empty( $style ) ) {
+			$style = '{"username":"", "style_id":""}';
+			update_option( 'mgl_mapbox_style', $style );
+		}
+		return $style;
+	}
+
+	function admin_googlemaps_style_callback( $args ) {
+		$value = get_option( 'mgl_googlemaps_style', $this->create_default_googlemaps_style() );
+		$value = json_encode( json_decode( $value ), JSON_PRETTY_PRINT );
+		if ( empty( $value ) || $value == 'null' ) {
+			echo '<p style="color: red; margin-bottom: 5px;">' . __( "The format of the style must be valid JSON. To avoid errors, it was reverted to the default style.", 'meow-gallery' ) . "</p>";
+			$value = $this->create_default_googlemaps_style( true );
+			$value = json_encode( json_decode( $value ), JSON_PRETTY_PRINT );
+		}
+		$html = '<textarea rows="8" id="mgl_googlemaps_style" style="width: 100%;" name="mgl_googlemaps_style">' . $value . '</textarea>';
+		$html .= '<br /><span class="description">' . __( 'Google Map Style JSON. You can find a lot of beautiful templates ready to use here: <a target="_blank" href="https://snazzymaps.com/">SnazzyMaps.com</a>. Remove it and it will reset to the default style.', 'meow-gallery' ) . '</span>';
+		echo $html;
+	}
+
+	function admin_mapbox_style_callback( $args ) {
+		$value = get_option( 'mgl_mapbox_style', $this->create_default_mapbox_style() );
+		$value = json_encode( json_decode( $value ), JSON_PRETTY_PRINT );
+		if ( empty( $value ) || $value == 'null' ) {
+			echo '<p style="color: red; margin-bottom: 5px;">' . __( "The format of the style must be valid JSON. To avoid errors, it was reverted to the default style.", 'meow-gallery' ) . "</p>";
+			$value = $this->create_default_mapbox_style( true );
+			$value = json_encode( json_decode( $value ), JSON_PRETTY_PRINT );
+		}
+		$html = '<textarea rows="8" id="mgl_mapbox_style" style="width: 100%;" name="mgl_mapbox_style">' . $value . '</textarea>';
 		echo $html;
 	}
 

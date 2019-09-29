@@ -115,6 +115,8 @@ const buildShortcode = function(attributes) {
 		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
 	else if (layout === 'slider')
 		shortcode = `[gallery ${attrs}][/gallery]`;
+	else if (layout === 'map')
+		shortcode = `[gallery ${attrs}][/gallery]`;
 	else {
 		alert("This layout is not handled. Check the Console Logs.");
 		console.log('Layout could not be handled.', attributes);
