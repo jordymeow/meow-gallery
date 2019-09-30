@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.2
 Requires PHP: 7.0
-Stable tag: 3.5.2
+Stable tag: 3.5.3
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,9 +27,10 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.5.2 =
+= 3.5.3 =
+* Add: New layout for Pro: The Map Layout. Please try it and let us know what you think :)
+* Fix: Admin Updater.
 * Fix: Remove the call to gallery_written which was allowing theme to break the Meow Gallery. If this causes an issue, an option will be added instead.
-* Add: New layout for Pro: The Map Layout!
 
 = 3.5.0 =
 * Add: The two new attributes 'orderby' and 'order'. You can learn more about them here: https://meowapps.com/meow-gallery-tutorial/#Gallery_Shortcode.
