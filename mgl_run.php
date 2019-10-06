@@ -81,7 +81,7 @@ class Meow_Gallery_Run {
 		if ( isset( $atts['orderby'] ) ) {
 			$images = explode( ',', $images );
 			require_once dirname( __FILE__ ) . '/mgl_orderby.php';
-			$images = Meow_Gallery_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : $atts['order'] );
+			$images = Meow_Gallery_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : 'asc' );
 			$images = implode( ',', $images );
 		}
 

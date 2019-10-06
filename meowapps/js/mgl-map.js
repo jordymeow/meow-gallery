@@ -150,6 +150,8 @@ jQuery(document).ready(function ($) {
     }
   }
 
-  mglInitMaps()
+  if ($('.mgl-ui-map').length) {
+    mglInitMaps()
+  }
 
 })
