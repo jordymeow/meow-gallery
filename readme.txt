@@ -2,9 +2,9 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
-Tested up to: 5.2
+Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 3.5.4
+Stable tag: 3.5.5
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,10 +27,13 @@ Nothing yet.
 
 == Changelog ==
 
+= 3.5.5 =
+* Update: Admin refresh.
+* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
+
 = 3.5.4 =
 * Fix: Default order issue.
 * Fix: Run mglInitMaps only if there is a map on the page.
-* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
 = 3.5.3 =
 * Add: New layout for Pro: The Map Layout. Please try it and let us know what you think :)
