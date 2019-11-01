@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 3.5.5
+Stable tag: 3.5.6
 
 Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
 
@@ -27,7 +27,7 @@ Nothing yet.
 
 == Changelog ==
 
-= 3.5.5 =
+= 3.5.6 =
 * Update: Admin refresh.
 * Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
