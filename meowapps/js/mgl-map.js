@@ -118,35 +118,40 @@ jQuery(document).ready(function ($) {
   }
 
   window.mglInitMaps = function() {
+
     if (typeof mgl_map_images !== 'undefined') {
       $('.mgl-ui-map').each(function () {
         var $map_container = $(this)
         var $gallery_container = $map_container.parent('.mgl-map')
-
-
-        $gallery_container.css('height', mgl_map.height + 'px')
-
-        // Add ID to the map_container
         var id = 'map-' + $gallery_container.attr('id').replace('mgl-gallery-', '')
-        $map_container.attr('id', id)
 
-        var map_settings = {
-          container_id: id,
-          center: [51.505, -0.09],
-          tiles_provider: mgl_map.default_engine,
+        if (mgl_map_images[$gallery_container.attr('id')].length > 0) {
+          $gallery_container.css('height', mgl_map.height + 'px')
+
+          // Add ID to the map_container
+
+          $map_container.attr('id', id)
+
+          var map_settings = {
+            container_id: id,
+            center: [51.505, -0.09],
+            tiles_provider: mgl_map.default_engine,
+          }
+
+          var map_data = mgl_map_images[$gallery_container.attr('id')]
+
+          var mapController = new MapController(map_settings, map_data)
+
+          mapController.createMap()
+          mapController.addTilesLayer()
+          mapController.addMarkers()
+          mapController.fitMarkers()
+        } else {
+          console.error('Gallery with id ' + $gallery_container.attr('id') +' does\'t have any photos with valid GPS.')
         }
-
-        var map_data = mgl_map_images[$gallery_container.attr('id')]
-
-        var mapController = new MapController(map_settings, map_data)
-
-        mapController.createMap()
-        mapController.addTilesLayer()
-        mapController.addMarkers()
-        mapController.fitMarkers()
-      })
+      }) 
     } else {
-      console.error('mgl_map_images is undefined. Ask Jordy.')
+      console.error('mgl_map_images is undefined. It might be because your photos don\'t have valid GPS exif data?')
     }
   }
 

@@ -200,10 +200,10 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			// Creates standard menu if it does NOT exist
 			global $submenu;
 			if ( !isset( $submenu[ 'meowapps-main-menu' ] ) ) {
-				add_menu_page( 'Meow Apps', '<img style="width: 24px; margin-left: -30px; position: absolute; margin-top: -3px;" src="' . MeowApps_Admin::$logo . '" />Meow Apps', 'manage_options', 'meowapps-main-menu',
+				add_menu_page( 'Meow Apps', '<img alt="Meow Apps" style="width: 24px; margin-left: -30px; position: absolute; margin-top: -3px;" src="' . MeowApps_Admin::$logo . '" />Meow Apps', 'manage_options', 'meowapps-main-menu',
 					array( $this, 'admin_meow_apps' ), '', 82 );
-				add_submenu_page( 'meowapps-main-menu', __( 'Dashboard', 'meowapps' ),
-					__( 'Dashboard', 'meowapps' ), 'manage_options',
+				add_submenu_page( 'meowapps-main-menu', __( 'Dashboard', $this->domain ),
+					__( 'Dashboard', $this->domain ), 'manage_options',
 					'meowapps-main-menu', array( $this, 'admin_meow_apps' ) );
 			}
 
@@ -226,7 +226,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			$value = get_option( 'meowapps_hide_ads', null );
 			$html = '<input type="checkbox" id="meowapps_hide_ads" name="meowapps_hide_ads" value="1" ' .
 				checked( 1, get_option( 'meowapps_hide_ads' ), false ) . '/>';
-	    $html .= __( '<label>Hide</label><br /><small>Doesn\'t display the ads.</small>', 'meowapps' );
+	    $html .= __( '<label>Hide</label><br /><small>Doesn\'t display the ads.</small>', $this->domain );
 	    echo $html;
 		}
 
@@ -234,7 +234,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			$value = get_option( 'meowapps_hide_meowapps', null );
 			$html = '<input type="checkbox" id="meowapps_hide_meowapps" name="meowapps_hide_meowapps" value="1" ' .
 				checked( 1, get_option( 'meowapps_hide_meowapps' ), false ) . '/>';
-	    $html .= __( '<label>Hide <b>Meow Apps</b> Menu</label><br /><small>Hide Meow Apps menu and all its components, for a cleaner admin. This option will be reset if a new Meow Apps plugin is installed. <b>Once activated, an option will be added in your General settings to display it again.</b></small>', 'meowapps' );
+	    $html .= __( '<label>Hide <b>Meow Apps</b> Menu</label><br /><small>Hide Meow Apps menu and all its components, for a cleaner admin. This option will be reset if a new Meow Apps plugin is installed. <b>Once activated, an option will be added in your General settings to display it again.</b></small>', $this->domain );
 	    echo $html;
 		}
 
@@ -242,7 +242,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 			$value = get_option( 'force_sslverify', null );
 			$html = '<input type="checkbox" id="force_sslverify" name="force_sslverify" value="1" ' .
 				checked( 1, get_option( 'force_sslverify' ), false ) . '/>';
-	    $html .= __( '<label>Force</label><br /><small>Updates and licenses checks are usually made without checking SSL certificates and it is actually fine this way. But if you are intransigent when it comes to SSL matters, this option will force it.</small>', 'meowapps' );
+	    $html .= __( '<label>Force</label><br /><small>Updates and licenses checks are usually made without checking SSL certificates and it is actually fine this way. But if you are intransigent when it comes to SSL matters, this option will force it.</small>', $this->domain );
 	    echo $html;
 		}
 
@@ -360,7 +360,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 				?>
 				<?php $this->display_title( 'Meow Apps' ); ?>
 				<p>
-				<?php _e( 'Meow Apps is run by Jordy Meow, a photographer and software developer living in Japan (and taking <a target="_blank" href="http://offbeatjapan.org">a lot of photos</a>). Meow Apps is a suite of plugins focusing on photography, imaging, optimization and it teams up with the best players in the community (other themes and plugins developers). For more information, please check <a href="http://meowapps.com" target="_blank">Meow Apps</a>.', 'meowapps' )
+				<?php _e( 'Meow Apps is run by Jordy Meow, a photographer and software developer living in Japan (and taking <a target="_blank" href="http://offbeatjapan.org">a lot of photos</a>). Meow Apps is a suite of plugins focusing on photography, imaging, optimization and it teams up with the best players in the community (other themes and plugins developers). For more information, please check <a href="http://meowapps.com" target="_blank">Meow Apps</a>.', $this->domain )
 				?>
 				</p>
 				
@@ -407,7 +407,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 
 				<h2>WordPress Performance & Recommendations</h2>
 				<div style="background: white; padding: 5px 15px 5px 15px; box-shadow: 2px 2px 1px rgba(0,0,0,.02); margin-bottom: 15px;">
-					<p><?php _e( 'The <b>Empty Request Time</b> helps you analyzing the raw performance of your install by giving you the average time it takes to run an empty request to your server. You can try to disable some plugins (or change their options) then and click on Reset to see how it influences the results. With <b>File Operation Time</b>, you will find out if your server is slow with files. An excellent install would have an Empty Request Time of less than 500 ms. Keep it absolutely under 2,000 ms. File Operation Time should take only a few milliseconds more than the Empty Request Time. For more information about this, <a href="https://meowapps.com/clean-optimize-wordpress/#Optimize_your_Empty_Request_Time" target="_blank">click here</a>.', 'meowapps' ); ?></p>
+					<p><?php _e( 'The <b>Empty Request Time</b> helps you analyzing the raw performance of your install by giving you the average time it takes to run an empty request to your server. You can try to disable some plugins (or change their options) then and click on Reset to see how it influences the results. With <b>File Operation Time</b>, you will find out if your server is slow with files. An excellent install would have an Empty Request Time of less than 500 ms. Keep it absolutely under 2,000 ms. File Operation Time should take only a few milliseconds more than the Empty Request Time. For more information about this, <a href="https://meowapps.com/clean-optimize-wordpress/#Optimize_your_Empty_Request_Time" target="_blank">click here</a>.', $this->domain ); ?></p>
 				</div>
 
 				<div style="float: left; margin-right: 10px; text-align: center; padding: 10px; background: white; width: 200px; border: 1px solid #e2e2e2;">
@@ -489,7 +489,7 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 
 				<div style="background: white; padding: 5px 15px 5px 15px; box-shadow: 2px 2px 1px rgba(0,0,0,.02); margin-top: 15px;">
 					<p>
-						<?php _e( 'Too many WordPress installs are blown-up with useless and/or huge plugins, and bad practices. But that is because most users are overwhelmed by the diversity and immensity of the WordPress jungle. One rule of thumb is to keep your install the simplest as possible, with the least number of plugins (avoiding heavy ones too) and a good hosting service (avoid VPS except if you know exactly what you are doing). Articles are kept being updated on the Meow Apps website, with all the latest recommendations: ', 'meowapps' )?>
+						<?php _e( 'Too many WordPress installs are blown-up with useless and/or huge plugins, and bad practices. But that is because most users are overwhelmed by the diversity and immensity of the WordPress jungle. One rule of thumb is to keep your install the simplest as possible, with the least number of plugins (avoiding heavy ones too) and a good hosting service (avoid VPS except if you know exactly what you are doing). Articles are kept being updated on the Meow Apps website, with all the latest recommendations: ', $this->domain )?>
 						<a href='https://meowapps.com/debugging-wordpress/' target='_blank'>
 							How To Debug</a>, 
 						<a href='https://meowapps.com/seo-optimization/' target='_blank'>

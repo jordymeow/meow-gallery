@@ -244,7 +244,7 @@ class Meow_MGL_Admin extends MeowApps_Admin {
 
 				<div class="meow-col meow-span_1_of_2">
 
-					<?php $this->display_serialkey_box( "https://meowapps.com/meow-gallery/" ); ?>
+					<?php $this->display_serialkey_box( "https://meowapps.com/plugin/meow-gallery/" ); ?>
 
 					<div class="meow-box">
 						<div class="meow-tabs">

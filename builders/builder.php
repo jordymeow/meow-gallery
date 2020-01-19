@@ -138,6 +138,7 @@ abstract class Meow_Gallery_Generator {
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();
+		$inline_css = preg_replace( "/\r|\n/", "", $inline_css );
 		$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
 
 		return $container;

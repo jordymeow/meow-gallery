@@ -12,7 +12,7 @@ function mglInitCarousels($) {
 		$gallery.imagesLoaded(function() {
 
 			$gallery.addClass('loaded');
-			if ($(window).outerWidth() > 660) {
+			if ($(window).outerWidth() > 860) {
 				var owl = $gallery.owlCarousel({
 					margin: gutter,
 					center: true,
