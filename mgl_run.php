@@ -61,15 +61,23 @@ class Meow_Gallery_Run {
 
 	function gallery( $atts, $isPreview = false ) {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
+
+		// Get the IDs
 		$images = array();
 		if ( isset( $atts['ids'] ) )
 			$images = $atts['ids'];
 		if ( isset( $atts['include'] ) ) {
-			$images = is_array( $atts['include'] ) ? implode( $atts['include'], ',' ) : $atts['include'];
+			$images = is_array( $atts['include'] ) ? implode( ',', $atts['include'] ) : $atts['include'];
 			$atts['include'] = $images;
 		}
-		if ( empty( $images ) )
-			return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
+		if ( empty( $images ) ) {
+			$attachments = get_attached_media( 'image' );
+			$attachmentIds = array_map( function($x) { return $x->ID; }, $attachments );
+			if ( !empty( $attachmentIds ) )
+				$images = implode( ',', $attachmentIds );
+			else
+				return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
+		}
 
 		if ( $isPreview ) {
 			$check = explode( ',', $images );

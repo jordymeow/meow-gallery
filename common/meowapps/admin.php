@@ -27,11 +27,11 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			$this->version = $version;
 
 			// Update system config
-			if( !class_exists( 'EDD_SL_Plugin_Updater' ) )
+			if( !class_exists( 'Meow_EDD_SL_Plugin_Updater' ) )
 				include( dirname( __FILE__ ) . '/updater.php' );
 			$this->is_registered();
 			$license_key = $this->license && isset( $this->license['key'] ) ? $this->license['key'] : "";
-			$edd_updater = new EDD_SL_Plugin_Updater(
+			$edd_updater = new Meow_EDD_SL_Plugin_Updater(
 				( get_option( 'force_sslverify', false ) ? 'https' : 'http' ) . '://store.meowapps.com', $mainfile,
 				array(
 					'version' => $version,
@@ -64,10 +64,17 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			$thisPathName = basename( $thisPath['dirname'] );
 			if ( strpos( $pathName, $thisPathName ) !== false ) {
 				$new_links = array(
-					'pro' =>
-						'<b>Pro Version (' . ( $this->is_registered() ? 'active' :
-						( 'inactive, add your key in the <a href="admin.php?page=' . $this->prefix . '_settings-menu">settings</a>' )
-						) . ')</b>'
+					'pro' => sprintf(
+						// translators: %s is a plugin version number
+						__( '<b>Pro Version (%s)</b>', $this->domain ),
+						( $this->is_registered()
+							? __( 'active', $this->domain )
+							: sprintf(
+								// translators: %s is a plugin prefix
+								__( 'inactive, add your key in the <a href="admin.php?page=%s_settings-menu">settings</a>', $this->domain ),
+								$this->prefix )
+						)
+					),
 				);
 				$links = array_merge( $new_links, $links );
 			}
@@ -118,7 +125,7 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			$license = null;
 			$expires = null;
 			if ( !$post || ( property_exists( $post, 'code' ) ) ) {
-				$status = __( "There was an error while validating the serial.<br />Please contact <a target='_blank' href='https://meowapps.com/contact/'>Meow Apps</a> and mention the following log: <br /><ul>" );
+				$status = __( "There was an error while validating the serial.<br />Please contact <a target='_blank' href='https://meowapps.com/contact/'>Meow Apps</a> and mention the following log: <br /><ul>", $this->domain );
 				$status .= "<li>Server IP: <b>" . gethostbyname( $_SERVER['SERVER_NAME'] ) . "</b></li>";
 				$status .= "<li>Google GET: ";
 				$r = wp_remote_get( 'http://google.com' );
@@ -135,11 +142,23 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			}
 			else if ( $post->license !== "valid" ) {
 				if ( $post->error == "no_activations_left" )
-					$status = __( "Your license key has reached its activation limit <a target='_blank' href='$url'>({$post->error})</a>." );
+					$status = sprintf(
+						// translators: %1$s is a URL attribute, %2$s is error message text
+						__( 'Your license key has reached its activation limit <a target="_blank" href="%1$s">(%2$s)</a>.', $this->domain ),
+						$url, $post->error
+					);
 				else if ( $post->error == "expired" )
-					$status = __( "Your license key expired <a target='_blank' href='$url'>({$post->error})</a>." );
+					$status = sprintf(
+						// translators: %1$s is a URL attribute, %2$s is error message text
+						__( 'Your license key expired <a target="_blank" href="%1$s">(%2$s)</a>.', $this->domain ),
+						$url, $post->error
+					);
 				else {
-					$status = "There is a problem with your subscription <a target='_blank' href='$url'>({$post->error})</a>.";
+					$status = sprintf(
+						// translators: %1$s is a URL attribute, %2$s is error message text
+						__( 'There is a problem with your subscription <a target="_blank" href="%1$s">(%2$s)</a>.', $this->domain ),
+						$url, $post->error
+					);
 				}
 			}
 			else {
@@ -162,7 +181,7 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 		function admin_menu_for_serialkey() {
 			// SUBMENU > Settings > Pro Serial
 			add_settings_section( $this->prefix . '_settings_serialkey', null, null, $this->prefix . '_settings_serialkey-menu' );
-			add_settings_field( $this->prefix . '_pro_serial', "Serial Key",
+			add_settings_field( $this->prefix . '_pro_serial', __( 'Serial Key', $this->domain ),
 				array( $this, 'admin_serialkey_callback' ),
 				$this->prefix . '_settings_serialkey-menu', $this->prefix . '_settings_serialkey' );
 			register_setting( $this->prefix . '_settings_serialkey', $this->prefix . '_pro_serial' );
@@ -186,24 +205,31 @@ if ( !class_exists( 'MeowApps_Admin_Pro' ) ) {
 			settings_fields( $this->prefix . '_settings_serialkey' );
 			do_settings_sections( $this->prefix . '_settings_serialkey-menu' );
 			if ( !$this->is_registered() ) {
-				echo '<small class="description">Insert your serial key above. If you don\'t have one yet, you can get one <a target="_blank" href="' . $url . '">here</a>. If there was an error during the validation, try the <i>Retry to validate</i> button.</small>';
+				printf(
+					// translators: %s is a URL
+					__( '<small class="description">Insert your serial key above. If you don\'t have one yet, you can get one <a target="_blank" href="%s">here</a>. If there was an error during the validation, try the <i>Retry to validate</i> button.</small>', $this->domain ),
+					$url
+				);
 			}
 			else {
 				if ( $this->license['expires'] == 'lifetime' ) {
-					echo "This license never expires.";
+					_e( 'This license never expires.', $this->domain );
 				}
 				else {
 					$datediff = strtotime( $this->license['expires'] ) - time();
 					$days = floor( $datediff / ( 60 * 60 * 24 ) );
-					echo "This license expires in $days days.";
+					printf(
+						// translators: %s is a number of days
+						__( 'This license expires in %s days.', $this->domain ), $days
+					);
 				}
 			}
 			echo '<p class="submit">';
 			if ( !$this->is_registered() ) {
-				submit_button( "Retry to validate", 'delete', 'retry-validation-' . $this->prefix,
+				submit_button( __( 'Retry to validate', $this->domain ), 'delete', 'retry-validation-' . $this->prefix,
 					false, array( 'style' => 'margin-right: 5px;' ) );
 			}
-			submit_button( "Save Changes", 'primary', 'submit', false );
+			submit_button( __( 'Save Changes', $this->domain ), 'primary', 'submit', false );
 			echo '</p></form>';
 		}
 

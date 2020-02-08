@@ -4,13 +4,13 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 3.5.7
+Stable tag: 3.5.8
 
-Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Masonry layout by default.
+Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
 == Description ==
 
-Gallery system built for photographers, by photographers. Clean, focused, evolves naturally. Uses the Tiles layout by default. More information on https://-gallery/.
+Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) and also the standard Gallery Shortcode. It's responsive, retina-friendly, has modern layouts, is blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery-layouts/).
 
 == Installation ==
 
@@ -27,10 +27,14 @@ Nothing yet.
 
 == Changelog ==
 
+= 3.5.8 =
+* Fix: When the gallery is empty, automatically gets the images attached to the post.
+* Update: Better i18n support for admin.
+* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
+
 = 3.5.7 =
 * Fix: Avoid an issue (when a gallery had an issue, all the other galleries weren't rendered).
 * Update: Admin refresh.
-* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
 = 3.5.4 =
 * Fix: Default order issue.
