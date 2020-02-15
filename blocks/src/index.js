@@ -26,7 +26,7 @@ const blockAttributes = {
 	},
 	layout: {
 		type: 'string',
-		default: 'tiles'
+		default: 'default'
 	},
 	animation: {
 		type: 'animation',
@@ -74,7 +74,8 @@ const buildCoreAttributes = function(attributes) {
 	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
 	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
-	if (layout)
+	
+	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
 	if (!useDefaults && animation)
 		attrs += `animation="${animation}" `;
@@ -149,7 +150,18 @@ registerBlockType( 'meow-gallery/gallery', {
 		{
 			attributes: blockAttributes,
 			save({ attributes }) {
+				// Unfortunately, I don't remember what I did this.
+				// Probably simply because we don't use the attribute if it's false.
 				let str = buildShortcode(attributes).replace(' captions="false"', '');
+				return (<Fragment>{str}</Fragment>);
+			}
+		}, {
+			attributes: blockAttributes,
+			save({ attributes }) {
+				// Before, tiles was used as default in the shortcode.
+				// Since we removed the default, we should also do that.
+				let oldAttributes = { ...attributes, layout: attributes.layout === 'default' ? 'tiles' : attributes.layout };
+				let str = buildShortcode(oldAttributes);
 				return (<Fragment>{str}</Fragment>);
 			}
 		}

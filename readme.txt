@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
 Requires at least: 4.8
 Tested up to: 5.3
 Requires PHP: 7.0
-Stable tag: 3.5.8
+Stable tag: 3.5.9
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -26,6 +26,12 @@ Replace all the files. Nothing else to do.
 Nothing yet.
 
 == Changelog ==
+
+= 3.5.9 =
+* Fix: Remove dots when 3 or fewer images in Carousel.
+* Fix: Cascade layout had an issue when vertical image was sandwiched between two horizontal ones.
+* Update: With the Gutenberg Block, default should be... default, and not always 'Tiles'.
+* Fix: Map doesn't crash anymore on first init in the editor.
 
 = 3.5.8 =
 * Fix: When the gallery is empty, automatically gets the images attached to the post.

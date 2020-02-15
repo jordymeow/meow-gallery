@@ -14,10 +14,10 @@ function mglInitCarousels($) {
 			$gallery.addClass('loaded');
 			if ($(window).outerWidth() > 860) {
 				var owl = $gallery.owlCarousel({
+					items: 1,
 					margin: gutter,
 					center: true,
 					loop: true,
-					dotsEach: true,
 					autoWidth: true,
 					dots: show_dots
 				});

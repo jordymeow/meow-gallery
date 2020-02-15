@@ -178,8 +178,8 @@ class GalleryEdit extends Component {
 
 	refreshMap() {
 		if (window.mglInitMaps) {
-			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview);
-			if (htmlPreviewDom.getElementsByTagName('script')[0]) {
+			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
+			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
 				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
 				eval(js);
 				mglInitMaps();

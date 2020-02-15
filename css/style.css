@@ -73,7 +73,7 @@
 .mgl-justified .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
-  transition: .3s;
+  transition: 0.3s;
 }
 .mgl-justified::after {
   --w: 2;
@@ -130,7 +130,7 @@
 .mgl-masonry .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
-  transition: .3s;
+  transition: 0.3s;
 }
 .mgl-square {
   width: 100%;
@@ -174,7 +174,7 @@
   background-clip: content-box;
   padding: 5px;
   box-sizing: border-box;
-  transition: .2s;
+  transition: 0.2s;
 }
 .mgl-square .mgl-item figcaption p {
   padding: 5px 10px;
@@ -183,7 +183,7 @@
 .mgl-square .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
-  transition: .3s;
+  transition: 0.3s;
 }
 .mgl-tiles {
   position: relative;
@@ -927,9 +927,9 @@
 .mgl-tiles .mgl-row .mgl-box .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
-  -webkit-transition: .3s;
-  -o-transition: .3s;
-  transition: .3s;
+  -webkit-transition: 0.3s;
+  -o-transition: 0.3s;
+  transition: 0.3s;
 }
 .mgl-cascade {
   position: relative;
@@ -950,7 +950,7 @@
   grid-row: row1-start / row2-end;
 }
 .mgl-cascade .mgl-row.mgl-layout-1-i {
-  grid-template-columns: [col1-start] 50% [col2-start];
+  grid-template-columns: [col1-start] 100% [col2-start];
   grid-template-rows: [row1-start] auto [row1-end];
 }
 .mgl-cascade .mgl-row.mgl-layout-1-i .a {
@@ -1010,5 +1010,5 @@
 .mgl-cascade .mgl-row .mgl-box .mgl-item:hover figcaption {
   bottom: 0;
   opacity: 1;
-  transition: .3s;
+  transition: 0.3s;
 }
