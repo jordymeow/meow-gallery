@@ -4,7 +4,7 @@ Plugin Name: Meow Gallery Pro
 Plugin URI: https://meowapps.com
 Bitbucket Plugin URI: https://bitbucket.org/meowapps/meow-gallery/
 Description: Gallery system built for photographers, by photographers.
-Version: 3.5.9
+Version: 4.0.0
 Author: Jordy Meow, Thomas Kim
 Author URI: https://meowapps.com
 Text Domain: meow-gallery
@@ -15,28 +15,13 @@ Originally developed for two of my websites:
 - Haikyo (https://haikyo.org)
 */
 
-if ( class_exists( 'Meow_Gallery_Core' ) ) {
-  function mfrh_admin_notices() {
-    echo '<div class="error"><p>Thanks for installing the Pro version of Meow Gallery :) However, the free version is still enabled. Please disable or uninstall it.</p></div>';
-  }
-  add_action( 'admin_notices', 'mfrh_admin_notices' );
-  return;
-}
+define( 'MGL_VERSION', '4.0.0' );
+define( 'MGL_PREFIX', 'mgl' );
+define( 'MGL_DOMAIN', ' meow-gallery' );
+define( 'MGL_ENTRY', __FILE__ );
+define( 'MGL_PATH', dirname( __FILE__ ) );
+define( 'MGL_URL', plugin_dir_url( __FILE__ ) );
 
-global $mgl_version;
-$mgl_version = '3.5.9';
-
-// Admin
-include "mgl_admin.php";
-$mgl_admin = new Meow_MGL_Admin( 'mgl', __FILE__, 'meow-gallery' );
-
-// Core
-include "mgl_core.php";
-$mgl_core = new Meow_Gallery_Core( $mgl_admin );
-
-// Pro Core
-require( 'meowapps/core.php' );
-new MeowAppsPro_MGL_Core( 'mgl', __FILE__, 'meow-gallery',
-  $mgl_version, $mgl_core, $mgl_admin );
+require_once( 'classes/init.php');
 
 ?>

@@ -1,0 +1,59 @@
+// main: style-pro.less
+
+.mgl-map {
+  width: 100%;
+  height: 400px;
+  background: #222;
+  
+  .mgl-ui-map {
+    width: 100%;
+    height: 100%;
+
+    .image-marker-container {
+      position: relative;
+      width: 60px;
+      height: 90px;
+      border: none;
+      margin-left: -30px;
+      margin-top: -90px;
+
+      .rounded-image {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        border: 2px solid #222;
+        overflow: hidden;
+
+        img {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+        }
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        width: 2px;
+        height: calc(~'100% - 1px');
+        left: 29px;
+        background: #222;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #222;
+        left: 25px;
+        bottom: 0;
+      }
+    }
+  }
+}
