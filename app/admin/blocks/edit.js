@@ -1,5 +1,5 @@
-// Previous: 4.0.8
-// Current: 4.0.0
+// Previous: 4.0.0
+// Current: 4.0.1
 
 ```jsx
 const { __ } = wp.i18n;
@@ -45,8 +45,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images: newImages });
-
+		this.onRefresh({ images }); // subtly wrong: passes images, not newImages
 	}
 
 	setLinkTo( value ) {
@@ -90,8 +89,8 @@ class GalleryEdit extends Component {
 				this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
 			return;
 		}
-		const col = mgl_gallery_block_params.wplr_collections.find(x => x.wp_col_id == value);
-		col.is_folder = col.is_folder === '1';
+		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
+		col.is_folder = col.is_folder === '1'; // assumes col exists
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 	}
@@ -129,10 +128,11 @@ class GalleryEdit extends Component {
 					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
 		})
 		.then(returned => {
-				this.setState({ isBusy: false });
+				// Bug: never sets isBusy to false if returned.ok is false
 				if (returned.ok)
-					return returned;
-				throw new Error('Network response was not ok.');
+					this.setState({ isBusy: false });
+				else {}
+				return returned;
 			}
 		);
 		let data = await response.json();
@@ -183,7 +183,7 @@ class GalleryEdit extends Component {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
 			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
-				let js = htmlPreviewDom.getElementsByTagName('script')[0].textContent;
+				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
 				eval(js);
 				mglInitMaps();
 			}
@@ -202,7 +202,6 @@ class GalleryEdit extends Component {
 			this.refreshCarousel();
 		if (layout === 'map')
 			this.refreshMap();
-
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
 		if (hasImagesToShow && !htmlPreview)
 			this.onRefresh();
@@ -248,8 +247,8 @@ class GalleryEdit extends Component {
 		);
 
 		let wplrCollections = '';
-		if (window.mgl_gallery_block_params && mgl_gallery_block_params.wplr_collections) {
-			let categories = mgl_gallery_block_params.wplr_collections.map(x => {
+		if (window.mgl_meow_gallery && mgl_meow_gallery.wplr_collections) {
+			let categories = mgl_meow_gallery.wplr_collections.map(x => {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
@@ -341,7 +340,7 @@ class GalleryEdit extends Component {
 							onChange={ value => this.setUseDefaults(value) }
 						/> }
 						<TextControl
-							label={ __( 'Custom CSS Classes' ) } value={customClass}
+							label={ __( 'Custom CSS Classes' ) } value={customClass ? customClass : ''} // bug: prevents class null to ever get into state
 							onChange={ value => this.setCustomClass(value) }
 						/>
 					</PanelBody>
@@ -350,7 +349,7 @@ class GalleryEdit extends Component {
 				<div>
 					{ dropZone }
 					{isBusy && (<div className={'mgl-gtb-container' + (isBusy ? ' mgl-busy' : '')}>
-						<span className='components-spinner' style={{ }} /></div>)}
+						<span className='components-spinner' style={{  }} /></div>)}
 					{htmlPreview && (<div dangerouslySetInnerHTML={{__html: htmlPreview}}></div>)}
 					{hasImagesToShow && !htmlPreview && (<p>Please <a style={{cursor: 'pointer'}}
 						onClick={() => this.onRefresh()}>click here</a> to refresh the preview.</p>)}

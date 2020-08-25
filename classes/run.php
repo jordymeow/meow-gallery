@@ -4,6 +4,7 @@ class Meow_MGL_Run {
 
 	public function __construct( $core ) {
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_shortcode( 'gallery', array( $core, 'gallery' ) );
 		add_shortcode( 'meow-gallery', array( $core, 'gallery' ) );
 		// Yoast: Some people really want this, but it needs to be reviewed as Yoast changed its API
@@ -14,7 +15,7 @@ class Meow_MGL_Run {
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
 		wp_enqueue_script( 'mgl-js', MGL_URL . '/app/galleries.js', array( 'jquery' ), $cache_buster, false );
-		wp_register_style( 'mgl-css', MGL_URL . '/app/style.min.css', null, $cache_buster );
+		wp_enqueue_style( 'mgl-css', MGL_URL . '/app/style.min.css', null, $cache_buster );
 	}
 
 	/*

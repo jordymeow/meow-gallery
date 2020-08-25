@@ -1,10 +1,10 @@
-=== Meow Gallery Pro ===
+=== Meow Gallery (+ Gallery Block) ===
 Contributors: TigrouMeow, kywyz
-Tags: gallery, masonry, justified, photo gallery, photo gallery, image gallery
+Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 4.8
 Tested up to: 5.5
 Requires PHP: 5.6
-Stable tag: 4.0.0
+Stable tag: 4.0.1
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -12,20 +12,46 @@ Polished and beautiful gallery built for image lovers. Designed to work for Word
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) and also the standard Gallery Shortcode. It's responsive, retina-friendly, has modern layouts, is blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery-layouts/).
 
-== Installation ==
+=== Features ===
 
-1. Upload `meow-gallery` to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
+Uses WordPress and Gutenberg naturally without hacking it, and more importantly, without imposing its own system and making your website dependent of it. It means you can use the Meow Gallery and one day switch back to the WordPress core rendering, or anything else. It works everywhere, easily, and fits naturally in WordPress. We will never blow it up with features that most users do not need.
 
-== Upgrade Notice ==
+[youtube https://youtu.be/ZyboZqZb9JQ]
 
-Replace all the files. Nothing else to do.
+=== Layouts ===
 
-== Frequently Asked Questions ==
+Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram), only using CSS, so no more scripts to slow down your pages and the rendering. Demo [here](https://meowapps.com/meow-gallery-layouts/).
 
-Nothing yet.
+=== Compatibility ===
+
+Since this gallery works with WordPress in a natural way, it should be compatible with any other plugins or themes (of course, it depends on how those have been exactly implemented). The following plugins might interest you.
+
+* Lightbox: The choice of the lightbox is yours, so this gallery does not come with one. However, we made the [Meow Lightbox](https://wordpress.org/plugins/meow-lightbox/). It follows the same principles.
+* Lightroom: It fully works with [WP/LR Sync](https://wordpress.org/plugins/wplr-sync/) and its attributes. If you wish to use your collections in Lightroom automatically, then, this is easy!
+* External links: If you want to create links from your images to external URLs, we recommend you the [Gallery Custom Links](https://wordpress.org/plugins/gallery-custom-links/) plugin.
+* Audio: You can also add sound, music or any kind of audio to an image. To do this, you can use [Audio Story Images](https://wordpress.org/plugins/audio-story-images/).
+
+This plugin is SEO-friendly, so for example, the list of images will be added in your sitemap (Yoast SEO does this).
+
+=== Pro Version ===
+
+If you want to support us, you will get those additional features.
+
+* Infinite/Lazy loading, for a faster page loading and a smoother experience for the user.
+* The Carousel, a very cool and dynamic layout.
+* The Map Layout, a different and really nice way to present your photos, or trips.
+* Animations on your galleries.
+
+You can find more information on this plugin on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
+
+Languages: English.
 
 == Changelog ==
+
+= 4.0.1 (2020/09/25) =
+* Fix: Better loading of the JS and CSS files.
+* Fix: Compatibility with WP/LR Sync.
+* Update: Repository cleaning.
 
 = 4.0.0 (2020/09/21) =
 * Update: New UI in the admin, better and faster architecture.

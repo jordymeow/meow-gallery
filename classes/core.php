@@ -9,10 +9,14 @@ class Meow_MGL_Core {
 		$this->is_rest = MeowCommon_Helpers::is_rest();
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
+
+		// TODO: Would be nice to detect if the gallery is actually used on the current page.
+		$is_gallery_used = true;
+
 		if ( is_admin() ) {
 			new Meow_MGL_Admin();
 		}
-		else {
+		if ( is_admin() || $is_gallery_used ) {
 			new Meow_MGL_Run( $this );
 		}
 		if ( $this->is_rest ) {
