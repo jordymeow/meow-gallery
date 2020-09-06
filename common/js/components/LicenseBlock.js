@@ -47,7 +47,9 @@ const LicenseBlock = () => {
     let res = await postFetch(`${CommonApiUrl}/set_license`, { serialKey });
     if (res.success) {
       setLicense(res.data);
-      setCurrentModal('licenseAdded');
+      if (res.data && !res.data.issue) {
+        setCurrentModal('licenseAdded');
+      }
     }
     setBusy(false);
   }

@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 4.8
 Tested up to: 5.5
 Requires PHP: 5.6
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -47,6 +47,10 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 4.0.2 (2020/10/06) =
+* Update: Better compatibility with Meow Lightbox.
+* Update: Updated the common library.
 
 = 4.0.1 (2020/09/25) =
 * Fix: Better loading of the JS and CSS files.

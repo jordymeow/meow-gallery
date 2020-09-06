@@ -2,11 +2,9 @@
 
 class Meow_MGL_Core {
 
-	public $is_rest = false;
 	private $gallery_process = false;
 
 	public function __construct() {
-		$this->is_rest = MeowCommon_Helpers::is_rest();
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 
@@ -19,11 +17,11 @@ class Meow_MGL_Core {
 		if ( is_admin() || $is_gallery_used ) {
 			new Meow_MGL_Run( $this );
 		}
-		if ( $this->is_rest ) {
+		if ( MeowCommon_Helpers::is_rest() ) {
 			new Meow_MGL_Rest( $this );
 		}
 		if ( class_exists( 'MeowPro_MGL_Core' ) ) {
-			new MeowPro_MGL_Core( $this );
+			new MeowPro_MGL_Core();
 		}
 	}
 

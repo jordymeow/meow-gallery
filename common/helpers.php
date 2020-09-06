@@ -4,19 +4,35 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 
 	class MeowCommon_Helpers {
 	
-	/**
-	 * Checks if the current request is a WP REST API request.
-	 *
-	 * Case #1: After WP_REST_Request initialisation
-	 * Case #2: Support "plain" permalink settings
-	 * Case #3: It can happen that WP_Rewrite is not yet initialized,
-	 *          so do this (wp-settings.php)
-	 * Case #4: URL Path begins with wp-json/ (your REST prefix)
-	 *          Also supports WP installations in subfolders
-	 *
-	 * @returns boolean
-	 * @author matzeeable
-	 */
+		static function is_divi_builder() {
+			return isset( $_GET['et_fb'] ) && $_GET['et_fb'] === '1';
+		}
+
+		static function is_asynchronous_request() {
+			return self::is_ajax_request() || self::is_woocommerce_ajax_request() || self::is_rest();
+		}
+
+		static function is_ajax_request() {
+			return wp_doing_ajax();
+		}
+
+		static function is_woocommerce_ajax_request() {
+			return !empty( $_GET['wc-ajax'] );
+		}
+
+		/**
+		 * Checks if the current request is a WP REST API request.
+		 *
+		 * Case #1: After WP_REST_Request initialisation
+		 * Case #2: Support "plain" permalink settings
+		 * Case #3: It can happen that WP_Rewrite is not yet initialized,
+		 *          so do this (wp-settings.php)
+		 * Case #4: URL Path begins with wp-json/ (your REST prefix)
+		 *          Also supports WP installations in subfolders
+		 *
+		 * @returns boolean
+		 * @author matzeeable
+		 */
 
 		static function is_rest() {
 			$prefix = rest_get_url_prefix( );
