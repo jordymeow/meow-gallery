@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.0.0
+// Previous: 4.0.0
+// Current: 4.0.4
 
 jQuery(document).ready(function ($) {
 
@@ -47,4 +47,10 @@ jQuery(document).ready(function ($) {
 
   window.mglCalculateRow = tilesCalculateRow
   window.mglCalculateRow()
+
+  if (mgl_settings.disable_right_click) {
+    $('.mgl-gallery img').on('contextmenu', function () {
+      return false
+    })
+  }
 })

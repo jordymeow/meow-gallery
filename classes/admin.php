@@ -5,7 +5,10 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 	public function __construct() {
 		parent::__construct( MGL_PREFIX, MGL_ENTRY, MGL_DOMAIN, class_exists( 'MeowPro_MGL_Core' ) );
 		add_action( 'admin_menu', array( $this, 'app_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		$blocks_enabled = function_exists( 'register_block_type' );
+		if ( $blocks_enabled ) {
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		}
 		if ( get_option( 'mgl_captions', 'notset' ) === 'notset' ) {
 			$captions_enabled = get_option( 'mgl_captions_enabled' );
 			update_option( 'mgl_captions', $captions_enabled ? 'hover-only' : false );
@@ -40,6 +43,7 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 			'domain' => MGL_DOMAIN,
 			'is_pro' => class_exists( 'MeowPro_MGL_Core' ),
 			'is_registered' => !!$this->is_registered(),
+			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			'wplr_collections' => $wplr ? $wplr->read_collections_recursively() : [],
 		] ) );
 

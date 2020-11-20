@@ -101,6 +101,7 @@ class Meow_MGL_Rest
 			'mgl_mapbox_token' => get_option( 'mgl_mapbox_token', '' ),
 			'mgl_mapbox_style' => get_option( 'mgl_mapbox_style', $this->create_default_mapbox_style() ),
 			'mgl_maptiler_token' => get_option( 'mgl_maptiler_token', '' ),
+			'mgl_right_click' => get_option( 'mgl_right_click', false )
 		);
 	}
 

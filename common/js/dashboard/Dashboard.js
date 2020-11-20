@@ -7,7 +7,7 @@ import { NekoTypo, NekoPage, NekoHeader, NekoWrapper, NekoTab, NekoTabs, NekoBlo
   NekoColumn, NekoSettings, NekoCheckboxGroup, NekoCheckbox } from '@neko-ui';
 import { postFetch, jsonFetcher } from '@neko-ui';
 
-import { apiUrl, restUrl, pluginUrl } from '@app/settings';
+import { apiUrl, restUrl, pluginUrl, restNonce } from '@app/settings';
 import { SpeedTester } from './SpeedTester';
 import { TabText, StyledPluginBlock, StyledPluginImage, 
   StyledPhpErrorLogs, StyledPhpInfo } from './Dashboard.styled';
@@ -92,7 +92,7 @@ const Dashboard = () => {
     newSettingsData[id] = value;
     mutateSwrSettings({ ...swrSettings, data: newSettingsData }, false);
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/update_option`, { name: id, value });
+    const res = await postFetch(`${CommonApiUrl}/update_option`, { json: { name: id, value }, nonce: restNonce });
     setBusy(false);
     if (!res.success) {
       alert(res.message);
@@ -194,11 +194,11 @@ const Dashboard = () => {
                     </div>
                   </StyledPluginBlock>
 
-                  <StyledPluginBlock title="WP Retina 2x" className="primary">
+                  <StyledPluginBlock title="Perfect Images + Retina" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/wp-retina-2x.jpg`} />
                     <div>
-                      <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>WP Retina 2x</a></h2>
-                      <p>The first and best High-DPI plugin! It enforces high-quality image support and best-practices.</p>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>Perfect Images + Retina</a></h2>
+                      <p>It handles Retina, help you managing the Image Sizes registered in your WP, and much more.</p>
                     </div>
                   </StyledPluginBlock>
 

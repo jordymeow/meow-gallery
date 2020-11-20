@@ -2,14 +2,22 @@
 
 class MeowCommon_Classes_Rest
 {
-	private $namespace = null;
+	private $namespace = "meow-common/v1";
+	static public $instance = null;
 
-	public function __construct( &$admin ) {
-    $this->admin = $admin;
-		$this->namespace = "meow-common/v1";
+	static public function init_once() {
+		if ( !function_exists( 'wp_get_current_user' ) ) {
+			return;
+		}
 		if ( !current_user_can( 'administrator' ) ) {
 			return;
 		}
+		if ( !MeowCommon_Classes_Rest::$instance ) {
+			MeowCommon_Classes_Rest::$instance = new self();
+		}
+	}
+
+	private function __construct() {
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 	}
 

@@ -5,7 +5,7 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 	class MeowCommon_Admin {
 
 		public static $loaded = false;
-		public static $admin_version = "3.0";
+		public static $admin_version = "3.2";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -16,16 +16,17 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 
 		public function __construct( $prefix, $mainfile, $domain, $isPro = false, $disableReview = false ) {
 
-			// Core Admin (used by all Meow Apps plugins)
 			if ( !MeowCommon_Admin::$loaded ) {
 				if ( is_admin() ) {
+
+					// Check potential issues with this WordPress install, other plugins, etc.
+					new MeowCommon_Classes_Issues( $prefix, $mainfile, $domain );
+
+					// Create the Meow Apps Menu
 					add_action( 'admin_menu', array( $this, 'admin_menu_start' ) );
 					if ( isset( $_GET['page'] ) && $_GET['page'] === 'meowapps-main-menu' ) {
 						add_filter( 'admin_footer_text',  array( $this, 'admin_footer_text' ), 100000, 1 );
 					}
-				}
-				if ( MeowCommon_Helpers::is_rest() ) {
-					new MeowCommon_Classes_Rest( $this );
 				}
 				MeowCommon_Admin::$loaded = true;
 			}
@@ -55,13 +56,19 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			$pathName = basename( $path['dirname'] );
 			$thisPath = pathinfo( $this->mainfile );
 			$thisPathName = basename( $thisPath['dirname'] );
+			$isActive = is_plugin_active( $file );
+			if ( !$isActive ) {
+				return $links;
+			}
+			$isIssue = $this->isPro && !$this->is_registered();
 			if ( strpos( $pathName, $thisPathName ) !== false ) {
 				$new_links = array(
 					'settings' => 
 						sprintf( __( '<a href="admin.php?page=%s_settings">Settings</a>', $this->domain ), $this->prefix ),
 					'license' => 
-						$this->is_registered() ? '<span style="color: #a75bd6;">' . __( 'Pro Version', $this->domain ) . '</span>' : 
-						sprintf( '<span style="color: #ff3434;">' . __( 'License Issue', $this->domain ), $this->prefix ) . '</span>',
+						$this->is_registered() ? 
+							('<span style="color: #a75bd6;">' . __( 'Pro Version', $this->domain ) . '</span>') : 
+								( $isIssue ? (sprintf( '<span style="color: #ff3434;">' . __( 'License Issue', $this->domain ), $this->prefix ) . '</span>') : (sprintf( '<span>' . __( '<a target="_blank" href="https://store.meowapps.com">Get the <u>Pro Version</u></a>', $this->domain ), $this->prefix ) . '</span>') ),
 				);
 				$links = array_merge( $new_links, $links );
 			}
@@ -148,26 +155,31 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			$errorpath = ini_get( 'error_log' );
 			$output_lines = array();
 			if ( !empty( $errorpath ) && file_exists( $errorpath ) ) {
-				$file = new SplFileObject( $errorpath, 'r' );
-				$file->seek( PHP_INT_MAX );
-				$last_line = $file->key();
-				$iterator = new LimitIterator( $file, $last_line > 500 ? $last_line - 500 : 0, $last_line );
-				$lines = iterator_to_array( $iterator );
-				foreach ( $lines as $line ) {
-					$newline = '';
-					if ( preg_match( '/PHP Fatal/', $line ) ) {
-						$newline = '<div class="fatal">' . $line . '</div>';
+				try {
+					$file = new SplFileObject( $errorpath, 'r' );
+					$file->seek( PHP_INT_MAX );
+					$last_line = $file->key();
+					$iterator = new LimitIterator( $file, $last_line > 500 ? $last_line - 500 : 0, $last_line );
+					$lines = iterator_to_array( $iterator );
+					foreach ( $lines as $line ) {
+						$newline = '';
+						if ( preg_match( '/PHP Fatal/', $line ) ) {
+							$newline = '<div class="fatal">' . $line . '</div>';
+						}
+						else if ( preg_match( '/PHP Warning/', $line ) ) {
+							$newline = '<div class="warning">' . $line . '</div>';
+						}
+						else if ( preg_match( '/PHP Notice/', $line ) ) {
+							$newline = '<div class="notice">' . $line . '</div>';
+						}
+						else {
+							continue;
+						}
+						array_push( $output_lines, $newline );
 					}
-					else if ( preg_match( '/PHP Warning/', $line ) ) {
-						$newline = '<div class="warning">' . $line . '</div>';
-					}
-					else if ( preg_match( '/PHP Notice/', $line ) ) {
-						$newline = '<div class="notice">' . $line . '</div>';
-					}
-					else {
-						continue;
-					}
-					array_push( $output_lines, $newline );
+				}
+				catch ( OutOfBoundsException $e ) {
+					error_log( $e->getMessage() );
 				}
 			}
 			if ( empty( $output_lines ) ) {

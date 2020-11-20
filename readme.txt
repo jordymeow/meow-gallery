@@ -1,10 +1,10 @@
 === Meow Gallery (+ Gallery Block) ===
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
-Requires at least: 4.8
+Requires at least: 5.0
 Tested up to: 5.5
 Requires PHP: 5.6
-Stable tag: 4.0.3
+Stable tag: 4.0.4
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -48,16 +48,19 @@ Languages: English.
 
 == Changelog ==
 
-= 4.0.3 (2020/10/06) =
+= 4.0.4 (2020/11/20) =
+* Add: Right click option.
+
+= 4.0.3 (2020/09/06) =
 * Update: Better compatibility with Meow Lightbox.
 * Update: Updated the common library.
 
-= 4.0.1 (2020/09/25) =
+= 4.0.1 (2020/08/25) =
 * Fix: Better loading of the JS and CSS files.
 * Fix: Compatibility with WP/LR Sync.
 * Update: Repository cleaning.
 
-= 4.0.0 (2020/09/21) =
+= 4.0.0 (2020/08/21) =
 * Update: New UI in the admin, better and faster architecture.
 
 = 3.5.9 =

@@ -15,6 +15,11 @@ class Meow_MGL_Run {
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
 		wp_enqueue_script( 'mgl-js', MGL_URL . '/app/galleries.js', array( 'jquery' ), $cache_buster, false );
+		wp_localize_script('mgl-js', 'mgl_settings',
+			array(
+				'disable_right_click' => !get_option( 'mgl_right_click', false ),
+			)
+		);
 		wp_enqueue_style( 'mgl-css', MGL_URL . '/app/style.min.css', null, $cache_buster );
 	}
 

@@ -20,37 +20,43 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 			return !empty( $_GET['wc-ajax'] );
 		}
 
-		/**
-		 * Checks if the current request is a WP REST API request.
-		 *
-		 * Case #1: After WP_REST_Request initialisation
-		 * Case #2: Support "plain" permalink settings
-		 * Case #3: It can happen that WP_Rewrite is not yet initialized,
-		 *          so do this (wp-settings.php)
-		 * Case #4: URL Path begins with wp-json/ (your REST prefix)
-		 *          Also supports WP installations in subfolders
-		 *
-		 * @returns boolean
-		 * @author matzeeable
-		 */
-
+		// Originally created by matzeeable, modified by jordymeow
 		static function is_rest() {
-			$prefix = rest_get_url_prefix( );
-			if ( defined('REST_REQUEST') && REST_REQUEST || isset( $_GET['rest_route'] ) // (#2)
-							&& strpos( trim( $_GET['rest_route'], '\\/' ), $prefix , 0 ) === 0)
-					return true;
-			// (#3)
+
+			// WP_REST_Request init.
+			$is_rest_request = defined('REST_REQUEST') && REST_REQUEST;
+			if ( $is_rest_request ) {
+				MeowCommon_Classes_Rest::init_once();
+				return true;
+			}
+
+			// Plain permalinks.
+			$prefix = rest_get_url_prefix();
+			$request_contains_rest = isset( $_GET['rest_route'] ) && strpos( trim( $_GET['rest_route'], '\\/' ), $prefix , 0 ) === 0;
+			if ( $request_contains_rest) {
+				MeowCommon_Classes_Rest::init_once();
+				return true;
+			}		
+
+			// It can happen that WP_Rewrite is not yet initialized, so better to do it.
 			global $wp_rewrite;
-			if ($wp_rewrite === null) $wp_rewrite = new WP_Rewrite();
-				
-			// (#4)
-			$rest_url = wp_parse_url( trailingslashit( rest_url( ) ) );
-			$current_url = wp_parse_url( add_query_arg( array( ) ) );
+			if ( $wp_rewrite === null ) { 
+				$wp_rewrite = new WP_Rewrite();
+			}
+			$rest_url = wp_parse_url( trailingslashit( rest_url() ) );
+			$current_url = wp_parse_url( add_query_arg( array() ) );
 			if ( !$rest_url || !$current_url )
 				return false;
+
+			// URL Path begins with wp-json.
 			if ( !empty( $current_url['path'] ) && !empty( $rest_url['path'] ) ) {
-				return strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
+				$request_contains_rest = strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
+				if ( $request_contains_rest) {
+					MeowCommon_Classes_Rest::init_once();
+					return true;
+				}
 			}
+
 			return false;
 		}
 
