@@ -88,32 +88,44 @@ const StyledPhpInfo = Styled.div`
   }
 `;
 
-const StyledPhpErrorLogs = Styled.div`
-  color: white;
-  margin: 0px 15px 15px 15px;
+const StyledPhpErrorLogs = Styled.ul`
+  margin-top: 10px;
+  background: rgb(0, 72, 88);
+  padding: 10px;
+  color: rgb(58, 212, 58);
+  max-height: 600px;
+  min-height: 200px;
+  display: block;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre;
+  overflow-x: auto;
+  width: calc(100vw - 276px);
 
-  .fatal {
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: #ab3014;
-    margin: 0 0 10px 0;
-    border: 0;
+  .log-date {
+    color: white;
+    margin-left: 8px;
   }
 
-  .warning {
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: #b98c0e;
-    margin: 0 0 10px 0;
-    border: 0;
+  .log-type {
+    background: #0000004d;
+    padding: 2px 5px;
+    border-radius: 8px;
+    text-transform: uppercase;
   }
 
-  .notice {
-    padding: 8px 12px;
-    border-radius: 10px;
-    background: #23ad74;
-    margin: 0 0 10px 0;
-    border: 0;
+  .log-content {
+    display: block;
+  }
+
+  .log-warning .log-type {
+    background: #ccb028;
+    color: white;
+  }
+
+  .log-fatal .log-type {
+    background: #cc2828;
+    color: white;
   }
 `;
 

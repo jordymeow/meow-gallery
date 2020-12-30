@@ -3,7 +3,7 @@ const { useState, useEffect } = wp.element;
 import useSWR from 'swr';
 
 // NekoUI
-import { NekoTypo, NekoPage, NekoHeader, NekoWrapper, NekoTab, NekoTabs, NekoBlock,
+import { NekoTypo, NekoPage, NekoHeader, NekoWrapper, NekoTab, NekoTabs, NekoBlock, NekoButton,
   NekoColumn, NekoSettings, NekoCheckboxGroup, NekoCheckbox } from '@neko-ui';
 import { postFetch, jsonFetcher } from '@neko-ui';
 
@@ -55,13 +55,6 @@ const jsxTextRecommendations =
     </NekoTypo>
   </TabText>;
 
-const jsxPhpErrorLogs = 
-  <TabText>
-    <NekoTypo p>
-      A summarized version of your PHP Error Logs will be displayed here, with the latest errors at the top. After it, you will find information about your PHP, so make sure your scroll down.
-    </NekoTypo>
-  </TabText>;
-
 const Dashboard = () => {
   const [ fatalError, setFatalError ] = useState(false);
   const { data: swrSettings, mutate: mutateSwrSettings, error: swrError } = useSWR(`${CommonApiUrl}/all_settings/`, jsonFetcher);
@@ -69,7 +62,7 @@ const Dashboard = () => {
   const hide_meowapps = settings?.meowapps_hide_meowapps;
   const force_sslverify = settings?.force_sslverify;
   const [ busy, setBusy ] = useState(false);
-  const [ phpErrorLogs, setPhpErrorLogs ] = useState("");
+  const [ phpErrorLogs, setPhpErrorLogs ] = useState([]);
   const [ phpInfo, setPhpInfo ] = useState("");
 
   // Handle SWR errors
@@ -81,9 +74,7 @@ const Dashboard = () => {
   }, [swrError]);
 
   useEffect(() => {
-    let logs = document.getElementById('meow-common-phperrorlogs');
     let info = document.getElementById('meow-common-phpinfo');
-    setPhpErrorLogs(logs.innerHTML);
     setPhpInfo(info.innerHTML);
   }, []);
 
@@ -98,6 +89,14 @@ const Dashboard = () => {
       alert(res.message);
     }
     mutateSwrSettings();
+  }
+
+  const loadErrorLogs = async () => {
+    setBusy(true);
+    const res = await postFetch(`${CommonApiUrl}/error_logs`, { nonce: restNonce });
+    let fresh = res && res.data ? res.data : [];
+    setPhpErrorLogs(fresh.reverse());
+    setBusy(false);
   }
 
   const jsxHideMeowApps = 
@@ -220,10 +219,26 @@ const Dashboard = () => {
               {jsxTextRecommendations}
             </NekoTab>
 
-            <NekoTab title="PHP Errors & Info">
-              {jsxPhpErrorLogs}
-              <StyledPhpErrorLogs dangerouslySetInnerHTML={{ __html: phpErrorLogs }} />
+            <NekoTab title="PHP Info">
               <StyledPhpInfo dangerouslySetInnerHTML={{ __html: phpInfo }} />
+            </NekoTab>
+
+            <NekoTab title="PHP Error Logs">
+              <TabText>
+                <NekoButton style={{ marginBottom: 10 }} color={'#ccb027'} onClick={loadErrorLogs}>
+                    Load PHP Error Logs
+                </NekoButton>
+                <StyledPhpErrorLogs>
+                  {phpErrorLogs.map(x => <li class={`log-${x.type}`}>
+                    <span class='log-type'>{x.type}</span>
+                    <span class='log-date'>{x.date}</span>
+                    <span class='log-content'>{x.content}</span>
+                  </li>)}
+                </StyledPhpErrorLogs>
+              </TabText>
+              {/* {jsxPhpErrorLogs}
+              <StyledPhpErrorLogs dangerouslySetInnerHTML={{ __html: phpErrorLogs }} />
+              <StyledPhpInfo dangerouslySetInnerHTML={{ __html: phpInfo }} /> */}
             </NekoTab>
 
             <NekoTab title="Settings">

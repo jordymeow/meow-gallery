@@ -1,7 +1,6 @@
-// Previous: 4.0.0
-// Current: 4.0.1
+// Previous: 4.0.1
+// Current: 4.0.5
 
-```jsx
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -45,7 +44,8 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images }); // subtly wrong: passes images, not newImages
+		this.onRefresh({ images: newImages });
+
 	}
 
 	setLinkTo( value ) {
@@ -90,7 +90,7 @@ class GalleryEdit extends Component {
 			return;
 		}
 		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
-		col.is_folder = col.is_folder === '1'; // assumes col exists
+		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 	}
@@ -112,7 +112,7 @@ class GalleryEdit extends Component {
 
 	async onRefresh(newAttributes = {}) {
 		let attributes = { ...this.props.attributes, ...newAttributes }
-		const ids = attributes.images.map(x => x.id);
+		const ids = attributes.images && attributes.images.map(x => x.id);
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
 		this.setState( { isBusy: true } );
@@ -128,11 +128,10 @@ class GalleryEdit extends Component {
 					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
 		})
 		.then(returned => {
-				// Bug: never sets isBusy to false if returned.ok is false
+				this.setState({ isBusy: false });
 				if (returned.ok)
-					this.setState({ isBusy: false });
-				else {}
-				return returned;
+					return returned;
+				throw new Error('Network response was not ok.');
 			}
 		);
 		let data = await response.json();
@@ -167,10 +166,6 @@ class GalleryEdit extends Component {
 	}
 
 	refreshCarousel() {
-		if (window.mglInitCarousels)
-			mglInitCarousels();
-		else
-			console.log('Meow Gallery: mglInitCarousels does not exist.');
 	}
 
 	createElementFromHTML(htmlString) {
@@ -340,7 +335,7 @@ class GalleryEdit extends Component {
 							onChange={ value => this.setUseDefaults(value) }
 						/> }
 						<TextControl
-							label={ __( 'Custom CSS Classes' ) } value={customClass ? customClass : ''} // bug: prevents class null to ever get into state
+							label={ __( 'Custom CSS Classes' ) } value={customClass}
 							onChange={ value => this.setCustomClass(value) }
 						/>
 					</PanelBody>
@@ -360,4 +355,3 @@ class GalleryEdit extends Component {
 }
 
 export default withNotices( GalleryEdit );
-```

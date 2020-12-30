@@ -5,7 +5,8 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 	class MeowCommon_Admin {
 
 		public static $loaded = false;
-		public static $admin_version = "3.2";
+		public static $version = "3.3";
+		public static $admin_version = "3.3";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -151,62 +152,8 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			echo $html;
 		}
 
-		function get_phperrorlogs() {
-			$errorpath = ini_get( 'error_log' );
-			$output_lines = array();
-			if ( !empty( $errorpath ) && file_exists( $errorpath ) ) {
-				try {
-					$file = new SplFileObject( $errorpath, 'r' );
-					$file->seek( PHP_INT_MAX );
-					$last_line = $file->key();
-					$iterator = new LimitIterator( $file, $last_line > 500 ? $last_line - 500 : 0, $last_line );
-					$lines = iterator_to_array( $iterator );
-					foreach ( $lines as $line ) {
-						$newline = '';
-						if ( preg_match( '/PHP Fatal/', $line ) ) {
-							$newline = '<div class="fatal">' . $line . '</div>';
-						}
-						else if ( preg_match( '/PHP Warning/', $line ) ) {
-							$newline = '<div class="warning">' . $line . '</div>';
-						}
-						else if ( preg_match( '/PHP Notice/', $line ) ) {
-							$newline = '<div class="notice">' . $line . '</div>';
-						}
-						else {
-							continue;
-						}
-						array_push( $output_lines, $newline );
-					}
-				}
-				catch ( OutOfBoundsException $e ) {
-					error_log( $e->getMessage() );
-				}
-			}
-			if ( empty( $output_lines ) ) {
-				return '<div class="fatal">Your PHP Error Logs is either empty, or (more likely is not accessible through PHP. You should contact your hosting service and ask them how to get it.</div>';
-			}
-			else {
-				$output_lines = array_reverse( $output_lines );
-				$html = '';
-				$previous = '';
-				foreach ( $output_lines as $line ) {
-					// Let's avoid similar errors, since it's not useful. We should also make this better
-					// and not only theck this depending on tie.
-					if ( preg_replace( '/\[.*\] PHP/', '', $previous ) !== preg_replace( '/\[.*\] PHP/', '', $line ) ) {
-						$html .=  $line;
-						$previous = $line;
-					}
-				}
-				return $html;
-			}
-		}
-
 		function admin_meow_apps() {
 			echo "<div id='meow-common-dashboard'></div>";
-			
-			echo "<div style='display: none;' id='meow-common-phperrorlogs'>";
-			echo $this->get_phperrorlogs();
-			echo "</div>";
 
 			echo "<div style='display: none;' id='meow-common-phpinfo'>";
 			echo $this->get_phpinfo();
@@ -217,7 +164,7 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			return sprintf(
 				// translators: %1$s is the version of the interface; %2$s is a file path.
 				__( 'Thanks for using <a href="https://meowapps.com">Meow Apps</a>! This is the Meow Admin %1$s <br /><i>Loaded from %2$s </i>', $this->domain ),
-				MeowCommon_Admin::$admin_version,
+				MeowCommon_Admin::$version,
 				__FILE__
 			);
 		}

@@ -1,0 +1,137 @@
+// main: style-pro.less
+
+.mgl-carousel {
+ 	position: relative;
+	display: block !important;
+	width: 100%;
+	overflow-x: hidden;
+	overflow-y: visible;
+
+	.meow-carousel-track {
+		position: relative;
+		height: 100%;
+		overflow: visible;
+		white-space: nowrap;
+		transition: transform 0.3s;
+		font-size: 0;
+
+		&.no-transition {
+			transition: 0s;
+		}
+	}
+
+	&.no-dots-nav {
+		margin-bottom: 0;
+	}
+
+	.mgl-item {
+		position: relative;
+		display: inline-flex;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		opacity: 1;
+		font-size: 16px;
+
+		.mgl-icon {
+			height: 100%;
+
+			.mgl-img-container {
+				height: 100% !important;
+
+				img {	
+					height: 100% !important;
+					width: auto !important;
+					max-width: none;
+				}
+			}
+		}
+
+		figcaption {
+			display: block;
+			position: absolute;
+			left: 0;
+			opacity: 0;
+			z-index: 9;
+			width: calc('100%');
+			bottom: 0;
+			padding: 5px;
+			box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+
+			p {
+				margin: 0;
+				padding: 10px;
+				box-sizing: border-box;
+			}
+		}
+
+		&:hover figcaption {
+			bottom: 0;
+			opacity: 1;
+			transition: .3s;
+		}
+	}
+
+	.meow-carousel-prev-btn, .meow-carousel-next-btn {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 40px;
+		height: 60px;
+		background: rgba(255,255,255,.9);
+		border-radius: 8px;
+		line-height: 60px;
+		text-align: center;
+		opacity: 0.8;
+		cursor: pointer;
+		user-select: none;
+
+		svg {
+			display: inline-block;
+			height: 40px;
+			margin-top: 10px;
+			line-height: 60px;
+		}
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	.meow-carousel-prev-btn {
+		left: 20px;
+	}
+
+	.meow-carousel-next-btn {
+		right: 20px;
+	}
+
+	.meow-carousel-nav-dots-container {
+		width: 100%;
+		margin-top: 10px;
+		text-align: center;
+
+		.meow-carousel-nav-dot {
+			display: inline-block;
+			cursor: pointer;
+
+			span {
+				display: block;
+				height: 12px;
+				width: 12px;
+				margin: 5px 7px;
+				border-radius: 50%;
+				background: #d6d6d6;
+				transition: background 0.3s;
+			}
+
+			&.active, &:hover {
+				span {
+					background: #869791;
+				}
+			}
+		}
+	}
+}
