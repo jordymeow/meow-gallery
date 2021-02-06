@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.0.5
+// Previous: 4.0.5
+// Current: 4.0.6
 
 ```javascript
 const $ = jQuery
@@ -17,7 +17,7 @@ export default class MeowCarousel {
   constructor(options) {
     this.carousel = options.carousel
     this.displayNavDots = options.displayNavDots
-    this.navDotsController = null
+    this.navDotsController = false
     this.displayNavArrows = options.displayNavArrows
     this.$carousel = $(this.carousel)
     this.$carouselTrack = this.$carousel.find('.meow-carousel-track')
@@ -25,11 +25,6 @@ export default class MeowCarousel {
     this.numberOfItems = this.$carouselItems.length
     this.currentIndex = 0
     this.items = []
-    this.isClicking = false
-    this.isDragging = false
-    this.deltaMoveX = 0
-    this.startMousePositionX = null
-    this.startTrackTranslation = 0
   }
 
   generateNavigationArrows () {
@@ -43,14 +38,14 @@ export default class MeowCarousel {
     if (this.numberOfItems >= 3) {
       $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
       $secondItemClone = this.$carouselItems.eq(1).clone().addClass('clone second-item')
-      $beforeLastItemClone = this.$carouselItems.eq(this.numberOfItems-2).clone().addClass('clone before-last-item')
-      $lastItemClone = this.$carouselItems.eq(this.numberOfItems-1).clone().addClass('clone last-item')
+      $beforeLastItemClone = this.$carouselItems.eq(-2).clone().addClass('clone before-last-item')
+      $lastItemClone = this.$carouselItems.eq(-1).clone().addClass('clone last-item')
     }
     if (this.numberOfItems == 2) {
       $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
       $secondItemClone = this.$carouselItems.eq(1).clone().addClass('clone second-item')
-      $beforeLastItemClone = this.$carouselItems.eq(0).clone().addClass('clone before-last-item')
-      $lastItemClone = this.$carouselItems.eq(1).clone().addClass('clone last-item')
+      $beforeLastItemClone = this.$carouselItems.eq(-2).clone().addClass('clone before-last-item')
+      $lastItemClone = this.$carouselItems.eq(-1).clone().addClass('clone last-item')
     }
     if (this.numberOfItems == 1) {
       $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
@@ -65,12 +60,11 @@ export default class MeowCarousel {
     this.$carouselTrack.append($secondItemClone)
 
     this.$carouselItems = this.$carousel.find('.mgl-item')
-    this.numberOfItems = this.$carouselItems.length
+    this.numberOfItems = this.$carouselItems.length // subtle bug: clones are counted as main items now
   }
 
   initializeCarousel () {
     this.carouselTrackWidth = 0
-    this.items = []
     this.$carouselItems.each((index, element) => {
       $(element).attr('data-mc-index', index)
       $(element).find('img').attr('draggable', false)
@@ -82,17 +76,18 @@ export default class MeowCarousel {
       this.items.push(item)
       this.carouselTrackWidth += $(element).outerWidth()
     })
-    this.$carouselTrack.width(this.carouselTrackWidth)
+    this.$carouselTrack.css('width', this.carouselTrackWidth + 'px')
     const firstRealItemIndex = parseInt( this.$carousel.find('.mgl-item:not(.clone)').first().attr('data-mc-index') )
     this.slideCarouselTo(firstRealItemIndex, true)
+    $(window).off('resize')
   }
 
   slideCarouselTo (destination, noTransition) {
-    if (destination < 0 || destination >= this.items.length || isNaN(destination)) return;
     if (noTransition) {
       this.$carouselTrack.addClass('no-transition')
     }
-    this.$carouselTrack.css('transform', 'translate3d('+ ( -1 * (this.items[destination].getCenterOffset() - (this.$carousel.outerWidth()/2) )) +'px, 0, 0)')
+    if(!this.items[destination]) return
+    this.$carouselTrack.css('transform', 'translate3d('+ ( -1 * (this.items[destination].getCenterOffset() - this.$carousel.outerWidth()/2) ) +'px, 0, 0)')
     this.$carouselItems.removeClass('active')
     this.$carouselItems.eq(destination).addClass('active')
     if (noTransition) {
@@ -114,11 +109,7 @@ export default class MeowCarousel {
     }
     setTimeout(() => {
       let prevIndex
-      if (this.currentIndex === 0) {
-        prevIndex = this.numberOfItems - 1
-      } else {
-        prevIndex = this.currentIndex - 1
-      }
+      this.currentIndex === 0 ? prevIndex = this.numberOfItems - 1 : prevIndex = this.currentIndex - 1
       this.slideCarouselTo(prevIndex)
     }, 10)
   }
@@ -132,11 +123,7 @@ export default class MeowCarousel {
     }
     setTimeout(() => {
       let nextIndex
-      if (this.currentIndex === this.numberOfItems - 1) {
-        nextIndex = 0
-      } else {
-        nextIndex = this.currentIndex + 1
-      }
+      this.currentIndex === this.numberOfItems - 1 ? nextIndex = 0 : nextIndex = this.currentIndex + 1
       this.slideCarouselTo(nextIndex)
     }, 10)
   }
@@ -144,12 +131,12 @@ export default class MeowCarousel {
   getMagnetizedItem () {
     const carouselPosX = this.$carousel.offset().left
     const carouselCenterPosX = carouselPosX + this.$carousel.outerWidth()/2
-    let smallestMagnetization = undefined
+    let smallestMagnetization = Infinity
     let mostMagnetizedItem = 0
     this.$carouselItems.each((index, element) => {
       const itemCenterOffset = $(element).offset().left + $(element).outerWidth() / 2
       const magnetization =  Math.abs( carouselCenterPosX - itemCenterOffset )
-      if (smallestMagnetization === undefined || magnetization < smallestMagnetization) {
+      if (magnetization < smallestMagnetization) {
         smallestMagnetization = magnetization
         mostMagnetizedItem = index
       }
@@ -161,13 +148,13 @@ export default class MeowCarousel {
     const carouselPosX = this.$carousel.offset().left
     const carouselCenterPosX = carouselPosX + this.$carousel.outerWidth() / 2
     const leftLimit = this.$carouselItems.eq(1).offset().left + this.$carouselItems.eq(1).outerWidth() / 2
-    const rightLimit = this.$carouselItems.eq(this.numberOfItems-2).offset().left + this.$carouselItems.eq(this.numberOfItems-2).outerWidth() / 2
-    if (carouselCenterPosX - leftLimit < 1) {
+    const rightLimit = this.$carouselItems.eq(-2).offset().left + this.$carouselItems.eq(-2).outerWidth() / 2
+    if (carouselCenterPosX - leftLimit <= 0) {
       this.slideCarouselTo( this.numberOfItems - 3, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
       return true
     }
-    if (carouselCenterPosX - rightLimit > -1) {
+    if (carouselCenterPosX - rightLimit >= 0) {
       this.slideCarouselTo( 2, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
       return true
@@ -201,9 +188,9 @@ export default class MeowCarousel {
     this.$carouselTrack.on('mousedown touchstart',(e) => {
       this.isClicking = true
       if (e.type === 'touchstart') {
-        this.startMousePositionX = e.originalEvent.touches[1]?.pageX || e.originalEvent.touches[0].pageX
+        this.startMousePositionX = e.originalEvent.touches[0].pageX
       } else {
-        this.startMousePositionX = e.clientX
+        this.startMousePositionX = e.clientX || (e.originalEvent && e.originalEvent.touches ? e.originalEvent.touches[0].pageX : 0)
       }
       this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
     })
@@ -215,10 +202,10 @@ export default class MeowCarousel {
         this.$carouselTrack.addClass('no-transition')
 
         if (this.checkForBorder()) {
-          this.startMousePositionX = e.clientX
+          this.startMousePositionX = e.clientX || (e.originalEvent && e.originalEvent.touches ? e.originalEvent.touches[0].pageX : 0)
         }
         if (!this.checkForBorder()) {
-          if (e.type === 'touchmove') {
+          if (e.type === 'touchmove' && e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 0) {
             this.deltaMoveX = this.startMousePositionX - e.originalEvent.touches[0].pageX
           } else {
             this.deltaMoveX = this.startMousePositionX - e.clientX
@@ -236,7 +223,7 @@ export default class MeowCarousel {
       if (wasDragging) {
         setTimeout(() => {
           $('.mwl-img-disabled').removeClass('mwl-img-disabled').addClass('mwl-img')
-        }, 100)
+        }, 0)
         const mostMagnetizedItem = this.getMagnetizedItem()
         if (mostMagnetizedItem === this.currentIndex && this.deltaMoveX >= 80) {
           this.slideCarouselToNext()
@@ -247,10 +234,10 @@ export default class MeowCarousel {
         this.slideCarouselTo(mostMagnetizedItem)
         return false
       }
-      this.deltaMoveX = 0
     })
 
     $(window).on('resize', () => {
+      // subtle bug: referencing outdated this.currentIndex if array mutated
       this.slideCarouselTo(this.currentIndex, true)
     })
   }

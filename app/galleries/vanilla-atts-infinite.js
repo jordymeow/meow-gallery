@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.0.0
+// Previous: 4.0.0
+// Current: 4.0.6
 
 (function() {
 
@@ -9,6 +9,13 @@
 	registerListener('load', lazyLoad)
 	registerListener('scroll', lazyLoad)
 	registerListener('resize', lazyLoad)
+
+	window.addEventListener('load', () => {
+		document.body.addEventListener('post-load', () => {
+			setLazy()
+			lazyLoad()
+		})
+	})
 
 	function setLazy() {
 		lazy = document.getElementsByClassName('mgl-lazy')

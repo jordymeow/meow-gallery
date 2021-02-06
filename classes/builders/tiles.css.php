@@ -5,22 +5,34 @@
 	}
 
 	<?= $class_id ?> {
-		margin: <?= -1 * ( $gutter / 2 ) ?>px;
-		width: calc(100% + <?= $gutter ?>px);
+		margin: <?= -1 * ( $gutter['desktop'] / 2 ) ?>px;
+		width: calc(100% + <?= $gutter['desktop'] ?>px);
 	}
 
 	<?= $class_id ?> .mgl-box {
-		padding: <?= $gutter / 2 ?>px;
+		padding: <?= $gutter['desktop'] / 2 ?>px;
 	}
 
-	@media screen and (max-width: 600px) {
-		<?= $class_id ?> .mgl-row {
-			height: 100px;
+	@media screen and (max-width: 768px) {
+		<?= $class_id ?> {
+			margin: <?= -1 * ( $gutter['tablet'] / 2 ) ?>px;
+			width: calc(100% + <?= $gutter['tablet'] ?>px);
 		}
 
-		<?= $class_id ?> figcaption {
-			display: none;
+		<?= $class_id ?> .mgl-box {
+			padding: <?= $gutter['tablet'] / 2 ?>px;
+		}	
+	}
+
+	@media screen and (max-width: 460px) {
+		<?= $class_id ?> {
+			margin: <?= -1 * ( $gutter['mobile'] / 2 ) ?>px;
+			width: calc(100% + <?= $gutter['mobile'] ?>px);
 		}
+
+		<?= $class_id ?> .mgl-box {
+			padding: <?= $gutter['mobile'] / 2 ?>px;
+		}	
 	}
 
 </style>

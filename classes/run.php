@@ -15,9 +15,24 @@ class Meow_MGL_Run {
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
 		wp_enqueue_script( 'mgl-js', MGL_URL . '/app/galleries.js', array( 'jquery' ), $cache_buster, false );
+
+		// TODO: This should be moved in a getter (since it is also used by tiles.php)
+		$density = [];
+		if ( isset( $this->atts['density'] ) ) {
+			$density['desktop'] = $this->atts['density'];
+			$density['tablet'] = $this->atts['density'];
+			$density['mobile'] = $this->atts['density'];
+		}
+		else {
+			$density['desktop'] = get_option( 'mgl_tiles_density', 'high' );
+			$density['tablet'] = get_option( 'mgl_tiles_density_tablet', 'medium' );
+			$density['mobile'] = get_option( 'mgl_tiles_density_mobile', 'low' );
+		}
+
 		wp_localize_script('mgl-js', 'mgl_settings',
 			array(
 				'disable_right_click' => !get_option( 'mgl_right_click', false ),
+				'tiles' => array( 'density' => $density )
 			)
 		);
 		wp_enqueue_style( 'mgl-css', MGL_URL . '/app/style.min.css', null, $cache_buster );

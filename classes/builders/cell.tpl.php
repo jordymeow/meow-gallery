@@ -1,4 +1,4 @@
-<figure class="mgl-item">
+<figure class="mgl-item"<?= $attributes ?>>
 	<div class="mgl-icon">
 		<div class="mgl-img-container">
 			<?php if ( !$isPreview && $linkUrl ): ?>

@@ -41,6 +41,10 @@ abstract class Meow_MGL_Builders_Core {
 			$this->animation = get_option( 'mgl_animation', null );
 	}
 
+	function build_inline_attributes( $id, $data ) {
+		return '';
+	}
+
 	function prepare_data( $idsStr ) {
 		global $wpdb;
 		$res = $wpdb->get_results( "SELECT p.ID id, p.post_excerpt caption, m.meta_value meta
@@ -76,6 +80,11 @@ abstract class Meow_MGL_Builders_Core {
 			$info = wp_get_attachment_image_src( $id, $image_size );
 			$imgSrc = '<img src="' . $info[0] . '" class="' .
 				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
+		}
+
+		$attributes = $this->build_inline_attributes( $id, $data );
+		if ( !empty( $attributes ) ) {
+			$attributes = ' ' . $attributes;
 		}
 
 		$linkUrl = null;
@@ -141,8 +150,13 @@ abstract class Meow_MGL_Builders_Core {
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();
-		$inline_css = preg_replace( "/\r|\n/", "", $inline_css );
-		$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
+		if ( !empty( $inline_css ) ) {
+			$inline_css = preg_replace( "/\r|\n/", "", $inline_css );
+			$container = "<div class='{$container_classes}'>{$inline_css}{$out}</div>";
+		}
+		else {
+			$container = "<div class='{$container_classes}'>{$out}</div>";
+		}
 
 		return $container;
 	}
