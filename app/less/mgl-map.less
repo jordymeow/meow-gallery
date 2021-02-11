@@ -55,5 +55,38 @@
         bottom: 0;
       }
     }
+
+    .gmap-image-marker {
+      position: absolute;
+      cursor: pointer;
+      background: #424242;
+      width: 80px;
+      height: 80px;
+      /* -width/2 */
+      margin-left: -40px;
+      /* -height + arrow */
+      margin-top: -90px;
+      border-radius: 50%;
+      padding: 0px;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -9px;
+        left: 30px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #424242 transparent;
+        display: block;
+        width: 0;
+      }
+
+      img {
+        width: 70px;
+        height: 70px;
+        margin: 5px;
+        border-radius: 50%;
+      }
+    }
   }
 }

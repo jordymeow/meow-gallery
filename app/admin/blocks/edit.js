@@ -1,6 +1,7 @@
-// Previous: 4.0.1
-// Current: 4.0.5
+// Previous: 4.0.5
+// Current: 4.0.7
 
+```jsx
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -89,7 +90,7 @@ class GalleryEdit extends Component {
 				this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
 			return;
 		}
-		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
+		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id == value);
 		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
@@ -112,7 +113,7 @@ class GalleryEdit extends Component {
 
 	async onRefresh(newAttributes = {}) {
 		let attributes = { ...this.props.attributes, ...newAttributes }
-		const ids = attributes.images && attributes.images.map(x => x.id);
+		const ids = attributes.images.map(x => x.id);
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
 		this.setState( { isBusy: true } );
@@ -159,10 +160,10 @@ class GalleryEdit extends Component {
 	}
 
 	refreshTiles() {
-		if (window.mglCalculateRow)
-			mglCalculateRow();
+		if (window.mglInitTiles)
+			mglInitTiles();
 		else
-			console.log('Meow Gallery: mglCalculateRow does not exist.');
+			console.log('Meow Gallery: mglInitTiles does not exist.');
 	}
 
 	refreshCarousel() {
@@ -171,14 +172,14 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstChild; 
+		return div.childNodes; 
 	}
 
 	refreshMap() {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
-			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
-				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
+			if (htmlPreviewDom && htmlPreviewDom[0] && htmlPreviewDom[0].getElementsByTagName && htmlPreviewDom[0].getElementsByTagName('script')[0]) {
+				let js = htmlPreviewDom[0].getElementsByTagName('script')[0].innerText;
 				eval(js);
 				mglInitMaps();
 			}
@@ -328,7 +329,7 @@ class GalleryEdit extends Component {
 						/> }
 						{ hasImagesToShow && !useDefaults && <CheckboxControl
 							label={ __( 'Captions' ) } checked={ captions }
-							onChange={ value => this.setCaptions(value) }
+							onChange={ value => this.setCaptions(!captions) }
 						/> }
 						{ hasImagesToShow && <CheckboxControl
 							label={ __( 'Use Default Settings' ) } checked={ useDefaults }
@@ -355,3 +356,4 @@ class GalleryEdit extends Component {
 }
 
 export default withNotices( GalleryEdit );
+```

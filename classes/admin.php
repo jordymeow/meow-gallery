@@ -22,10 +22,17 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 
 	function enqueue_scripts() {
 
+		// Javascript for gallery
+		$physical_file = MGL_PATH . '/app/galleries.js';
+		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
+		wp_register_script( 'mgl-gallery-js', plugins_url( '/app/galleries.js', __DIR__ ), 
+			array( 'jquery' ), $cache_buster, false );
+
 		// Load the "admin" scripts
 		$physical_file = MGL_PATH . '/app/admin.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
-		wp_register_script( 'mgl-admin-js', MGL_URL . '/app/admin.js', array( 'wp-editor', 'wp-i18n', 'wp-element' ), $cache_buster );
+		wp_register_script( 'mgl-admin-js', MGL_URL . '/app/admin.js', 
+			array( 'mgl-gallery-js', 'wp-editor', 'wp-i18n', 'wp-element' ), $cache_buster );
 		register_block_type( 'meow-gallery/gallery', array( 'editor_script' => 'mgl-admin-js' ));
 
 		// Load the fonts

@@ -15,7 +15,7 @@
 			$columns_in_percentage = "25%";
 			break;
 		case 3:
-			$columns_in_percentage = "33%";
+			$columns_in_percentage = "33.33%";
 			break;
 		case 2:
 			$columns_in_percentage = "50%";
