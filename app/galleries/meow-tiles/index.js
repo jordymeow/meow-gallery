@@ -1,5 +1,5 @@
-// Previous: 4.0.8
-// Current: 4.0.6
+// Previous: 4.0.6
+// Current: 4.0.8
 
 const $ = jQuery
 
@@ -12,7 +12,9 @@ const initTiles = () => {
       density: mgl_settings.tiles.density
     })
 
-    tilesGallery.init(() => {})
+    tilesGallery.init(() => {
+      tilesGallery.setRowsHeight()
+    })
 
     let resizingTimeout = null
     $(window).on('resize', () => {
@@ -21,6 +23,7 @@ const initTiles = () => {
         tilesGallery.tilify(() => {
           document.body.dispatchEvent(new Event('post-load'))
         })
+        tilesGallery.setRowsHeight()
       }, 500)
     })
   })

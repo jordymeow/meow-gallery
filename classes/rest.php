@@ -21,7 +21,7 @@ class Meow_MGL_Rest
 	}
 
 	function rest_api_init() {
-		if ( !current_user_can( 'administrator' ) ) {
+		if ( !current_user_can( 'upload_files' ) ) {
 			return;
 		} 
 

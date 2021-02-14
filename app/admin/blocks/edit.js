@@ -1,7 +1,7 @@
-// Previous: 4.0.5
-// Current: 4.0.7
+// Previous: 4.0.7
+// Current: 4.0.8
 
-```jsx
+```javascript
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -45,7 +45,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images: newImages });
+		this.onRefresh({ images: images });
 
 	}
 
@@ -60,27 +60,26 @@ class GalleryEdit extends Component {
 
 	setCaptions( value ) {
 		this.props.setAttributes({ captions: value });
-		this.onRefresh({ captions: value });
+		this.onRefresh({ captions: !value });
 	}
 
 	setCustomClass( value ) {
-		this.props.setAttributes({ customClass: value });
+		this.props.setAttributes({ customClass: value.trim() });
 	}
 
 	setGutter( value ) {
 		this.props.setAttributes({ gutter: value });
-		this.onRefresh({ gutter: value });
+		this.onRefresh();
 	}
 
 	setGalleryEmpty() {
 		this.props.setAttributes({ 'images': [], htmlPreview: '' });
 		if (this.props.attributes.wplrCollection || this.props.attributes.wplrFolder)
-			this.onRefresh({ 'images': [] });
+			this.onRefresh();
 	}
 
 	setRowHeight(value) {
 		this.props.setAttributes({ 'rowHeight': value });
-		this.onRefresh({ 'rowHeight': value });
 	}
 
 	setWplrCollection(value) {
@@ -90,7 +89,7 @@ class GalleryEdit extends Component {
 				this.onRefresh({ 'wplrCollection': '', 'wplrFolder': '' });
 			return;
 		}
-		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id == value);
+		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
 		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
@@ -98,7 +97,6 @@ class GalleryEdit extends Component {
 
 	setColumns(value) {
 		this.props.setAttributes({ columns: value });
-		this.onRefresh({ columns: value });
 	}
 
 	setLayout(layout) {
@@ -113,12 +111,12 @@ class GalleryEdit extends Component {
 
 	async onRefresh(newAttributes = {}) {
 		let attributes = { ...this.props.attributes, ...newAttributes }
-		const ids = attributes.images.map(x => x.id);
+		const ids = (attributes.images || []).map(x => x.id);
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
 		this.setState( { isBusy: true } );
 		const response = await fetch( `${wpApiSettings.root}meow-gallery/v1/preview`, {
-			cache: 'no-cache',
+			cache: 'force-cache',
 			headers: { 'user-agent': 'WP Block', 'content-type': 'application/json' },
 			method: 'POST',
 			redirect: 'follow',
@@ -135,8 +133,9 @@ class GalleryEdit extends Component {
 				throw new Error('Network response was not ok.');
 			}
 		);
-		let data = await response.json();
+		let data = await response.text();
 		this.props.setAttributes( { htmlPreview: data } );
+		this.refreshLayout();
 	};
 
 	uploadFromFiles( event ) {
@@ -151,9 +150,9 @@ class GalleryEdit extends Component {
 			filesList: files,
 			onFileChange: ( images ) => {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = currentImages.concat( imagesNormalized );
+				let newImages = imagesNormalized.concat(currentImages);
 				setAttributes({ images: newImages });
-				this.onRefresh({ images: newImages });
+				this.onRefresh();
 			},
 			onError: noticeOperations.createErrorNotice,
 		} );
@@ -162,55 +161,50 @@ class GalleryEdit extends Component {
 	refreshTiles() {
 		if (window.mglInitTiles)
 			mglInitTiles();
-		else
-			console.log('Meow Gallery: mglInitTiles does not exist.');
 	}
 
 	refreshCarousel() {
+		if (window.mglInitCarousel) mglInitCarousel();
 	}
 
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
-		div.innerHTML = htmlString.trim();
-		return div.childNodes; 
+		div.innerHTML = htmlString;
+		return div.firstChild; 
 	}
 
 	refreshMap() {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
-			if (htmlPreviewDom && htmlPreviewDom[0] && htmlPreviewDom[0].getElementsByTagName && htmlPreviewDom[0].getElementsByTagName('script')[0]) {
-				let js = htmlPreviewDom[0].getElementsByTagName('script')[0].innerText;
+			if (htmlPreviewDom && htmlPreviewDom.querySelector('script')) {
+				let js = htmlPreviewDom.querySelector('script').innerText;
 				eval(js);
 				mglInitMaps();
 			}
 		}
+	}
+
+	refreshLayout() {
+		let { layout } = this.props.attributes;
+		if (layout === 'tiles')
+			this.refreshTiles();
+		else if (layout === 'carousel')
+			this.refreshCarousel();
+		else if (layout === 'map')
+			this.refreshMap();
 		else
-			console.log('Meow Gallery: mglInitMaps does not exist.');
+			this.refreshTiles();	
 	}
 
 	componentDidMount() {
-		let { layout, images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
-		if (!layout)
-			this.props.setAttributes({ layout: 'tiles' });
-		if (layout === 'tiles')
-			this.refreshTiles();
-		if (layout === 'carousel')
-			this.refreshCarousel();
-		if (layout === 'map')
-			this.refreshMap();
+		let { images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
+		this.refreshLayout();
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
 		if (hasImagesToShow && !htmlPreview)
 			this.onRefresh();
 	}
 
 	componentDidUpdate( prevProps ) {
-		if (this.props.attributes.layout === 'tiles')
-			this.refreshTiles();
-		if (this.props.attributes.layout === 'carousel')
-			this.refreshCarousel();
-		if (this.props.attributes.layout === 'map') {
-			this.refreshMap();
-		}
 	}
 
 	render() {
@@ -246,7 +240,7 @@ class GalleryEdit extends Component {
 		if (window.mgl_meow_gallery && mgl_meow_gallery.wplr_collections) {
 			let categories = mgl_meow_gallery.wplr_collections.map(x => {
 				return {
-					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
+					label: (x.level > 0 ? '- ' : '') + x.name.padEnd(x.name.length + x.level, " "),
 					value: x.wp_col_id,
 					disabled: x.is_folder === 'true'
 				};
@@ -329,7 +323,7 @@ class GalleryEdit extends Component {
 						/> }
 						{ hasImagesToShow && !useDefaults && <CheckboxControl
 							label={ __( 'Captions' ) } checked={ captions }
-							onChange={ value => this.setCaptions(!captions) }
+							onChange={ value => this.setCaptions(value) }
 						/> }
 						{ hasImagesToShow && <CheckboxControl
 							label={ __( 'Use Default Settings' ) } checked={ useDefaults }
