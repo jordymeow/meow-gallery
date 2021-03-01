@@ -87,7 +87,7 @@ const LicenseBlock = () => {
 
   const jsxNonPro = 
     <NekoBlock title="Pro Version (Not Installed)" className="primary">
-      You will find more information about the Pro Version <a target='_blank' rel="noreferrer" href={`https://meowapps.com/plugin/${domain}/`}>here</a>. If you actually bought the Pro Version already, please remove the current plugin and download the Pro Version from your account at the <a target='_blank' rel="noreferrer" href='https://store.meowapps.com/'>Meow Apps Store</a>.
+      You will find more information about the Pro Version <a target='_blank' rel="noreferrer" href={`https://store.meowapps.com`}>here</a>. If you actually bought the Pro Version already, please remove the current plugin and download the Pro Version from your account at the <a target='_blank' rel="noreferrer" href='https://store.meowapps.com/'>Meow Apps Store</a>.
     </NekoBlock>;
 
   const jsxProVersion = 
@@ -101,7 +101,7 @@ const LicenseBlock = () => {
       {license && success && <NekoMessageSuccess>{message}</NekoMessageSuccess>}
 
       {!license && <NekoTypo p>
-        Insert your serial key above. If you don&apos;t have one yet, you can get one <a href="/plugin/media-file-renamer/">here</a>. If there was an error during the validation, try the <i>Retry</i> to <i>validate</i> button.
+        Insert your serial key above. If you don&apos;t have one yet, you can get one <a href="https://store.meowapps.com">here</a>. If there was an error during the validation, try the <i>Retry</i> to <i>validate</i> button.
         </NekoTypo>
       }
 

@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.0.8
+// Previous: 4.0.8
+// Current: 4.0.9
 
 const $ = jQuery
 const ratio = "three-two"
@@ -26,7 +26,7 @@ export default class MeowTiles {
     if (windowWidth <= 460) {
       return 'mobile'
     }
-    if (windowWidth < 768) {
+    if (windowWidth <= 768) {
       return 'tablet'
     }
     return 'desktop'
@@ -64,13 +64,12 @@ export default class MeowTiles {
   }
 
   createGalleryItemsArray () {
-    this.galleryItems = []
     for (const galleryItem of this.$galleryItems) {
       const $galleryItem = $(galleryItem)
       const galleryItemWidth = parseInt($galleryItem.attr('data-mgl-width'))
       const galleryItemHeight = parseInt($galleryItem.attr('data-mgl-height'))
       let galleryItemOrientation
-      galleryItemWidth > galleryItemHeight ? galleryItemOrientation = 'o' : galleryItemOrientation = 'i'
+      galleryItemWidth >= galleryItemHeight ? galleryItemOrientation = 'o' : galleryItemOrientation = 'i'
       this.galleryItems.push({
         id: parseInt($galleryItem.attr('data-mgl-id')),
         width: galleryItemWidth,
@@ -82,18 +81,16 @@ export default class MeowTiles {
   }
 
   calculateGalleryRows () {
-    const galleryItems = this.galleryItems.slice()
+    const galleryItems = [...this.galleryItems]
     this.rows = []
     let rowClass = ''
     while (galleryItems.length > 0) {
       const galleryItem = galleryItems.shift()
       const supposedRowClass = rowClass + galleryItem.orientation
-      if (this.rowClasses.indexOf(supposedRowClass) !== -1) {
+      if (this.rowClasses.includes(supposedRowClass)) {
         rowClass = supposedRowClass
       } else {
-        if (rowClass.length > 0) {
-          this.rows.push(rowClass)
-        }
+        this.rows.push(rowClass)
         rowClass = galleryItem.orientation
       }
       if (galleryItems.length === 0) {
@@ -107,9 +104,9 @@ export default class MeowTiles {
     if (this.rows.length >= 2) {
       const lastRow = this.rows[this.rows.length - 1].split('')
       const secondToLastRow = this.rows[this.rows.length - 2].split('')
-      if (lastRow.length === 1) {
-        const secondToLastRowLastItem = secondToLastRow.shift()
-        lastRow.unshift(secondToLastRowLastItem)
+      if (lastRow.length === 1 && secondToLastRow.length > 2) {
+        const secondToLastRowLastItem = secondToLastRow.pop()
+        lastRow.push(secondToLastRowLastItem)
       }
       this.rows[this.rows.length - 2] = secondToLastRow.join('')
       this.rows[this.rows.length - 1] = lastRow.join('')
@@ -128,15 +125,13 @@ export default class MeowTiles {
         return 'd'
       case 4:
         return 'e'
-      default:
-        return 'f'
     }
   }
 
   getRowLayout (row) {
     let rowLayout = ''
     if (row === 'oooo') {
-      if (this.ooooLayoutVariant > 3) {
+      if (this.ooooLayoutVariant === 3) {
         this.ooooLayoutVariant = 0
       }
       if (this.ooooLayoutVariant === 0) {
@@ -147,7 +142,7 @@ export default class MeowTiles {
       this.ooooLayoutVariant++
     } else {
       rowLayout += row
-    }
+    } 
     return rowLayout
   }
 
@@ -159,7 +154,7 @@ export default class MeowTiles {
     const rowLayout = this.getRowLayout(row)
     let rowMarkup = `<div class="mgl-row mgl-layout-${row.length}-${rowLayout}" data-row-layout="${rowLayout}">`
     let count = 0
-    for (let i = 0; i <= row.length - 1; i++) {
+    for (let i = 0; i < row.length; i++) {
       let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(count)}">`
       rowItemMarkup += rowItems.shift().markup
       rowItemMarkup += '</div>'
@@ -171,20 +166,19 @@ export default class MeowTiles {
   }
 
   writeMarkup (callback) {
-    const galleryItems = [].concat(this.galleryItems)
-    const rows = [].concat(this.rows)
+    const galleryItems = [...this.galleryItems]
+    const rows = [...this.rows]
     let rowsMarkup = ''
     for (const row of rows) {
-      const rowItems = galleryItems.slice(0, row.length)
-      galleryItems.splice(0, row.length)
+      const rowItems = galleryItems.splice(0, row.length)
       rowsMarkup += this.getRowMarkup(row, rowItems)
     }
     this.$gallery.html(rowsMarkup)
-    if (callback) callback()
+    callback()
   }
 
   getHeightByWidth(ratio, width, orientation) {
-    if (orientation === 'landscape') {
+    if (orientation == 'landscape') {
       switch (ratio) {
         case 'three-two':
           return (2 * width) / 3
@@ -194,7 +188,7 @@ export default class MeowTiles {
     } else {
       switch (ratio) {
         case 'three-two':
-          return (3.1 * width) / 2
+          return (3 * width) / 2
         case 'five-four':
           return (5 * width) / 4
       }
@@ -205,10 +199,14 @@ export default class MeowTiles {
     this.$gallery.find('.mgl-row').each((index, item) => {
       const layout = $(item).attr('data-row-layout')
       const ref = references[layout]
-      if (!ref) return
       const $ref = $(item).find('.mgl-box.' + ref.box)
-      const ref_width = $ref.width()
-      $(item).height(this.getHeightByWidth(ratio, ref_width, ref.orientation))
+      if (this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation) === 0) {
+        setTimeout(function () {
+          $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
+        }, 750)
+      } else {
+        $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
+      }
     })
   }
 
@@ -218,19 +216,22 @@ export default class MeowTiles {
     this.getAvailableRowClasses()
     this.createGalleryItemsArray()
     this.calculateGalleryRows()
-    this.writeMarkup(callback)
-    this.setRowsHeight()
+    this.writeMarkup(() => {
+      if (typeof callback === 'function') {
+        callback()
+      }
+    })
   }
 
   tilify (callback) {
-    if (this.currentDevice !== this.getCurrentDevice()) {
+    if (this.currentDevice != this.getCurrentDevice()) {
       this.currentDevice = this.getCurrentDevice()
       this.ooooLayoutVariant = 0
+
       this.setDensity()
       this.getAvailableRowClasses()
       this.calculateGalleryRows()
       this.writeMarkup(callback)
-      // this.setRowsHeight();  // missing in tilify
     }
   }
 }

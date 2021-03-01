@@ -6,6 +6,16 @@ class Meow_MGL_Core {
 
 	public function __construct() {
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
+
+		if ( MeowCommon_Helpers::is_rest() ) {
+			new Meow_MGL_Rest( $this );
+		}
+
+		// The gallery should be completely off if the request is asynchronous
+		if ( MeowCommon_Helpers::is_asynchronous_request() || MeowCommon_Helpers::is_pagebuilder_request() ) {
+			return;
+		}
+
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 
 		// TODO: Would be nice to detect if the gallery is actually used on the current page.
@@ -16,9 +26,6 @@ class Meow_MGL_Core {
 		}
 		if ( is_admin() || $is_gallery_used ) {
 			new Meow_MGL_Run( $this );
-		}
-		if ( MeowCommon_Helpers::is_rest() ) {
-			new Meow_MGL_Rest( $this );
 		}
 		if ( class_exists( 'MeowPro_MGL_Core' ) ) {
 			new MeowPro_MGL_Core();

@@ -1,7 +1,6 @@
-// Previous: 4.0.9
-// Current: 4.0.0
+// Previous: 4.0.0
+// Current: 4.0.9
 
-```javascript
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
 const { registerBlockType, createBlock } = wp.blocks;
@@ -76,7 +75,7 @@ const blockAttributes = {
 
 const buildCoreAttributes = function(attributes) {
 	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
-	let ids = (images || []).map(x => x.id).join(',');
+	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
 	
 	if (layout && layout !== 'default')
@@ -121,6 +120,8 @@ const buildShortcode = function(attributes) {
 	else if (layout === 'slider')
 		shortcode = `[gallery ${attrs}][/gallery]`;
 	else if (layout === 'map')
+		shortcode = `[gallery ${attrs}][/gallery]`;
+	else if (layout === 'default')
 		shortcode = `[gallery ${attrs}][/gallery]`;
 	else {
 		alert("This layout is not handled. Check the Console Logs.");
@@ -212,4 +213,3 @@ registerBlockType( 'meow-gallery/gallery', {
 });
 
 export default meowGalleryIcon;
-```
