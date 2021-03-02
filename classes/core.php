@@ -12,7 +12,10 @@ class Meow_MGL_Core {
 		}
 
 		// The gallery should be completely off if the request is asynchronous
-		if ( MeowCommon_Helpers::is_asynchronous_request() || MeowCommon_Helpers::is_pagebuilder_request() ) {
+		if ( MeowCommon_Helpers::is_asynchronous_request()  ) {
+			return;
+		}
+		if (method_exists('MeowCommon_Helpers', 'is_pagebuilder_request') && MeowCommon_Helpers::is_pagebuilder_request()) {
 			return;
 		}
 
