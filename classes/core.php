@@ -3,35 +3,22 @@
 class Meow_MGL_Core {
 
 	private $gallery_process = false;
+	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
 
 	public function __construct() {
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
 
-		if ( MeowCommon_Helpers::is_rest() ) {
-			new Meow_MGL_Rest( $this );
-		}
+		// Initializes the classes needed
+		MeowCommon_Helpers::is_rest() && new Meow_MGL_Rest( $this );
+		is_admin() && new Meow_MGL_Admin();
+		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core();
 
-		// The gallery should be completely off if the request is asynchronous
-		if ( MeowCommon_Helpers::is_asynchronous_request()  ) {
-			return;
-		}
-		if (method_exists('MeowCommon_Helpers', 'is_pagebuilder_request') && MeowCommon_Helpers::is_pagebuilder_request()) {
-			return;
-		}
-
-		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
-
-		// TODO: Would be nice to detect if the gallery is actually used on the current page.
-		$is_gallery_used = true;
-
-		if ( is_admin() ) {
-			new Meow_MGL_Admin();
-		}
-		if ( is_admin() || $is_gallery_used ) {
-			new Meow_MGL_Run( $this );
-		}
-		if ( class_exists( 'MeowPro_MGL_Core' ) ) {
-			new MeowPro_MGL_Core();
+		// The gallery build process should only be enabled if the request is non-asynchronous
+		if ( !MeowCommon_Helpers::is_asynchronous_request()  ) {
+			add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
+			if ( is_admin() || $this->is_gallery_used ) {
+				new Meow_MGL_Run( $this );
+			}
 		}
 	}
 

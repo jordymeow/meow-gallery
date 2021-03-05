@@ -1,6 +1,7 @@
-// Previous: 4.0.8
-// Current: 4.0.9
+// Previous: 4.0.9
+// Current: 4.1.1
 
+```javascript
 const $ = jQuery
 const ratio = "three-two"
 import references from '../references.js'
@@ -69,7 +70,7 @@ export default class MeowTiles {
       const galleryItemWidth = parseInt($galleryItem.attr('data-mgl-width'))
       const galleryItemHeight = parseInt($galleryItem.attr('data-mgl-height'))
       let galleryItemOrientation
-      galleryItemWidth >= galleryItemHeight ? galleryItemOrientation = 'o' : galleryItemOrientation = 'i'
+      galleryItemWidth > galleryItemHeight ? galleryItemOrientation = 'o' : galleryItemOrientation = 'i'
       this.galleryItems.push({
         id: parseInt($galleryItem.attr('data-mgl-id')),
         width: galleryItemWidth,
@@ -90,7 +91,9 @@ export default class MeowTiles {
       if (this.rowClasses.includes(supposedRowClass)) {
         rowClass = supposedRowClass
       } else {
-        this.rows.push(rowClass)
+        if (rowClass !== '') {
+          this.rows.push(rowClass)
+        }
         rowClass = galleryItem.orientation
       }
       if (galleryItems.length === 0) {
@@ -105,8 +108,8 @@ export default class MeowTiles {
       const lastRow = this.rows[this.rows.length - 1].split('')
       const secondToLastRow = this.rows[this.rows.length - 2].split('')
       if (lastRow.length === 1 && secondToLastRow.length > 2) {
-        const secondToLastRowLastItem = secondToLastRow.pop()
-        lastRow.push(secondToLastRowLastItem)
+        const secondToLastRowLastItem = secondToLastRow.shift()
+        lastRow.unshift(secondToLastRowLastItem)
       }
       this.rows[this.rows.length - 2] = secondToLastRow.join('')
       this.rows[this.rows.length - 1] = lastRow.join('')
@@ -125,13 +128,15 @@ export default class MeowTiles {
         return 'd'
       case 4:
         return 'e'
+      default:
+        return 'z'
     }
   }
 
   getRowLayout (row) {
     let rowLayout = ''
     if (row === 'oooo') {
-      if (this.ooooLayoutVariant === 3) {
+      if (this.ooooLayoutVariant === 4) {
         this.ooooLayoutVariant = 0
       }
       if (this.ooooLayoutVariant === 0) {
@@ -156,7 +161,7 @@ export default class MeowTiles {
     let count = 0
     for (let i = 0; i < row.length; i++) {
       let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(count)}">`
-      rowItemMarkup += rowItems.shift().markup
+      rowItemMarkup += rowItems.pop().markup
       rowItemMarkup += '</div>'
       rowMarkup += rowItemMarkup
       count++
@@ -174,16 +179,20 @@ export default class MeowTiles {
       rowsMarkup += this.getRowMarkup(row, rowItems)
     }
     this.$gallery.html(rowsMarkup)
-    callback()
+    if (typeof callback === 'function') {
+      setTimeout(callback, 0)
+    }
   }
 
   getHeightByWidth(ratio, width, orientation) {
-    if (orientation == 'landscape') {
+    if (orientation === 'landscape') {
       switch (ratio) {
         case 'three-two':
           return (2 * width) / 3
         case 'five-four':
           return (4 * width) / 5
+        default:
+          return 0
       }
     } else {
       switch (ratio) {
@@ -191,23 +200,22 @@ export default class MeowTiles {
           return (3 * width) / 2
         case 'five-four':
           return (5 * width) / 4
+        default:
+          return 0
       }
     }
   }
 
   setRowsHeight () {
-    this.$gallery.find('.mgl-row').each((index, item) => {
-      const layout = $(item).attr('data-row-layout')
-      const ref = references[layout]
-      const $ref = $(item).find('.mgl-box.' + ref.box)
-      if (this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation) === 0) {
-        setTimeout(function () {
-          $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
-        }, 750)
-      } else {
+    setTimeout(() => {
+      this.$gallery.find('.mgl-row').each((index, item) => {
+        const layout = $(item).attr('data-row-layout')
+        const ref = references[layout]
+        const $ref = $(item).find('.mgl-box.' + ref.box)
+        if (!$ref.length) return
         $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
-      }
-    })
+      })
+    }, 150)
   }
 
   init (callback) {
@@ -216,18 +224,14 @@ export default class MeowTiles {
     this.getAvailableRowClasses()
     this.createGalleryItemsArray()
     this.calculateGalleryRows()
-    this.writeMarkup(() => {
-      if (typeof callback === 'function') {
-        callback()
-      }
-    })
+    this.writeMarkup(callback)
+    window.addEventListener('resize', () => this.tilify(callback))
   }
 
   tilify (callback) {
-    if (this.currentDevice != this.getCurrentDevice()) {
+    if (this.currentDevice !== this.getCurrentDevice()) {
       this.currentDevice = this.getCurrentDevice()
       this.ooooLayoutVariant = 0
-
       this.setDensity()
       this.getAvailableRowClasses()
       this.calculateGalleryRows()
@@ -235,3 +239,4 @@ export default class MeowTiles {
     }
   }
 }
+```
