@@ -77,9 +77,6 @@ class Meow_MGL_Core {
 			$images = Meow_MGL_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : 'asc' );
 			$images = implode( ',', $images );
 		}
-
-		//DEBUG: Display $atts
-		//error_log( print_r( $atts, 1 ) );
 		
 		// Layout
 		$layout = 'none';
@@ -98,6 +95,15 @@ class Meow_MGL_Core {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
 			return "<p class='meow-error'><b>Meow Gallery:</b> The layout $layout is not available in this version.</p>";
 		}
+		
+		// Captions
+		if ( isset( $atts['captions'] ) && ( $atts['captions'] === false || $atts['captions'] === 'false' ) ) {
+			// This is to avoid issues linked to the old block editor for the Meow Gallery
+			$atts['captions'] = 'none';	
+		}
+
+		//DEBUG: Display $atts
+		//error_log( print_r( $atts, 1 ) );
 
 		// Start the process of building the gallery
 		$this->gallery_process = true;
