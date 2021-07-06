@@ -19,7 +19,7 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 		}
 
 		static function is_asynchronous_request() {
-			return self::is_ajax_request() || self::is_woocommerce_ajax_request() || self::is_rest() || self::is_pagebuilder_request();
+			return self::is_ajax_request() || self::is_woocommerce_ajax_request() || self::is_rest();
 		}
 
 		static function is_ajax_request() {

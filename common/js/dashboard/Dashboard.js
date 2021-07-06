@@ -46,21 +46,11 @@ const jsxTextRecommendations =
     <NekoTypo p>
       On the Meow Apps website, you will find articles which are always updated with the latest recommendations.
       <ul>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/how-to-debug-wordpress-errors/" target="_blank">
-          How To Debug
-        </a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-improve-seo-wordpress/" target="_blank">
-          SEO Checklist &amp; Optimization
-        </a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-faster-wordpress-optimize/" target="_blank">
-          Clean Up and Optimize
-        </a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-optimize-images-wordpress/" target="_blank">
-          Optimize Images
-        </a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-hosting-service-wordpress/" target="_blank">
-          Best Hosting Services
-        </a></li>
+        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/debugging-wordpress/" target="_blank">How To Debug</a></li>
+        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/seo-optimization/" target="_blank">SEO Checklist &amp; Optimization</a></li>
+        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/clean-optimize-wordpress/" target="_blank">Clean Up and Optimize</a></li>
+        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/optimize-images-cdn/" target="_blank">Optimize Images</a></li>
+        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/best-hosting-services-wordpress/" target="_blank">Best Hosting Services</a></li>
       </ul>
     </NekoTypo>
   </TabText>;
@@ -195,11 +185,11 @@ const Dashboard = () => {
                     </div>
                   </StyledPluginBlock>
 
-                  <StyledPluginBlock title="WP/LR Sync" className="primary">
+                  <StyledPluginBlock title="Photo Engine" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/wplr-sync.jpg`} />
                     <div>
-                      <h2><a target='_blank' href='https://wordpress.org/plugins/wplr-sync/'>WP/LR Sync</a></h2>
-                      <p>Are you using Lightroom? So you know WP/LR Sync already. Wait, you don't? You must try it! This plugin will be your favorite very soon.</p>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/wplr-sync/'>Photo Engine</a></h2>
+                      <p>Are you using Lightroom? So you know Photo Engine already. Wait, you don't? You must try it! This plugin will be your favorite very soon.</p>
                     </div>
                   </StyledPluginBlock>
 

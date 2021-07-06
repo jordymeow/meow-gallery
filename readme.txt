@@ -2,9 +2,9 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
-Tested up to: 5.7
-Requires PHP: 5.6
-Stable tag: 4.1.2
+Tested up to: 5.7.2
+Requires PHP: 7.0
+Stable tag: 4.1.3
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -48,33 +48,39 @@ Languages: English.
 
 == Changelog ==
 
-= 4.1.2 (2020/04/05) =
+= 4.1.3 (2021/07/06) =
+* Fix: Remove double images on map markers.
+* Fix: Allow HTML such as links in the gallery items.
+* Fix: Fixed double slash in the CSS and JSS urls. 
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+
+= 4.1.2 (2021/04/05) =
 * Fix: Issue with the options relative to captions.
 
-= 4.1.1 (2020/03/05) =
+= 4.1.1 (2021/03/05) =
 * Fix: Optimization of the core.
 
-= 4.1.0 (2020/03/02) =
+= 4.1.0 (2021/03/02) =
 * Fix: Avoid compatibility issue if an old version of the common library is used.
 
-= 4.0.9 (2020/03/01) =
+= 4.0.9 (2021/03/01) =
 * Fix: Preview issues with default layout.
 * Fix: Attempt to fix compatibility with some SEO plugins.
 * Fix: Row height calculation.
 * Fix: Prevent the avoidLoneLastItem function fail.
 
-= 4.0.8 (2020/02/14) =
+= 4.0.8 (2021/02/14) =
 * Fix: Users with sufficient roles can now edit blocks.
 * Fix: Preview wasn't working fine when set on default.
 * Fix: Issue with tiles CSS.
 
-= 4.0.7 (2020/02/11) =
+= 4.0.7 (2021/02/11) =
 * Fix: Tiles Block in Gutenberg.
 * Update: Use Google Maps SDK instead of Leaflet.
 * Fix: MacOS Chrome issue with Tiles.
 * Fix: Square layout issue.
 
-= 4.0.6 (2020/02/06) =
+= 4.0.6 (2021/02/06) =
 * Update: New system for tiles.
 * Update: Better responsive features (please check the settings).
 * Fix: Issue with dots nav.
@@ -108,7 +114,6 @@ Languages: English.
 = 3.5.8 =
 * Fix: When the gallery is empty, automatically gets the images attached to the post.
 * Update: Better i18n support for admin.
-* Note: If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post), that will help us tremendously :) Thank you!
 
 = 3.5.7 =
 * Fix: Avoid an issue (when a gallery had an issue, all the other galleries weren't rendered).

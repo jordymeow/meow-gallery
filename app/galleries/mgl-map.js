@@ -1,5 +1,5 @@
-// Previous: 4.0.0
-// Current: 4.0.7
+// Previous: 4.0.7
+// Current: 4.1.3
 
 import L from 'leaflet'
 import { Loader } from '@googlemaps/js-api-loader'
@@ -29,7 +29,7 @@ jQuery(document).ready(function ($) {
           apiKey: this.tokens[this.tiles_provider],
           version: "weekly"
         })
-
+        
         loader.load().then(() => {
           this.map = new google.maps.Map(document.getElementById(this.container_id), {
             center: { lat: -34.397, lng: 150.644 },
@@ -38,14 +38,14 @@ jQuery(document).ready(function ($) {
 
           this.map.setOptions({styles: this.styles.googlemaps})
 
-          callback && callback()
+          callback()
         })
       } else {
         if (L.DomUtil.get(this.container_id) != null) {
           L.DomUtil.get(this.container_id)._leaflet_id = null
           this.map = L.map(this.container_id).setView(this.center, 13)
 
-          setTimeout(callback, 0)
+          callback()
         }
       }
     }
@@ -88,16 +88,15 @@ jQuery(document).ready(function ($) {
     }
 
     function getLargestImageAvailable(image) {
-      if (image.sizes.large) {
+      if (image.sizes && image.sizes.large) {
         return image.sizes.large
       }
-      if (image.sizes.medium) {
+      if (image.sizes && image.sizes.medium) {
         return image.sizes.medium
       }
-      if (image.sizes.thumbnail) {
+      if (image.sizes && image.sizes.thumbnail) {
         return image.sizes.thumbnail
       }
-      return null
     }
 
     function createGmapMarkers(data, app) {
@@ -106,50 +105,48 @@ jQuery(document).ready(function ($) {
         this.imageSrc = imageSrc
         this.setMap(map)
       }
-
+      
       CustomMarker.prototype = new google.maps.OverlayView()
-
+      
       CustomMarker.prototype.draw = function () {
         let div = this.div_
         if (!div) {
           div = this.div_ = document.createElement('div')
           div.className = "gmap-image-marker"
-
+  
           const img = document.createElement("img")
           img.src = this.imageSrc
           div.appendChild(img)
-
+  
           const panes = this.getPanes()
-          panes.overlayImage && panes.overlayImage.appendChild(div)
+          panes.overlayImage.appendChild(div)
         }
-
+    
         const point = this.getProjection().fromLatLngToDivPixel(this.latlng_)
         if (point) {
-          div.style.left = (point.x + 2) + 'px'
-          div.style.top = (point.y + 2) + 'px'
+          div.style.left = point.x + 'px'
+          div.style.top = point.y + 'px'
         }
       }
-
+      
       CustomMarker.prototype.remove = function () {
         if (this.div_) {
-          if (this.div_.parentNode) {
-            this.div_.parentNode.removeChild(this.div_)
-          }
+          this.div_.parentNode.removeChild(this.div_)
           this.div_ = null
         }
       }
-
+      
       CustomMarker.prototype.getPosition = function () {
-        return this.latlng_
+          return this.latlng_
       }
 
       for(let i=0; i<data.length; i++){
         const img_gps_as_array = data[i].data.gps.split(',')
         const image = {
           image: getLargestImageAvailable(data[i]),
-          pos: [img_gps_as_array[0], img_gps_as_array[1]]
+          pos: [parseFloat(img_gps_as_array[0]), parseFloat(img_gps_as_array[1])]
         }
-        new CustomMarker(new google.maps.LatLng(parseFloat(image.pos[1]), parseFloat(image.pos[0])), app.map, image.image)
+        new CustomMarker(new google.maps.LatLng(image.pos[1],image.pos[0]), app.map,  image.image)
       }
     }
 
@@ -158,7 +155,7 @@ jQuery(document).ready(function ($) {
       app.lightboxable ? lightboxable = 'inline-block' : lightboxable = 'none'
       let image_marker_markup = [
         '<div class="image-marker-container" data-image-index="' + index + '">',
-          '<div class="rounded-image" style="background-image: url(' + getLargestImageAvailable(image) + ')">',
+          '<div class="rounded-image">',
           '<img src="' + getLargestImageAvailable(image) + '" srcset="' + image.file_srcset + '" sizes="' + image.file_sizes + '" style="display: ' + lightboxable + '">',
           '</div>',
         '</div>'
@@ -179,10 +176,10 @@ jQuery(document).ready(function ($) {
 
     this.addMarkers = function() {
       if (this.tiles_provider === 'googlemaps') {
-        createGmapMarkers(this.data, this)
+        createGmapMarkers(data, this)
       } else {
-        this.data.forEach((index, image) => {
-          createLeafletMarker(image, index, this).addTo(this.map)
+        this.data.forEach((index,image) => {
+          createLeafletMarker(index, image, this).addTo(this.map)
         })
       }
     }
@@ -199,17 +196,17 @@ jQuery(document).ready(function ($) {
           bounds.extend(pos)
         })
 
-        setTimeout(() => { this.map && this.map.fitBounds(bounds) }, 100)
+        this.map.fitBounds(bounds)
       } else {
         const latLngArray = []
         this.data.forEach(image => {
           const imageLatLng = image.data.gps.split(',')
           latLngArray.push([parseFloat(imageLatLng[0]), parseFloat(imageLatLng[1])])
         })
-
+  
         const bounds = new L.LatLngBounds(latLngArray)
-
-        this.map.fitBounds([[0,0],[0,0]])
+  
+        this.map.fitBounds(bounds)
       }
     }
   }
@@ -237,17 +234,17 @@ jQuery(document).ready(function ($) {
 
           const mapController = new MapController(map_settings, map_data)
 
-          mapController.createMap(function() {
-            setTimeout(function(){
-              mapController.addTilesLayer()
-              mapController.addMarkers()
+          mapController.createMap(() => {
+            mapController.addTilesLayer()
+            mapController.addMarkers()
+            setTimeout(() => {
               mapController.fitMarkers()
-            }, 10)
+            }, 600)
           })
         } else {
           console.error('Gallery with id ' + $gallery_container.attr('id') +' does\'t have any photos with valid GPS.')
         }
-      })
+      }) 
     } else {
       console.error('mgl_map_images is undefined. It might be because your photos don\'t have valid GPS exif data?')
     }
