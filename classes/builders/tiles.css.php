@@ -1,37 +1,37 @@
 <style>
 
 	.mgl-tiles {
-		display: <?= ($isPreview ? 'block' : 'none') ?>;
+		display: <?php echo ($isPreview ? 'block' : 'none') ?>;
 	}
 
-	<?= $class_id ?> {
-		margin: <?= -1 * ( $gutter['desktop'] / 2 ) ?>px;
-		width: calc(100% + <?= $gutter['desktop'] ?>px);
+	<?php echo sanitize_html_class( $class_id ) ?> {
+		margin: <?php echo -1 * ( (int)$gutter['desktop'] / 2 ) ?>px;
+		width: calc(100% + <?php echo (int)$gutter['desktop'] ?>px);
 	}
 
-	<?= $class_id ?> .mgl-box {
-		padding: <?= $gutter['desktop'] / 2 ?>px;
+	<?php echo sanitize_html_class( $class_id ) ?> .mgl-box {
+		padding: <?php echo (int)$gutter['desktop'] / 2 ?>px;
 	}
 
 	@media screen and (max-width: 768px) {
-		<?= $class_id ?> {
-			margin: <?= -1 * ( $gutter['tablet'] / 2 ) ?>px;
-			width: calc(100% + <?= $gutter['tablet'] ?>px);
+		<?php echo sanitize_html_class( $class_id ) ?> {
+			margin: <?php echo -1 * ( (int)$gutter['tablet'] / 2 ) ?>px;
+			width: calc(100% + <?php echo (int)$gutter['tablet'] ?>px);
 		}
 
-		<?= $class_id ?> .mgl-box {
-			padding: <?= $gutter['tablet'] / 2 ?>px;
+		<?php echo sanitize_html_class( $class_id ) ?> .mgl-box {
+			padding: <?php echo (int)$gutter['tablet'] / 2 ?>px;
 		}	
 	}
 
 	@media screen and (max-width: 460px) {
-		<?= $class_id ?> {
-			margin: <?= -1 * ( $gutter['mobile'] / 2 ) ?>px;
-			width: calc(100% + <?= $gutter['mobile'] ?>px);
+		<?php echo sanitize_html_class( $class_id ) ?> {
+			margin: <?php echo -1 * ( (int)$gutter['mobile'] / 2 ) ?>px;
+			width: calc(100% + <?php echo (int)$gutter['mobile'] ?>px);
 		}
 
-		<?= $class_id ?> .mgl-box {
-			padding: <?= $gutter['mobile'] / 2 ?>px;
+		<?php echo sanitize_html_class( $class_id ) ?> .mgl-box {
+			padding: <?php echo (int)$gutter['mobile'] / 2 ?>px;
 		}	
 	}
 

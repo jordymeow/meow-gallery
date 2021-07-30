@@ -5,7 +5,7 @@
   "author": "Meow Apps",
   "scripts": {
     "dev-galleries": "webpack --watch --config webpack.galleries.config.js",
-    "build-galleries": "webpack --config webpack.galleries.config.js",
+    "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
     "dev-admin": "webpack --watch --config webpack.admin.config.js",
     "build-admin": "webpack --config webpack.admin.config.js",
     "build": "yarn build-galleries && yarn build-admin"

@@ -43,7 +43,7 @@ if ( !class_exists( 'MeowCommon_Licenser' ) ) {
 
 		function retry_validation() {
 			if ( isset( $_POST[$this->prefix . '_pro_serial'] ) ) {
-				$serial = $_POST[$this->prefix . '_pro_serial'];
+				$serial = sanitize_text_field( $_POST[$this->prefix . '_pro_serial'] );
 				$this->validate_pro( $serial );
 			}
 		}

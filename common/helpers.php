@@ -171,9 +171,11 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 		}
 	}
 
-	if ( MeowCommon_Helpers::is_rest() ) {
-		ini_set( 'display_errors', 0 );
-	}
+	// Asked by WP Security Team to remove this.
+
+	// if ( MeowCommon_Helpers::is_rest() ) {
+	// 	ini_set( 'display_errors', 0 );
+	// }
 }
 
 ?>
