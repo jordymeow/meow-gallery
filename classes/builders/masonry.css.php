@@ -4,27 +4,27 @@
 		display: <?php echo ($isPreview ? 'block' : 'none') ?>;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> {
+	<?php echo esc_attr( $class_id ) ?> {
 		column-count: <?php echo (int)$columns ?>;
 		margin: <?php echo -1 * ( (int)$gutter / 2 ) ?>px;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> .mgl-item {
+	<?php echo esc_attr( $class_id ) ?> .mgl-item {
 		padding: <?php echo (int)$gutter / 2 ?>px;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> figcaption {
+	<?php echo esc_attr( $class_id ) ?> figcaption {
 		padding: <?php echo (int)$gutter / 2 ?>px;
 	}
 
 	@media screen and (max-width: 800px) {
-		<?php echo sanitize_html_class( $class_id ) ?> {
+		<?php echo esc_attr( $class_id ) ?> {
 			column-count: 2;
 		}
 	}
 
 	@media screen and (max-width: 600px) {
-		<?php echo sanitize_html_class( $class_id ) ?> {
+		<?php echo esc_attr( $class_id ) ?> {
 			column-count: 1;
 		}
 	}

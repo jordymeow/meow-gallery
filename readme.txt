@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 5.8.0
 Requires PHP: 7.0
-Stable tag: 4.1.5
+Stable tag: 4.1.6
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -27,7 +27,7 @@ Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr)
 Since this gallery works with WordPress in a natural way, it should be compatible with any other plugins or themes (of course, it depends on how those have been exactly implemented). The following plugins might interest you.
 
 * Lightbox: The choice of the lightbox is yours, so this gallery does not come with one. However, we made the [Meow Lightbox](https://wordpress.org/plugins/meow-lightbox/). It follows the same principles.
-* Lightroom: It fully works with [WP/LR Sync](https://wordpress.org/plugins/wplr-sync/) and its attributes. If you wish to use your collections in Lightroom automatically, then, this is easy!
+* Lightroom: It fully works with [Photo Engine](https://wordpress.org/plugins/wplr-sync/), its Media Organizer, and its attributes. If you wish to use to control it with Lightroom, this is also easy!
 * External links: If you want to create links from your images to external URLs, we recommend you the [Gallery Custom Links](https://wordpress.org/plugins/gallery-custom-links/) plugin.
 * Audio: You can also add sound, music or any kind of audio to an image. To do this, you can use [Audio Story Images](https://wordpress.org/plugins/audio-story-images/).
 
@@ -48,7 +48,7 @@ Languages: English.
 
 == Changelog ==
 
-= 4.1.5 (2021/07/30) =
+= 4.1.6 (2021/07/31) =
 * Fix: SQL Injection and Arbitrary Options Update fixes.
 
 = 4.1.3 (2021/07/06) =

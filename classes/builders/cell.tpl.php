@@ -3,16 +3,16 @@
 		<div class="mgl-img-container">
 			<?php if ( !$isPreview && $linkUrl ): ?>
 				<a href="<?php echo esc_url( $linkUrl ) ?>">
-						<?php echo $imgSrc ?>
+						<?php echo wp_kses_post( $imgSrc ) ?>
 				</a>
 			<?php else: ?>
-				<?php echo $imgSrc ?>
+				<?php echo wp_kses_post( $imgSrc ) ?>
 			<?php endif; ?>
 		</div>
 	</div>
 	<?php if ( $caption ): ?>
 	<figcaption class="mgl-caption">
-			<p><?php echo $caption ?></p>
+			<p><?php echo wp_kses_post( $caption ) ?></p>
 	</figcaption>
 	<?php endif; ?>
 </figure>

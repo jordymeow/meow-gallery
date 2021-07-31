@@ -26,11 +26,11 @@
 	}
 	?>
 
-	<?php echo sanitize_html_class( $class_id ) ?> {
+	<?php echo esc_attr( $class_id ) ?> {
 		margin: <?php echo -1 * ( (int)$gutter / 2 ) ?>px;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> .mgl-item {
+	<?php echo esc_attr( $class_id ) ?> .mgl-item {
 		width: <?php echo (int)$columns_in_percentage ?>;
 		padding-bottom: <?php echo (int)$columns_in_percentage ?>;
 	}
@@ -40,7 +40,7 @@
 	?>
 
 	@media screen and (max-width: 460px) {
-		<?php echo sanitize_html_class( $class_id ) ?> .mgl-item {
+		<?php echo esc_attr( $class_id ) ?> .mgl-item {
 			width: 50%;
 			padding-bottom: 50%;
 		}
@@ -55,7 +55,7 @@
 	?>
 
 	@media screen and (max-width: 360px) {
-		<?php echo sanitize_html_class( $class_id ) ?> .mgl-item {
+		<?php echo esc_attr( $class_id ) ?> .mgl-item {
 			width: 100%;
 			padding-bottom: 100%;
 		}
@@ -65,15 +65,15 @@
 	} 
 	?>
 
-	<?php echo sanitize_html_class( $class_id ) ?>.custom-gallery-class .mgl-item {
+	<?php echo esc_attr( $class_id ) ?>.custom-gallery-class .mgl-item {
 		padding-bottom: <?php echo ( str_replace( '%', '', (int)$columns_in_percentage) / 1.5 ) ?>% !important;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> .mgl-item .mgl-icon {
+	<?php echo esc_attr( $class_id ) ?> .mgl-item .mgl-icon {
 		padding: <?php echo (int)$gutter / 2 ?>px;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> .mgl-item figcaption {
+	<?php echo esc_attr( $class_id ) ?> .mgl-item figcaption {
 		padding: <?php echo (int)$gutter / 2 ?>px;
 	}
 

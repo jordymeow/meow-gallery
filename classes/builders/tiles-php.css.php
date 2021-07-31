@@ -4,21 +4,21 @@
 		display: <?php echo ($isPreview ? 'block' : 'none') ?>;
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> {
+	<?php echo esc_attr( $class_id ) ?> {
 		margin: <?php echo -1 * ( (int)$gutter / 2 ) ?>px;
 		width: calc(100% + <?php echo (int)$gutter ?>px);
 	}
 
-	<?php echo sanitize_html_class( $class_id ) ?> .mgl-box {
+	<?php echo esc_attr( $class_id ) ?> .mgl-box {
 		padding: <?php echo (int)$gutter / 2 ?>px;
 	}
 
 	@media screen and (max-width: 600px) {
-		<?php echo sanitize_html_class( $class_id ) ?> .mgl-row {
+		<?php echo esc_attr( $class_id ) ?> .mgl-row {
 			height: 100px;
 		}
 
-		<?php echo sanitize_html_class( $class_id ) ?> figcaption {
+		<?php echo esc_attr( $class_id ) ?> figcaption {
 			display: none;
 		}
 	}
