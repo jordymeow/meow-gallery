@@ -5,8 +5,8 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 	class MeowCommon_Admin {
 
 		public static $loaded = false;
-		public static $version = "3.3";
-		public static $admin_version = "3.3";
+		public static $version = "3.4";
+		public static $admin_version = "3.4";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -136,7 +136,7 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			$html = '<input type="checkbox" id="meowapps_hide_meowapps" name="meowapps_hide_meowapps" value="1" ' .
 				checked( 1, get_option( 'meowapps_hide_meowapps' ), false ) . '/>';
 			$html .= __( '<label>Hide <b>Meow Apps</b> Menu</label><br /><small>Hide Meow Apps menu and all its components, for a cleaner admin. This option will be reset if a new Meow Apps plugin is installed. <b>Once activated, an option will be added in your General settings to display it again.</b></small>', $this->domain );
-			echo $html;
+			echo wp_kses_post( $html );
 		}
 
 		function is_registered() {
@@ -149,14 +149,13 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			$html = ob_get_contents();
 			ob_end_clean();
 			$html = preg_replace( '%^.*<body>(.*)</body>.*$%ms','$1', $html );
-			echo $html;
+			echo wp_kses_post( $html );
 		}
 
 		function admin_meow_apps() {
 			echo "<div id='meow-common-dashboard'></div>";
-
 			echo "<div style='display: none;' id='meow-common-phpinfo'>";
-			echo $this->get_phpinfo();
+			echo wp_kses_post( $this->get_phpinfo() );
 			echo "</div>";
 		}
 

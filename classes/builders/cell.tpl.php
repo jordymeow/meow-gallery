@@ -1,4 +1,4 @@
-<figure class="mgl-item"<?php echo $attributes ?>>
+<figure class="mgl-item"<?php echo wp_kses_post( $attributes ) ?>>
 	<div class="mgl-icon">
 		<div class="mgl-img-container">
 			<?php if ( !$isPreview && $linkUrl ): ?>
