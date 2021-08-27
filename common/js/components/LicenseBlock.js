@@ -80,7 +80,7 @@ const LicenseBlock = () => {
       message = 'This license seems to be for a different plugin... isn\'t it? :)';
     }
     else {
-      message = <span>There is an unknown error related to this serial key. Really sorry about this! Please <a target='_blank' rel="noreferrer" href='https://meowapps.com/contact/'>contact us</a>.</span>
+      message = <span>There is an unknown error related to the system or this serial key. Really sorry about this! Make sure your security plugins and systems are off temporarily. If you are still experiencing an issue, please <a target='_blank' rel="noreferrer" href='https://meowapps.com/contact/'>contact us</a>.</span>
       console.error({ license });
     }
   }
