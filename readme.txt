@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 5.8.0
 Requires PHP: 7.0
-Stable tag: 4.1.8
+Stable tag: 4.1.9
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -48,8 +48,12 @@ Languages: English.
 
 == Changelog ==
 
+= 4.1.9 (2021/08/29) =
+* Fix: Enhanced security for the plugin to avoid hackers.
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+
 = 4.1.8 (2021/08/27) =
-* Info: It seems like the versio 4.1.7 version was maybe not pushed properly, so let's have a jump to make sure everyone is up to date.
+* Info: It seems like the version 4.1.7 version was maybe not pushed properly, so let's have a jump to make sure everyone is up to date.
 
 = 4.1.7 (2021/08/11) =
 * Fix: Attributes where escaped a tad too much.
@@ -61,7 +65,6 @@ Languages: English.
 * Fix: Remove double images on map markers.
 * Fix: Allow HTML such as links in the gallery items.
 * Fix: Fixed double slash in the CSS and JSS urls. 
-* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
 
 = 4.1.2 (2021/04/05) =
 * Fix: Issue with the options relative to captions.

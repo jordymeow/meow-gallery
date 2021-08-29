@@ -20,27 +20,29 @@ class Meow_MGL_Rest
 		add_action( 'rest_api_init', array( $this, 'rest_api_init' ) );
 	}
 
+
 	function rest_api_init() {
-		if ( !current_user_can( 'upload_files' ) ) {
-			return;
-		} 
+
+		//$accessOptions = $can_access_options;
+		//error_log( $canDo );
+		//$accessOptions = $this->core->can_access_options();
 
 		// SETTINGS
 		register_rest_route( $this->namespace, '/update_option/', array(
 			'methods' => 'POST',
-			'permission_callback' => '__return_true',
+			'permission_callback' => function () { return true; },
 			'callback' => array( $this, 'rest_update_option' )
 		) );
 		register_rest_route( $this->namespace, '/all_settings/', array(
 			'methods' => 'GET',
-			'permission_callback' => '__return_true',
+			'permission_callback' => array( $this->core, 'can_access_options' ),
 			'callback' => array( $this, 'rest_all_settings' )
 		) );
 
 		// BLOCK
     register_rest_route( $this->namespace, '/preview', array(
 			'methods' => 'POST',
-			'permission_callback' => '__return_true',
+			'permission_callback' => function () { return true; },
 			'callback' => array( $this, 'preview' ),
 		) );
   }

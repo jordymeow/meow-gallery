@@ -47,11 +47,16 @@ abstract class Meow_MGL_Builders_Core {
 
 	function prepare_data( $idsStr ) {
 		global $wpdb;
+
+		// Escape the array of IDs for SQL
+		$ids = array_map( 'intval', explode(',', $idsStr ) );
+		$idsStr = implode( ',', $ids );
+
 		$query = "SELECT p.ID id, p.post_excerpt caption, m.meta_value meta
 		FROM $wpdb->posts p, $wpdb->postmeta m
 		WHERE m.meta_key = '_wp_attachment_metadata'
 		AND p.ID = m.post_id
-		AND p.ID IN (" . esc_sql( $idsStr ) .  ")";
+		AND p.ID IN (" . $idsStr .  ")";
 		$res = $wpdb->get_results( $query );
 		$this->ids = explode( ',', $idsStr );
 		foreach ( $res as $r ) {
