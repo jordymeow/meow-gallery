@@ -8,7 +8,8 @@
     "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
     "dev-admin": "webpack --watch --config webpack.admin.config.js",
     "build-admin": "webpack --config webpack.admin.config.js",
-    "build": "yarn build-galleries && yarn build-admin"
+    "build": "yarn build-galleries && yarn build-admin",
+    "zip": "zip -r ~/Desktop/meow-gallery-pro.zip . -x node_modules/\\* .git/\\* logs/\\*"
   },
   "dependencies": {
     "@babel/core": "^7.10.3",

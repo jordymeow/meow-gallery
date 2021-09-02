@@ -31,8 +31,8 @@
 	}
 
 	<?php echo esc_attr( $class_id ) ?> .mgl-item {
-		width: <?php echo (int)$columns_in_percentage ?>;
-		padding-bottom: <?php echo (int)$columns_in_percentage ?>;
+		width: <?php echo (int)$columns_in_percentage ?>%;
+		padding-bottom: <?php echo (int)$columns_in_percentage ?>%;
 	}
 
 	<?php

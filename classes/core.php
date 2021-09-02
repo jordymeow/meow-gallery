@@ -22,12 +22,12 @@ class Meow_MGL_Core {
 		}
 	}
 
-	public function can_access_options() {
-		return current_user_can( 'manage_options' );
+	public function can_access_settings() {
+		return apply_filters( 'mgl_allow_setup', current_user_can( 'manage_options' ) );
 	}
 
 	public function can_access_features() {
-		return current_user_can( 'upload_files' );
+		return apply_filters( 'mgl_allow_usage', current_user_can( 'upload_files' ) );
 	}
 
 	// Use by the Gutenberg block

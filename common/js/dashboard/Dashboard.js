@@ -55,9 +55,11 @@ const jsxTextRecommendations =
     </NekoTypo>
   </TabText>;
 
+const swrAllSettingsKey = [`${CommonApiUrl}/all_settings/`, { headers: { 'X-WP-Nonce': restNonce } }];
+
 const Dashboard = () => {
   const [ fatalError, setFatalError ] = useState(false);
-  const { data: swrSettings, mutate: mutateSwrSettings, error: swrError } = useSWR(`${CommonApiUrl}/all_settings/`, jsonFetcher);
+  const { data: swrSettings, mutate: mutateSwrSettings, error: swrError } = useSWR(swrAllSettingsKey, jsonFetcher);
   const settings = swrSettings?.data;
   const hide_meowapps = settings?.meowapps_hide_meowapps;
   const force_sslverify = settings?.force_sslverify;
@@ -150,7 +152,7 @@ const Dashboard = () => {
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Contact Form Block" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/default.png`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/contact-form-block.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/contact-form-block/'>Contact Form Block</a></h2>
                       <p>A simple, pretty and superlight contact form. If you simply want your visitors to get in touch with you, this contact form will be perfect for you and your WordPress.</p>
@@ -158,7 +160,7 @@ const Dashboard = () => {
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Meow Analytics" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/default.png`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/meow-analytics.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-analytics/'>Meow Analytics</a></h2>
                       <p>Are you tired of those heavy plugins, accessing your Google Analytics deliberately? Switch to Meow Analytics!</p>
