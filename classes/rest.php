@@ -48,7 +48,8 @@ class Meow_MGL_Rest
 		$params = json_decode( $params );
 		$params->ids = implode( ',', $params->ids );
 		$atts = (array) $params;
-		return $this->core->gallery( $atts, true );
+		$html = $this->core->gallery( $atts, true );
+		return new WP_REST_Response( [ 'success' => true, 'data' => $html ], 200 );
 	}
 
 	function rest_all_settings() {

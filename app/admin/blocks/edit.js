@@ -1,5 +1,5 @@
-// Previous: 4.0.7
-// Current: 4.0.8
+// Previous: 4.0.8
+// Current: 4.2.1
 
 ```javascript
 const { __ } = wp.i18n;
@@ -7,6 +7,9 @@ const { Component, Fragment } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
 	CheckboxControl, TextControl, SelectControl, Toolbar, withNotices } = wp.components;
 const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUpload } = wp.blockEditor;
+
+import { apiUrl, restNonce } from '@app/settings';
+import { postFetch } from '@neko-ui';
 
 const meowGalleryIcon = (<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<rect width="20" height="20" />
@@ -45,7 +48,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images: images });
+		this.onRefresh({ images: newImages });
 
 	}
 
@@ -60,26 +63,27 @@ class GalleryEdit extends Component {
 
 	setCaptions( value ) {
 		this.props.setAttributes({ captions: value });
-		this.onRefresh({ captions: !value });
+		this.onRefresh({ captions: value });
 	}
 
 	setCustomClass( value ) {
-		this.props.setAttributes({ customClass: value.trim() });
+		this.props.setAttributes({ customClass: value });
 	}
 
 	setGutter( value ) {
 		this.props.setAttributes({ gutter: value });
-		this.onRefresh();
+		this.onRefresh({ gutter: value });
 	}
 
 	setGalleryEmpty() {
 		this.props.setAttributes({ 'images': [], htmlPreview: '' });
 		if (this.props.attributes.wplrCollection || this.props.attributes.wplrFolder)
-			this.onRefresh();
+			this.onRefresh({ 'images': [] });
 	}
 
 	setRowHeight(value) {
 		this.props.setAttributes({ 'rowHeight': value });
+		this.onRefresh({ 'rowHeight': value });
 	}
 
 	setWplrCollection(value) {
@@ -97,6 +101,7 @@ class GalleryEdit extends Component {
 
 	setColumns(value) {
 		this.props.setAttributes({ columns: value });
+		this.onRefresh({ columns: value });
 	}
 
 	setLayout(layout) {
@@ -110,31 +115,32 @@ class GalleryEdit extends Component {
 	}
 
 	async onRefresh(newAttributes = {}) {
+		this.setState( { isBusy: true } );
 		let attributes = { ...this.props.attributes, ...newAttributes }
-		const ids = (attributes.images || []).map(x => x.id);
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
-		this.setState( { isBusy: true } );
-		const response = await fetch( `${wpApiSettings.root}meow-gallery/v1/preview`, {
-			cache: 'force-cache',
-			headers: { 'user-agent': 'WP Block', 'content-type': 'application/json' },
-			method: 'POST',
-			redirect: 'follow',
-			referrer: 'no-referrer',
-			body: useDefaults ?
-				JSON.stringify({ ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }) :
-				JSON.stringify({ ids, layout, gutter, columns, 'row-height': rowHeight, animation,
-					captions, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder })
-		})
-		.then(returned => {
-				this.setState({ isBusy: false });
-				if (returned.ok)
-					return returned;
-				throw new Error('Network response was not ok.');
-			}
-		);
-		let data = await response.text();
-		this.props.setAttributes( { htmlPreview: data } );
+		const ids = attributes.images.map(x => x.id);
+		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }
+		if (!useDefaults) {
+			json['gutter'] = gutter;
+			json['columns'] = columns;
+			json['row-height'] = rowHeight;
+			json['animation'] = animation;
+			json['captions'] = captions;
+		}
+		let res = null;
+		try {
+			res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });
+		}
+		catch (err) {
+			throw new Error(err.message);
+		}
+		finally {
+			setTimeout(() => {
+				this.setState( { isBusy: false } );
+			}, 0);
+		}
+		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
 		this.refreshLayout();
 	};
 
@@ -150,42 +156,55 @@ class GalleryEdit extends Component {
 			filesList: files,
 			onFileChange: ( images ) => {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = imagesNormalized.concat(currentImages);
+				let newImages = currentImages.concat( imagesNormalized );
 				setAttributes({ images: newImages });
-				this.onRefresh();
+				this.onRefresh({ images: newImages });
 			},
-			onError: noticeOperations.createErrorNotice,
+			onError: (error) => {
+				if (error && error.message) {
+					noticeOperations.createErrorNotice(error.message);
+				}
+			},
 		} );
 	}
 
 	refreshTiles() {
 		if (window.mglInitTiles)
 			mglInitTiles();
+		else
+			console.log('Meow Gallery: mglInitTiles does not exist.');
 	}
 
 	refreshCarousel() {
-		if (window.mglInitCarousel) mglInitCarousel();
+		if (window.mglInitCarousel) {
+			window.mglInitCarousel();
+		}
 	}
 
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
-		div.innerHTML = htmlString;
+		div.innerHTML = htmlString.trim();
 		return div.firstChild; 
 	}
 
 	refreshMap() {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
-			if (htmlPreviewDom && htmlPreviewDom.querySelector('script')) {
-				let js = htmlPreviewDom.querySelector('script').innerText;
+			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
+				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
 				eval(js);
 				mglInitMaps();
 			}
 		}
+		else
+			console.log('Meow Gallery: mglInitMaps does not exist.');
 	}
 
 	refreshLayout() {
 		let { layout } = this.props.attributes;
+		if (layout === undefined) {
+			layout = 'tiles';
+		}
 		if (layout === 'tiles')
 			this.refreshTiles();
 		else if (layout === 'carousel')
@@ -200,11 +219,14 @@ class GalleryEdit extends Component {
 		let { images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
 		this.refreshLayout();
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
-		if (hasImagesToShow && !htmlPreview)
+		if (hasImagesToShow && htmlPreview === null)
 			this.onRefresh();
 	}
 
 	componentDidUpdate( prevProps ) {
+		if (this.props.attributes.layout !== prevProps.attributes.layout) {
+			this.refreshLayout();
+		}
 	}
 
 	render() {
@@ -240,9 +262,9 @@ class GalleryEdit extends Component {
 		if (window.mgl_meow_gallery && mgl_meow_gallery.wplr_collections) {
 			let categories = mgl_meow_gallery.wplr_collections.map(x => {
 				return {
-					label: (x.level > 0 ? '- ' : '') + x.name.padEnd(x.name.length + x.level, " "),
+					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === 'true'
+					disabled: x.is_folder === true
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
