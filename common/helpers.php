@@ -36,7 +36,7 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 			// WP_REST_Request init.
 			$is_rest_request = defined('REST_REQUEST') && REST_REQUEST;
 			if ( $is_rest_request ) {
-				MeowCommon_Classes_Rest::init_once();
+				MeowCommon_Rest::init_once();
 				return true;
 			}
 
@@ -44,7 +44,7 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 			$prefix = rest_get_url_prefix();
 			$request_contains_rest = isset( $_GET['rest_route'] ) && strpos( trim( $_GET['rest_route'], '\\/' ), $prefix , 0 ) === 0;
 			if ( $request_contains_rest) {
-				MeowCommon_Classes_Rest::init_once();
+				MeowCommon_Rest::init_once();
 				return true;
 			}		
 
@@ -62,7 +62,7 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 			if ( !empty( $current_url['path'] ) && !empty( $rest_url['path'] ) ) {
 				$request_contains_rest = strpos( $current_url['path'], $rest_url['path'], 0 ) === 0;
 				if ( $request_contains_rest) {
-					MeowCommon_Classes_Rest::init_once();
+					MeowCommon_Rest::init_once();
 					return true;
 				}
 			}
@@ -177,5 +177,3 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 	// 	ini_set( 'display_errors', 0 );
 	// }
 }
-
-?>

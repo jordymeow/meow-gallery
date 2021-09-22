@@ -1,5 +1,5 @@
-// Previous: 4.0.0
-// Current: 4.0.9
+// Previous: 4.0.9
+// Current: 4.2.2
 
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
@@ -117,7 +117,7 @@ const buildShortcode = function(attributes) {
 		shortcode = `[gallery ${attrs} row-height="${rowHeight}"][/gallery]`;
 	else if (layout === 'square')
 		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
-	else if (layout === 'slider')
+	else if (layout === 'slider' || layout === 'carousel')
 		shortcode = `[gallery ${attrs}][/gallery]`;
 	else if (layout === 'map')
 		shortcode = `[gallery ${attrs}][/gallery]`;

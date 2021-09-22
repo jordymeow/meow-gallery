@@ -1,13 +1,13 @@
 <?php
 
-class MeowCommon_Classes_Rest
+class MeowCommon_Rest
 {
 	private $namespace = "meow-common/v1";
 	static public $instance = null;
 
 	static public function init_once() {
-		if ( !MeowCommon_Classes_Rest::$instance ) {
-			MeowCommon_Classes_Rest::$instance = new self();
+		if ( !MeowCommon_Rest::$instance ) {
+			MeowCommon_Rest::$instance = new self();
 		}
 	}
 
@@ -131,5 +131,3 @@ class MeowCommon_Classes_Rest
 	}
 
 }
-
-?>
