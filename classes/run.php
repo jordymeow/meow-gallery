@@ -1,20 +1,34 @@
 <?php
 
 class Meow_MGL_Run {
+	private $isEnqueued = false;
 
 	public function __construct( $core ) {
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_shortcode( 'gallery', array( $core, 'gallery' ) );
 		add_shortcode( 'meow-gallery', array( $core, 'gallery' ) );
+
+		if ( is_admin() ) {
+			add_action( 'init', array( $this, 'enqueue_scripts' ) );
+		}
+		else {
+			add_action( 'mgl_gallery_created', array( $this, 'enqueue_scripts' ), 10, 0 );
+		}
+
 		// Yoast: Some people really want this, but it needs to be reviewed as Yoast changed its API
 		//add_filter( 'wpseo_sitemap_urlimages', array( $this, 'wpseo_siteimap' ), 10, 2 );
 	}
 
 	function enqueue_scripts() {
+		// Only need to load the scripts once.
+		if ( $this->isEnqueued ) { 
+			return;
+		}
+		$this->isEnqueued = true;
+
+		// Load the JS for Meow Gallery
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
-		wp_enqueue_script( 'mgl-js', plugins_url( '/app/galleries.js', __DIR__ ), array( 'jquery' ), $cache_buster, false );
+		wp_enqueue_script( 'mgl-js', plugins_url( '/app/galleries.js', __DIR__ ), array( 'jquery' ), $cache_buster, true );
 
 		// TODO: This should be moved in a getter (since it is also used by tiles.php)
 		$density = [];

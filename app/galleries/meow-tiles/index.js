@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.0.8
+// Previous: 4.0.8
+// Current: 4.2.3
 
 const $ = jQuery
 
@@ -7,9 +7,10 @@ import MeowTiles from './classes/MeowTiles'
 
 const initTiles = () => {
   $('.mgl-tiles').each(function() {
+
     const tilesGallery = new MeowTiles({
       gallery: $(this)[0],
-      density: mgl_settings.tiles.density
+      density: mgl_settings?.tiles?.density
     })
 
     tilesGallery.init(() => {

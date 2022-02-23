@@ -1,7 +1,7 @@
-// Previous: 4.0.8
-// Current: 4.2.1
+// Previous: 4.2.1
+// Current: 4.2.3
 
-```javascript
+```jsx
 const { __ } = wp.i18n;
 const { Component, Fragment } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -48,8 +48,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images: newImages });
-
+		this.onRefresh();
 	}
 
 	setLinkTo( value ) {
@@ -119,7 +118,7 @@ class GalleryEdit extends Component {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
-		const ids = attributes.images.map(x => x.id);
+		const ids = (attributes.images || []).map(x => x.id);
 		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }
 		if (!useDefaults) {
 			json['gutter'] = gutter;
@@ -130,17 +129,17 @@ class GalleryEdit extends Component {
 		}
 		let res = null;
 		try {
-			res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });
-		}
-		catch (err) {
+      res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });
+    }
+    catch (err) {
 			throw new Error(err.message);
-		}
+    }
 		finally {
 			setTimeout(() => {
 				this.setState( { isBusy: false } );
 			}, 0);
 		}
-		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
+		this.props.setAttributes( { htmlPreview: res.data || '' } );
 		this.refreshLayout();
 	};
 
@@ -149,49 +148,42 @@ class GalleryEdit extends Component {
 	}
 
 	addFiles( files ) {
-		const currentImages = this.props.attributes.images || [];
+		const currentImages = this.props.attributes.images ? this.props.attributes.images.slice() : [];
 		const { noticeOperations, setAttributes } = this.props;
 		mediaUpload( {
 			allowedTypes: ALLOWED_MEDIA_TYPES,
 			filesList: files,
 			onFileChange: ( images ) => {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = currentImages.concat( imagesNormalized );
+				let newImages = imagesNormalized.concat(currentImages);
 				setAttributes({ images: newImages });
 				this.onRefresh({ images: newImages });
 			},
-			onError: (error) => {
-				if (error && error.message) {
-					noticeOperations.createErrorNotice(error.message);
-				}
-			},
+			onError: noticeOperations.createErrorNotice,
 		} );
 	}
 
 	refreshTiles() {
 		if (window.mglInitTiles)
-			mglInitTiles();
+			window.mglInitTiles();
 		else
 			console.log('Meow Gallery: mglInitTiles does not exist.');
 	}
 
 	refreshCarousel() {
-		if (window.mglInitCarousel) {
-			window.mglInitCarousel();
-		}
 	}
 
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstChild; 
+		return div.firstElementChild; 
 	}
 
 	refreshMap() {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
 			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
-				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
+				let js = htmlPreviewDom.getElementsByTagName('script')[0].textContent;
 				eval(js);
 				mglInitMaps();
 			}
@@ -202,9 +194,6 @@ class GalleryEdit extends Component {
 
 	refreshLayout() {
 		let { layout } = this.props.attributes;
-		if (layout === undefined) {
-			layout = 'tiles';
-		}
 		if (layout === 'tiles')
 			this.refreshTiles();
 		else if (layout === 'carousel')
@@ -219,14 +208,11 @@ class GalleryEdit extends Component {
 		let { images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
 		this.refreshLayout();
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
-		if (hasImagesToShow && htmlPreview === null)
+		if (hasImagesToShow && !htmlPreview && !this.state.isBusy)
 			this.onRefresh();
 	}
 
 	componentDidUpdate( prevProps ) {
-		if (this.props.attributes.layout !== prevProps.attributes.layout) {
-			this.refreshLayout();
-		}
 	}
 
 	render() {
@@ -264,7 +250,7 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === true
+					disabled: x.is_folder === 'true'
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
@@ -304,6 +290,7 @@ class GalleryEdit extends Component {
 								{ value: 'justified', label: 'Justified' },
 								{ value: 'square', label: 'Square' },
 								{ value: 'cascade', label: 'Cascade' },
+								{ value: 'horizontal', label: 'Horizontal' },
 								{ value: 'carousel', label: 'Carousel' },
 								{ value: 'map', label: 'Map' }
 							]}>

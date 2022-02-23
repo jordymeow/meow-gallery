@@ -116,13 +116,18 @@ class Meow_MGL_Core {
 		// Start the process of building the gallery
 		$this->gallery_process = true;
 		$this->gallery_layout = $layout;
-		wp_enqueue_style( 'mgl-css' );
+
+		// This should be probably removed.
+		// wp_enqueue_style( 'mgl-css' );
+
 		$infinite = get_option( 'mgl_infinite', false ) && class_exists( 'MeowPro_MGL_Core' );
 		$gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
 		$result = $gen->build( $images );
 		$this->gallery_process = false;
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		//$result = apply_filters( 'post_gallery', $result, $atts, null );
+
+		do_action( 'mgl_gallery_created' );
 
 		return $result;
 	}

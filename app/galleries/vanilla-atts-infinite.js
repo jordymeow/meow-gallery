@@ -1,5 +1,5 @@
-// Previous: 4.0.0
-// Current: 4.0.6
+// Previous: 4.0.6
+// Current: 4.2.3
 
 (function() {
 
@@ -11,6 +11,17 @@
 	registerListener('resize', lazyLoad)
 
 	window.addEventListener('load', () => {
+
+		if (document.querySelector('.mgl-gallery.mgl-horizontal')) {
+			document.querySelectorAll('.mgl-gallery.mgl-horizontal').forEach(gallery => {
+				const galleryTrack = gallery.querySelector('.meow-horizontal-track')
+
+				galleryTrack.addEventListener('scroll', () => {
+					lazyLoad()
+				})
+			})
+		}
+
 		document.body.addEventListener('post-load', () => {
 			setLazy()
 			lazyLoad()

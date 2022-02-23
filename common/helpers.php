@@ -4,7 +4,9 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 
 	class MeowCommon_Helpers {
 	
-		public static $version = MeowCommon_Admin::version;
+		//public static $version = MeowCommon_Admin::version;
+		private static $startTimes = array();
+		private static $startQueries = array();
 
 		static function is_divi_builder() {
 			return isset( $_GET['et_fb'] ) && $_GET['et_fb'] === '1';
@@ -168,6 +170,21 @@ if ( !class_exists( 'MeowCommon_Helpers' ) ) {
 			// 	}
 			// 	return $html;
 			// }
+		}
+
+		static function timer_start( $timerName = 'default' ) {
+			MeowCommon_Helpers::$startQueries[ $timerName ] = get_num_queries();
+			MeowCommon_Helpers::$startTimes[ $timerName ] = microtime( true );
+		}
+
+		static function timer_elapsed( $timerName = 'default' ) {
+			return microtime( true ) - MeowCommon_Helpers::$startTimes[ $timerName ];
+		}
+
+		static function timer_log_elapsed( $timerName = 'default' ) {
+			$elapsed = MeowCommon_Helpers::timer_elapsed( $timerName );
+			$queries = get_num_queries() - MeowCommon_Helpers::$startQueries[ $timerName ];
+			error_log( $timerName . ": " . $elapsed . "ms (" . $queries . " queries)" );
 		}
 	}
 

@@ -136,26 +136,34 @@ const Dashboard = () => {
                 <NekoColumn minimal>
 
                   <StyledPluginBlock title="Media Cleaner" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/media-cleaner.jpg`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/media-cleaner.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/media-cleaner/'>Media Cleaner</a></h2>
                       <p>The Cleaner analyzes your WordPress entirely to find out which files are not used. You can trash them, before deleting them permanently. Your WordPress will breath again :)</p>
                     </div>
                   </StyledPluginBlock>
 
+                  <StyledPluginBlock title="Database Cleaner" className="primary">
+                    <StyledPluginImage src={`${pluginUrl}/common/img/database-cleaner.png`} />
+                    <div>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/database-cleaner/'>Database Cleaner</a></h2>
+                      <p>Clean your WordPress database. This plugin is simple, handles risk levels, and aims to work even on oversized databases on which other plugins fail to operate.</p>
+                    </div>
+                  </StyledPluginBlock>
+
                   <StyledPluginBlock title="Media File Renamer" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/media-file-renamer.jpg`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/media-file-renamer.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/media-file-renamer/'>Media File Renamer</a></h2>
                       <p>The Renamer will help you in getting nicer filenames for an improved SEO and a tidier filesystem. It's mostly automatic and very fun to use.</p>
                     </div>
                   </StyledPluginBlock>
 
-                  <StyledPluginBlock title="Contact Form Block" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/contact-form-block.png`} />
+                  <StyledPluginBlock title="Social Engine" className="primary">
+                    <StyledPluginImage src={`${pluginUrl}/common/img/social-engine.png`} />
                     <div>
-                      <h2><a target='_blank' href='https://wordpress.org/plugins/contact-form-block/'>Contact Form Block</a></h2>
-                      <p>A simple, pretty and superlight contact form. If you simply want your visitors to get in touch with you, this contact form will be perfect for you and your WordPress.</p>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/social-engine/'>Social Engine</a></h2>
+                      <p>Organize, schedule and automate the publishing of your content and photos on social accounts. Similar to Buffer, TweetDeck, etc, but without all the limitations, and in your WordPress.</p>
                     </div>
                   </StyledPluginBlock>
 
@@ -171,8 +179,16 @@ const Dashboard = () => {
 
                 <NekoColumn minimal>
 
+                <StyledPluginBlock title="Photo Engine" className="primary">
+                    <StyledPluginImage src={`${pluginUrl}/common/img/wplr-sync.png`} />
+                    <div>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/wplr-sync/'>Photo Engine</a></h2>
+                      <p>Are you using Lightroom? So you know Photo Engine already. Wait, you don't? You must try it! This plugin will be your favorite very soon.</p>
+                    </div>
+                  </StyledPluginBlock>
+
                   <StyledPluginBlock title="Meow Gallery" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/meow-gallery.jpg`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/meow-gallery.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-gallery/'>Meow Gallery</a></h2>
                       <p>This is the fastest gallery system... and it is pretty as well! It is 100% compatible with the native WordPress galleries and therefore, works right away.</p>
@@ -180,26 +196,26 @@ const Dashboard = () => {
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Meow Lightbox" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/meow-lightbox.jpg`} />
+                    <StyledPluginImage src={`${pluginUrl}/common/img/meow-lightbox.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-lightbox/'>Meow Lightbox</a></h2>
                       <p>A very sleek and performant Lightbox which will also display your EXIF data (camera, lens, aperture...). Photographers love it.</p>
                     </div>
                   </StyledPluginBlock>
 
-                  <StyledPluginBlock title="Photo Engine" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/wplr-sync.jpg`} />
-                    <div>
-                      <h2><a target='_blank' href='https://wordpress.org/plugins/wplr-sync/'>Photo Engine</a></h2>
-                      <p>Are you using Lightroom? So you know Photo Engine already. Wait, you don't? You must try it! This plugin will be your favorite very soon.</p>
-                    </div>
-                  </StyledPluginBlock>
-
-                  <StyledPluginBlock title="Perfect Images + Retina" className="primary">
-                    <StyledPluginImage src={`${pluginUrl}/common/img/wp-retina-2x.jpg`} />
+                  <StyledPluginBlock title="Perfect Images (Retina)" className="primary">
+                    <StyledPluginImage src={`${pluginUrl}/common/img/wp-retina-2x.png`} />
                     <div>
                       <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>Perfect Images + Retina</a></h2>
                       <p>It handles Retina, help you managing the Image Sizes registered in your WP, and much more.</p>
+                    </div>
+                  </StyledPluginBlock>
+
+                  <StyledPluginBlock title="Contact Form Block" className="primary">
+                    <StyledPluginImage src={`${pluginUrl}/common/img/contact-form-block.png`} />
+                    <div>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/contact-form-block/'>Contact Form Block</a></h2>
+                      <p>A simple, pretty and superlight contact form. If you simply want your visitors to get in touch with you, this contact form will be perfect for you and your WordPress.</p>
                     </div>
                   </StyledPluginBlock>
 

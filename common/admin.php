@@ -5,8 +5,8 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 	class MeowCommon_Admin {
 
 		public static $loaded = false;
-		public static $version = "3.6";
-		public static $admin_version = "3.6";
+		public static $version = "3.7";
+		public static $admin_version = "3.7";
 
 		public $prefix; 		// prefix used for actions, filters (mfrh)
 		public $mainfile; 	// plugin main file (media-file-renamer.php)
@@ -25,7 +25,8 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 
 					// Create the Meow Apps Menu
 					add_action( 'admin_menu', array( $this, 'admin_menu_start' ) );
-					if ( isset( $_GET['page'] ) && $_GET['page'] === 'meowapps-main-menu' ) {
+					$page = isset( $_GET["page"] ) ? sanitize_text_field( $_GET["page"] ) : null;
+					if ( $page === 'meowapps-main-menu' ) {
 						add_filter( 'admin_footer_text',  array( $this, 'admin_footer_text' ), 100000, 1 );
 					}
 				}
@@ -162,6 +163,7 @@ if ( !class_exists( 'MeowCommon_Admin' ) ) {
 			$html .= "<div style='height: 0; width: 0; overflow: hidden;' id='meow-common-phpinfo'>";
 			$html .=  $this->get_phpinfo();
 			$html .=  "</div>";
+			$html = preg_replace("/<img[^>]+\>/i", "", $html); 
 			echo wp_kses_post( $html );
 		}
 

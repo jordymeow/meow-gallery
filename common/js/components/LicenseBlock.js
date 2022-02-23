@@ -13,6 +13,7 @@ const CommonApiUrl = `${restUrl}/meow-licenser/${prefix}/v1`;
 
 const LicenseBlock = () => {
   const [ busy, setBusy ] = useState(false);
+  const [ meowMode, setMeowMode ] = useState(false);
   const [ currentModal, setCurrentModal ] = useState(null);
   const [ license, setLicense ] = useState(null);
   const [ serialKey, setSerialKey ] = useState('');
@@ -42,7 +43,25 @@ const LicenseBlock = () => {
     setBusy(false);
   }
 
+  const forceLicense = async () => {
+    setBusy(true);
+    const res = await postFetch(`${CommonApiUrl}/set_license`, { nonce: restNonce, json: { serialKey, override: true } });
+    if (res.success) {
+      setLicense(res.data);
+      if (res.data && !res.data.issue) {
+        setCurrentModal('licenseAdded');
+      }
+    }
+    setBusy(false);
+  }
+
   const validateLicense = async () => {
+    if ( serialKey === 'MEOW_OVERRIDE' ) {
+      setMeowMode(true);
+      setLicense(null);
+      setSerialKey("");
+      return;
+    }
     setBusy(true);
     const res = await postFetch(`${CommonApiUrl}/set_license`, { nonce: restNonce, json: { serialKey } });
     if (res.success) {
@@ -58,8 +77,11 @@ const LicenseBlock = () => {
 
   const licenseTextStatus = isOverridenLicense ? 'Forced License' : isRegistered ? 'Enabled' : 'Disabled';
 
-  const success = license && license.license === 'valid';
-  let message = 'Your license is active. Thanks a lot for your support :)';
+  const success = isOverridenLicense || (license && license.license === 'valid');
+  let message = 'Your license is active. Thanks a lot for your support :)';
+  if ( isOverridenLicense && license && license.check_url ) {
+    message = <><span>{message}</span><br /><small>This license was enabled manually. To check your license status, please click <a target="_blank" href={license.check_url + '&cache=' + (Math.random() * (642000))}>here</a>.</small></>;
+  }
   if (!success) {
     if (!license) {
       message = 'Unknown error :(';
@@ -78,6 +100,9 @@ const LicenseBlock = () => {
     }
     else if (license.issue === 'item_name_mismatch') {
       message = 'This license seems to be for a different plugin... isn\'t it? :)';
+    }
+    else if (license.issue === 'forced') {
+      message = 'YOOOO';
     }
     else {
       message = <span>There is an unknown error related to the system or this serial key. Really sorry about this! Make sure your security plugins and systems are off temporarily. If you are still experiencing an issue, please <a target='_blank' rel="noreferrer" href='https://meowapps.com/contact/'>contact us</a>.</span>
@@ -114,6 +139,8 @@ const LicenseBlock = () => {
         </NekoButton>}
         <NekoButton disabled={busy || !serialKey || (license && license.key === serialKey)} 
           onClick={validateLicense}>Validate License</NekoButton>
+        {meowMode && !success && <NekoButton disabled={busy || !serialKey || (license && license.key === serialKey)} 
+          onClick={forceLicense} className="danger">Force License</NekoButton>}
       </NekoSettings>
 
       <NekoModal

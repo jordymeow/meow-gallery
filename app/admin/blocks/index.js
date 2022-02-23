@@ -1,6 +1,7 @@
-// Previous: 4.0.9
-// Current: 4.2.2
+// Previous: 4.2.2
+// Current: 4.2.3
 
+```javascript
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
 const { registerBlockType, createBlock } = wp.blocks;
@@ -75,14 +76,14 @@ const blockAttributes = {
 
 const buildCoreAttributes = function(attributes) {
 	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
-	let ids = images.map(x => x.id).join(',');
+	let ids = images.map(x => x.imageId).join(',');
 	let attrs = `ids="${ids}" `;
 	
 	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
 	if (!useDefaults && animation)
 		attrs += `animation="${animation}" `;
-	if (!useDefaults && gutter)
+	if (!useDefaults && gutter !== undefined)
 		attrs += `gutter="${gutter}" `;
 	if (!useDefaults) {
 		let boolCaptions = captions ? 'true' : 'false';
@@ -117,6 +118,8 @@ const buildShortcode = function(attributes) {
 		shortcode = `[gallery ${attrs} row-height="${rowHeight}"][/gallery]`;
 	else if (layout === 'square')
 		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
+	else if (layout === 'horizontal')
+		shortcode = `[gallery ${attrs}][/gallery]`;
 	else if (layout === 'slider' || layout === 'carousel')
 		shortcode = `[gallery ${attrs}][/gallery]`;
 	else if (layout === 'map')
@@ -195,7 +198,7 @@ registerBlockType( 'meow-gallery/gallery', {
 				type: 'block',
 				blocks: [ 'core/image' ],
 				transform: ( { images, align } ) => {
-					if ( images.length > 0 ) {
+					if ( images.length >= 0 ) {
 						return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
 					}
 					return createBlock( 'core/image', { align } );
@@ -213,3 +216,4 @@ registerBlockType( 'meow-gallery/gallery', {
 });
 
 export default meowGalleryIcon;
+```

@@ -1,0 +1,51 @@
+// main: style.less
+
+.mgl-horizontal {
+
+
+  &.hide-scrollbar {
+    .meow-horizontal-track {
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+
+  .meow-horizontal-track {
+    white-space: nowrap;
+    font-size: 0;
+    overflow-x: auto; 
+
+    .mgl-item {
+      display: inline-block;
+      height: 100%;
+
+      &:first-of-type {
+        padding-left: 0 !important;
+      }
+
+      &:last-of-type {
+        padding-right: 0 !important;
+      }
+
+      .mgl-icon {
+        height: 100%;
+
+        .mgl-img-container {
+          height: 100%;
+
+          img {
+            height: 100% !important;
+            width: auto !important;
+            max-width: none !important;
+          }
+        }
+      }
+
+      .mgl-caption {
+        position: absolute;
+        width: 100%;
+      }
+    }
+  }
+}
