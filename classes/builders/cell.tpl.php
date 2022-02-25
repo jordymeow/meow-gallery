@@ -3,10 +3,40 @@
 		<div class="mgl-img-container">
 			<?php if ( !$isPreview && $linkUrl ): ?>
 				<a href="<?php echo esc_url( $linkUrl ) ?>">
-						<?php echo wp_kses_post( $imgSrc ) ?>
+						<?= 
+							wp_kses( $imgSrc, [ 
+								'img' => [
+									'src'      => true,
+									'srcset'   => true,
+									'sizes'    => true,
+									'class'    => true,
+									'id'       => true,
+									'width'    => true,
+									'height'   => true,
+									'alt'      => true,
+									'align'    => true,
+									]
+								] 
+							);
+						?>
 				</a>
 			<?php else: ?>
-				<?php echo wp_kses_post( $imgSrc ) ?>
+				<?= 
+					wp_kses( $imgSrc, [ 
+						'img' => [
+							'src'      => true,
+							'srcset'   => true,
+							'sizes'    => true,
+							'class'    => true,
+							'id'       => true,
+							'width'    => true,
+							'height'   => true,
+							'alt'      => true,
+							'align'    => true,
+							]
+						] 
+					);
+				?>
 			<?php endif; ?>
 		</div>
 	</div>

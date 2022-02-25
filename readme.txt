@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 5.9
 Requires PHP: 7.0
-Stable tag: 4.2.3
+Stable tag: 4.2.4
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
@@ -48,11 +48,12 @@ Languages: English.
 
 == Changelog ==
 
-= 4.2.3 (2022/02/23) =
+= 4.2.4 (2022/02/25) =
 * Update: Only load CSS and JS when the gallery is in use.
+* Fix: Responsive Images weren't used since January - sorry about that!
 * Add: New "Horizontal" layout.
 * Fix: Improved touch events.
-* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/wplr-sync/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
 
 = 4.2.2 (2021/09/22) =
 * Fix: Carousel block issue.

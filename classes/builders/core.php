@@ -87,7 +87,6 @@ abstract class Meow_MGL_Builders_Core {
 			$imgSrc = '<img src="' . $info[0] . '" class="' .
 				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
 		}
-
 		$attributes = $this->build_inline_attributes( $id, $data );
 		if ( !empty( $attributes ) ) {
 			$attributes = ' ' . $attributes;
