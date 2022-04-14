@@ -4,7 +4,7 @@
   "private": true,
   "author": "Meow Apps",
   "scripts": {
-    "dev-galleries": "webpack --watch --config webpack.galleries.config.js",
+    "dev": "webpack --watch --config webpack.galleries.config.js --mode development ",
     "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
     "dev-admin": "webpack --watch --config webpack.admin.config.js",
     "build-admin": "webpack --config webpack.admin.config.js",
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@babel/preset-react": "^7.10.4",
-    "cypress": "^6.4.0",
+    "cypress": "9.5.0",
     "eslint": "^7.3.1",
     "eslint-config-defaults": "^9.0.0",
     "eslint-plugin-cypress": "^2.11.2",

@@ -28,7 +28,7 @@ class Meow_MGL_Run {
 		// Load the JS for Meow Gallery
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
-		wp_enqueue_script( 'mgl-js', plugins_url( '/app/galleries.js', __DIR__ ), array( 'jquery' ), $cache_buster, true );
+		wp_enqueue_script( 'mgl-js', plugins_url( '/app/galleries.js', __DIR__ ), array(), $cache_buster, true );
 
 		// TODO: This should be moved in a getter (since it is also used by tiles.php)
 		$density = [];

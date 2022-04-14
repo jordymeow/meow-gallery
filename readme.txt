@@ -2,15 +2,15 @@
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
-Tested up to: 5.9
+Tested up to: 5.9.3
 Requires PHP: 7.0
-Stable tag: 4.2.4
+Stable tag: 4.2.5
 
 Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
 
 == Description ==
 
-Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) and also the standard Gallery Shortcode. It's responsive, retina-friendly, has modern layouts, is blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery-layouts/).
+Fast and smooth gallery built for image lovers. Designed to work with Gutenberg Blocks as well as the natural Gallery Shortcode. It's responsive, retina-friendly, has modern layouts, blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery/layouts/).
 
 === Features ===
 
@@ -20,7 +20,7 @@ Uses WordPress and Gutenberg naturally without hacking it, and more importantly,
 
 === Layouts ===
 
-Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram), only using CSS, so no more scripts to slow down your pages and the rendering. Demo [here](https://meowapps.com/meow-gallery-layouts/).
+Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram), only using CSS, so no more scripts to slow down your pages and the rendering. Demo [here](https://meowapps.com/meow-gallery/layouts/).
 
 === Compatibility ===
 
@@ -48,12 +48,17 @@ Languages: English.
 
 == Changelog ==
 
+= 4.2.5 (2022/04/14) =
+* Update: jQuery is not needed anymore.
+* Add: New filter mgl_ids, to overrides the IDs used.
+* Fix: Compatibility with latest Gutenberg (you might need to click on "Repair Block" when editing them again).
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+
 = 4.2.4 (2022/02/25) =
 * Update: Only load CSS and JS when the gallery is in use.
 * Fix: Responsive Images weren't used since January - sorry about that!
 * Add: New "Horizontal" layout.
 * Fix: Improved touch events.
-* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
 
 = 4.2.2 (2021/09/22) =
 * Fix: Carousel block issue.

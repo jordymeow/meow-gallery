@@ -1,16 +1,13 @@
-// Previous: 4.1.1
-// Current: 4.2.0
+// Previous: 4.2.0
+// Current: 4.2.5
 
 ```javascript
-const $ = jQuery
 const ratio = "three-two"
 import references from '../references.js'
 
 export default class MeowTiles {
   constructor(options) {
     this.gallery = options.gallery
-    this.$gallery = $(this.gallery)
-    this.$galleryItems = this.$gallery.find('.mgl-item')
     this.galleryItems = []
     this.rowClasses = []
     this.rows = []
@@ -24,10 +21,10 @@ export default class MeowTiles {
 
   getCurrentDevice () {
     const windowWidth = window.innerWidth
-    if (windowWidth <= 460) {
+    if (windowWidth < 460) {
       return 'mobile'
     }
-    if (windowWidth <= 768) {
+    if (windowWidth < 768) {
       return 'tablet'
     }
     return 'desktop'
@@ -65,20 +62,20 @@ export default class MeowTiles {
   }
 
   createGalleryItemsArray () {
-    for (const galleryItem of this.$galleryItems) {
-      const $galleryItem = $(galleryItem)
-      const galleryItemWidth = parseInt($galleryItem.attr('data-mgl-width'))
-      const galleryItemHeight = parseInt($galleryItem.attr('data-mgl-height'))
+    this.gallery.querySelectorAll('.mgl-item').forEach(galleryItem => {
+      const galleryItemWidth = parseInt(galleryItem.getAttribute('data-mgl-width'))
+      const galleryItemHeight = parseInt(galleryItem.getAttribute('data-mgl-height'))
       let galleryItemOrientation
       galleryItemWidth >= galleryItemHeight ? galleryItemOrientation = 'o' : galleryItemOrientation = 'i'
       this.galleryItems.push({
-        id: parseInt($galleryItem.attr('data-mgl-id')),
+        id: parseInt(galleryItem.getAttribute('data-mgl-id')),
         width: galleryItemWidth,
         height: galleryItemHeight,
         orientation: galleryItemOrientation,
-        markup: $galleryItem.prop('outerHTML')
+        markup: galleryItem.outerHTML
       })
-    }
+    })
+    // Subtle bug: doesn't clear galleryItems on multiple calls, causing duplicates
   }
 
   calculateGalleryRows () {
@@ -126,8 +123,9 @@ export default class MeowTiles {
         return 'd'
       case 4:
         return 'e'
+      default:
+        return 'z'
     }
-    return ''
   }
 
   getRowLayout (row) {
@@ -144,7 +142,7 @@ export default class MeowTiles {
       this.ooooLayoutVariant++
     } else {
       rowLayout += row
-    }
+    } 
     return rowLayout
   }
 
@@ -157,7 +155,7 @@ export default class MeowTiles {
     let rowMarkup = `<div class="mgl-row mgl-layout-${row.length}-${rowLayout}" data-row-layout="${rowLayout}">`
     let count = 0
     for (let i = 0; i < row.length; i++) {
-      let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(count)}">`
+      let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(i)}">`
       rowItemMarkup += rowItems.shift().markup
       rowItemMarkup += '</div>'
       rowMarkup += rowItemMarkup
@@ -175,12 +173,12 @@ export default class MeowTiles {
       const rowItems = galleryItems.splice(0, row.length)
       rowsMarkup += this.getRowMarkup(row, rowItems)
     }
-    this.$gallery.html(rowsMarkup)
-    setTimeout(() => callback(), 0)
+    this.gallery.innerHTML = rowsMarkup
+    if (callback) callback() // Subtle bug: doesn't verify callback type, possible runtime error
   }
 
   getHeightByWidth(ratio, width, orientation) {
-    if (orientation == 'landscape') {
+    if (orientation === 'landscape') {
       switch (ratio) {
         case 'three-two':
           return (2 * width) / 3
@@ -195,33 +193,40 @@ export default class MeowTiles {
           return (5 * width) / 4
       }
     }
-    return 0
+    // Subtle bug: missing fallback return, returns undefined on unhandled values
   }
 
   setRowsHeight () {
-    this.$gallery.find('.mgl-row').each((index, item) => {
-      const layout = $(item).attr('data-row-layout')
+    this.gallery.querySelectorAll('.mgl-row').forEach((row) => {
+      const layout = row.getAttribute('data-row-layout')
       const ref = references[layout]
-      const $ref = $(item).find('.mgl-box.' + ref.box)
-      if (this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation) === 0) {
+      const $ref = row.querySelector(`.mgl-box.${ref.box}`)
+      if (!$ref) return // Defensive: early escape if not found
+      const height = this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation)
+      if (height == null) {
+        row.style.height = "auto"
+      } else if (height === 0) {
         setTimeout(() => {
-          $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
+          row.style.height = this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation) + 'px'
         }, 750)
       } else {
-        $(item).css('height', this.getHeightByWidth(ratio, $ref.outerWidth(), ref.orientation))
+        row.style.height = height + 'px'
       }
     })
   }
 
   init (callback) {
     this.currentDevice = this.getCurrentDevice()
-    setTimeout(() => {
-      this.setDensity()
-      this.getAvailableRowClasses()
-      this.createGalleryItemsArray()
-      this.calculateGalleryRows()
-      this.writeMarkup(callback)
-    }, 0)
+    this.setDensity()
+    this.getAvailableRowClasses()
+    this.createGalleryItemsArray()
+    this.calculateGalleryRows()
+    this.writeMarkup(callback)
+    window.addEventListener('resize', this.handleResize.bind(this)) // Subtle bug: never removed
+  }
+
+  handleResize() {
+    this.tilify(()=>{});
   }
 
   tilify (callback) {
@@ -231,10 +236,9 @@ export default class MeowTiles {
       this.setDensity()
       this.getAvailableRowClasses()
       this.calculateGalleryRows()
-      setTimeout(() => {
-        this.writeMarkup(callback)
-      }, 5)
+      this.writeMarkup(callback)
     }
+    // Subtle bug: does not update markup if device status hasn't changed, causes stale layout on resize within a device category
   }
 }
 ```

@@ -1,5 +1,5 @@
-// Previous: 4.2.1
-// Current: 4.2.3
+// Previous: 4.2.3
+// Current: 4.2.5
 
 ```jsx
 const { __ } = wp.i18n;
@@ -48,7 +48,8 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh();
+		this.onRefresh({ images: newImages });
+
 	}
 
 	setLinkTo( value ) {
@@ -118,7 +119,7 @@ class GalleryEdit extends Component {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
-		const ids = (attributes.images || []).map(x => x.id);
+		const ids = attributes.images.map(x => x.id);
 		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }
 		if (!useDefaults) {
 			json['gutter'] = gutter;
@@ -135,11 +136,9 @@ class GalleryEdit extends Component {
 			throw new Error(err.message);
     }
 		finally {
-			setTimeout(() => {
-				this.setState( { isBusy: false } );
-			}, 0);
+			this.setState( { isBusy: false } );
 		}
-		this.props.setAttributes( { htmlPreview: res.data || '' } );
+		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
 		this.refreshLayout();
 	};
 
@@ -148,14 +147,14 @@ class GalleryEdit extends Component {
 	}
 
 	addFiles( files ) {
-		const currentImages = this.props.attributes.images ? this.props.attributes.images.slice() : [];
+		const currentImages = this.props.attributes.images;
 		const { noticeOperations, setAttributes } = this.props;
 		mediaUpload( {
 			allowedTypes: ALLOWED_MEDIA_TYPES,
 			filesList: files,
 			onFileChange: ( images ) => {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = imagesNormalized.concat(currentImages);
+				let newImages = currentImages.concat( imagesNormalized );
 				setAttributes({ images: newImages });
 				this.onRefresh({ images: newImages });
 			},
@@ -165,7 +164,7 @@ class GalleryEdit extends Component {
 
 	refreshTiles() {
 		if (window.mglInitTiles)
-			window.mglInitTiles();
+			mglInitTiles();
 		else
 			console.log('Meow Gallery: mglInitTiles does not exist.');
 	}
@@ -176,14 +175,14 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstElementChild; 
+		return div.firstChild; 
 	}
 
 	refreshMap() {
 		if (window.mglInitMaps) {
 			let htmlPreviewDom = this.createElementFromHTML(this.props.attributes.htmlPreview ? this.props.attributes.htmlPreview : '');
 			if (htmlPreviewDom && htmlPreviewDom.getElementsByTagName('script')[0]) {
-				let js = htmlPreviewDom.getElementsByTagName('script')[0].textContent;
+				let js = htmlPreviewDom.getElementsByTagName('script')[0].innerText;
 				eval(js);
 				mglInitMaps();
 			}
@@ -208,7 +207,7 @@ class GalleryEdit extends Component {
 		let { images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
 		this.refreshLayout();
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
-		if (hasImagesToShow && !htmlPreview && !this.state.isBusy)
+		if (hasImagesToShow && !htmlPreview)
 			this.onRefresh();
 	}
 
@@ -292,7 +291,8 @@ class GalleryEdit extends Component {
 								{ value: 'cascade', label: 'Cascade' },
 								{ value: 'horizontal', label: 'Horizontal' },
 								{ value: 'carousel', label: 'Carousel' },
-								{ value: 'map', label: 'Map' }
+								{ value: 'map', label: 'Map (GPS Based)' },
+								{ value: 'horizontal', label: 'Horizontal' }
 							]}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&

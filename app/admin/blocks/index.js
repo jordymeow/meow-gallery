@@ -1,7 +1,7 @@
-// Previous: 4.2.2
-// Current: 4.2.3
+// Previous: 4.2.3
+// Current: 4.2.5
 
-```javascript
+```jsx
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
 const { registerBlockType, createBlock } = wp.blocks;
@@ -33,7 +33,7 @@ const blockAttributes = {
 		default: 'default'
 	},
 	animation: {
-		type: 'animation',
+		type: 'string',
 		default: ''
 	},
 	useDefaults: {
@@ -41,7 +41,7 @@ const blockAttributes = {
 		default: 'default'
 	},
 	htmlPreview: {
-		type: 'text',
+		type: 'string',
 		default: null
 	},
 	useDefaults: {
@@ -66,7 +66,7 @@ const blockAttributes = {
 	},
 	gutter: {
 		type: 'number',
-		default: 10
+		default: 5
 	},
 	rowHeight: {
 		type: 'number',
@@ -76,14 +76,13 @@ const blockAttributes = {
 
 const buildCoreAttributes = function(attributes) {
 	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
-	let ids = images.map(x => x.imageId).join(',');
+	let ids = (images && images.length > 0) ? images.map(x => x.id).join(',') : '';
 	let attrs = `ids="${ids}" `;
-	
 	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
 	if (!useDefaults && animation)
 		attrs += `animation="${animation}" `;
-	if (!useDefaults && gutter !== undefined)
+	if (!useDefaults && gutter)
 		attrs += `gutter="${gutter}" `;
 	if (!useDefaults) {
 		let boolCaptions = captions ? 'true' : 'false';
@@ -107,25 +106,25 @@ const buildShortcode = function(attributes) {
 	const attrs = buildCoreAttributes(attributes);
 	let shortcode = '';
 	if (useDefaults)
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'tiles')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'cascade')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'masonry')
-		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
+		shortcode = `[gallery ${attrs} columns="${columns}"]`;
 	else if (layout === 'justified')
-		shortcode = `[gallery ${attrs} row-height="${rowHeight}"][/gallery]`;
+		shortcode = `[gallery ${attrs} row-height="${rowHeight}"]`;
 	else if (layout === 'square')
-		shortcode = `[gallery ${attrs} columns="${columns}"][/gallery]`;
+		shortcode = `[gallery ${attrs} columns="${columns}"]`;
 	else if (layout === 'horizontal')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'slider' || layout === 'carousel')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'map')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'default')
-		shortcode = `[gallery ${attrs}][/gallery]`;
+		shortcode = `[gallery ${attrs}]`;
 	else {
 		alert("This layout is not handled. Check the Console Logs.");
 		console.log('Layout could not be handled.', attributes);
@@ -186,7 +185,7 @@ registerBlockType( 'meow-gallery/gallery', {
 				isMultiBlock: true,
 				blocks: [ 'core/image' ],
 				transform: ( attributes ) => {
-					const validImages = attributes.filter(x => x.id && x.url);
+					const validImages = attributes.filter(x => x.id && x.url !== undefined);
 					return createBlock( 'meow-gallery/gallery', {
 						images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
 					} );
@@ -198,7 +197,7 @@ registerBlockType( 'meow-gallery/gallery', {
 				type: 'block',
 				blocks: [ 'core/image' ],
 				transform: ( { images, align } ) => {
-					if ( images.length >= 0 ) {
+					if ( images && images.length > 0 ) {
 						return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
 					}
 					return createBlock( 'core/image', { align } );

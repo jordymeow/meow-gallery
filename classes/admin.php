@@ -26,7 +26,7 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 		$physical_file = MGL_PATH . '/app/galleries.js';
 		$cache_buster = file_exists( $physical_file ) ? filemtime( $physical_file ) : MGL_VERSION;
 		wp_register_script( 'mgl-gallery-js', plugins_url( '/app/galleries.js', __DIR__ ), 
-			array( 'jquery' ), $cache_buster, false );
+			array(), $cache_buster, false );
 
 		// Load the "admin" scripts
 		$physical_file = MGL_PATH . '/app/admin.js';

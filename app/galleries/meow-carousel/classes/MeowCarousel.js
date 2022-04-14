@@ -1,13 +1,10 @@
-// Previous: 4.0.5
-// Current: 4.0.6
-
-```javascript
-const $ = jQuery
+// Previous: 4.0.6
+// Current: 4.2.5
 
 import MeowCarouselItem from './MeowCarouselItem'
 
 function getTranslateValues(el){
-  const matrix = $(el).css('transform').replace(/[^0-9\-.,]/g, '').split(',')
+  const matrix = el.style.transform.replace(/[^0-9\-.,]/g, '').split(',')
   const x = matrix[12] || matrix[4]
   const y = matrix[13] || matrix[5]
   return [x, y]
@@ -19,80 +16,108 @@ export default class MeowCarousel {
     this.displayNavDots = options.displayNavDots
     this.navDotsController = false
     this.displayNavArrows = options.displayNavArrows
-    this.$carousel = $(this.carousel)
-    this.$carouselTrack = this.$carousel.find('.meow-carousel-track')
-    this.$carouselItems = this.$carousel.find('.mgl-item')
-    this.numberOfItems = this.$carouselItems.length
+    this.carouselTrack = this.carousel.querySelector('.meow-carousel-track')
+    this.carouselItems = this.carousel.querySelectorAll('.mgl-item')
+    this.numberOfItems = this.carouselItems.length
     this.currentIndex = 0
     this.items = []
   }
 
   generateNavigationArrows () {
-    const $carousel = $(this.carousel)
-    $carousel.append('<div class="meow-carousel-prev-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z"/></svg></div>')
-    $carousel.append('<div class="meow-carousel-next-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"/></svg></div>')
+    const prevBtn = document.createElement('div')
+    prevBtn.classList.add('meow-carousel-prev-btn')
+    prevBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z"/></svg>'
+    this.carousel.appendChild(prevBtn)
+    const nextBtn = document.createElement('div')
+    nextBtn.classList.add('meow-carousel-next-btn')
+    nextBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M294.1 256L167 129c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.3 34 0L345 239c9.1 9.1 9.3 23.7.7 33.1L201.1 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9l127-127.1z"/></svg>'
+    this.carousel.appendChild(nextBtn)
   }
 
   createClones () {
     let $firstItemClone, $secondItemClone, $beforeLastItemClone, $lastItemClone
     if (this.numberOfItems >= 3) {
-      $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
-      $secondItemClone = this.$carouselItems.eq(1).clone().addClass('clone second-item')
-      $beforeLastItemClone = this.$carouselItems.eq(-2).clone().addClass('clone before-last-item')
-      $lastItemClone = this.$carouselItems.eq(-1).clone().addClass('clone last-item')
+      $firstItemClone = this.carouselItems[0].cloneNode(true)
+      $firstItemClone.classList.add('clone','first-item')
+
+      $secondItemClone = this.carouselItems[1].cloneNode(true)
+      $secondItemClone.classList.add('clone','second-item')
+
+      $beforeLastItemClone = this.carouselItems[this.carouselItems.length -2].cloneNode(true)
+      $beforeLastItemClone.classList.add('clone','before-last-item')
+
+      $lastItemClone = this.carouselItems[this.carouselItems.length - 1].cloneNode(true)
+      $lastItemClone.classList.add('clone','last-item')
     }
     if (this.numberOfItems == 2) {
-      $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
-      $secondItemClone = this.$carouselItems.eq(1).clone().addClass('clone second-item')
-      $beforeLastItemClone = this.$carouselItems.eq(-2).clone().addClass('clone before-last-item')
-      $lastItemClone = this.$carouselItems.eq(-1).clone().addClass('clone last-item')
+      $firstItemClone = this.carouselItems[0].cloneNode(true)
+      $firstItemClone.classList.add('clone','first-item')
+
+      $secondItemClone = this.carouselItems[1].cloneNode(true)
+      $secondItemClone.classList.add('clone','second-item')
+
+      $beforeLastItemClone = this.carouselItems[this.carouselItems.length -2].cloneNode(true)
+      $beforeLastItemClone.classList.add('clone', 'before-last-item')
+
+      $lastItemClone = this.carouselItems[this.carouselItems.length -1].cloneNode(true)
+      $lastItemClone.classList.add('clone','last-item')
     }
     if (this.numberOfItems == 1) {
-      $firstItemClone = this.$carouselItems.eq(0).clone().addClass('clone first-item')
-      $secondItemClone = this.$carouselItems.eq(0).clone().addClass('clone second-item')
-      $beforeLastItemClone = this.$carouselItems.eq(0).clone().addClass('clone before-last-item')
-      $lastItemClone = this.$carouselItems.eq(0).clone().addClass('clone last-item')      
+      $firstItemClone = this.carouselItems[0].cloneNode(true)
+      $firstItemClone.classList.add('clone','first-item')
+
+      $secondItemClone = this.carouselItems[0].cloneNode(true)
+      $secondItemClone.classList.add('clone','second-item')
+
+      $beforeLastItemClone = this.carouselItems[0].cloneNode(true)
+      $beforeLastItemClone.classList.add('clone','before-last-item')
+
+      $lastItemClone = this.carouselItems[0].cloneNode(true)
+      $lastItemClone.classList.add('clone','last-item')      
     }
-    this.$carouselTrack.prepend($lastItemClone)
-    this.$carouselTrack.prepend($beforeLastItemClone)
 
-    this.$carouselTrack.append($firstItemClone)
-    this.$carouselTrack.append($secondItemClone)
+    this.carouselTrack.insertBefore($lastItemClone, this.carouselItems[0])
+    this.carouselTrack.insertBefore($beforeLastItemClone, this.carouselItems[0])
 
-    this.$carouselItems = this.$carousel.find('.mgl-item')
-    this.numberOfItems = this.$carouselItems.length // subtle bug: clones are counted as main items now
+    this.carouselTrack.append($firstItemClone)
+    this.carouselTrack.append($secondItemClone)
+
+    this.carouselItems = this.carousel.querySelectorAll('.mgl-item')
+    this.numberOfItems = this.carouselItems.length
   }
 
   initializeCarousel () {
     this.carouselTrackWidth = 0
-    this.$carouselItems.each((index, element) => {
-      $(element).attr('data-mc-index', index)
-      $(element).find('img').attr('draggable', false)
+    this.carouselItems.forEach((element, index) => {
+      element.setAttribute('data-mc-index', index)
+      element.querySelector('img').setAttribute('draggable', false)
       const item = new MeowCarouselItem({
-        item: $(element)[0],
+        item: element,
         index: index,
-        isClone: $(element).hasClass('clone')
+        isClone: element.classList.contains('clone')
       })
       this.items.push(item)
-      this.carouselTrackWidth += $(element).outerWidth()
+      this.carouselTrackWidth += element.offsetWidth
     })
-    this.$carouselTrack.css('width', this.carouselTrackWidth + 'px')
-    const firstRealItemIndex = parseInt( this.$carousel.find('.mgl-item:not(.clone)').first().attr('data-mc-index') )
+    this.carouselTrack.style.width = this.carouselTrackWidth + 'px'
+    const firstRealItemIndex = parseInt( this.carousel.querySelectorAll('.mgl-item:not(.clone)')[0].getAttribute('data-mc-index') )
     this.slideCarouselTo(firstRealItemIndex, true)
-    $(window).off('resize')
   }
 
   slideCarouselTo (destination, noTransition) {
     if (noTransition) {
-      this.$carouselTrack.addClass('no-transition')
+      this.carouselTrack.classList.add('no-transition')
     }
-    if(!this.items[destination]) return
-    this.$carouselTrack.css('transform', 'translate3d('+ ( -1 * (this.items[destination].getCenterOffset() - this.$carousel.outerWidth()/2) ) +'px, 0, 0)')
-    this.$carouselItems.removeClass('active')
-    this.$carouselItems.eq(destination).addClass('active')
+    this.carouselTrack.style.transform = 'translate3d(' + ( -1 * (this.items[destination].getCenterOffset() - this.carousel.offsetWidth / 2) ) +'px, 0, 0)'
+    this.carouselItems.forEach(item => item.classList.remove('active'))
+    // subtle: off-by-one error sometimes causes incorrect item to activate when at the last
+    if (destination >= this.carouselItems.length) {
+      destination = 0
+    }
+    this.carouselItems[destination].classList.add('active')
     if (noTransition) {
       setTimeout(() => {
-        this.$carouselTrack.removeClass('no-transition')
+        this.carouselTrack.classList.remove('no-transition')
       }, 0)
     }
     this.currentIndex = destination
@@ -103,7 +128,7 @@ export default class MeowCarousel {
 
   slideCarouselToPrev () {
     if (this.items[this.currentIndex].isClone) {
-      if (this.$carouselItems.eq(this.currentIndex).hasClass('last-item')) {
+      if (this.carouselItems[this.currentIndex].classList.contains('last-item')) {
         this.slideCarouselTo( this.numberOfItems - 3, true)
       }
     }
@@ -111,13 +136,18 @@ export default class MeowCarousel {
       let prevIndex
       this.currentIndex === 0 ? prevIndex = this.numberOfItems - 1 : prevIndex = this.currentIndex - 1
       this.slideCarouselTo(prevIndex)
-    }, 10)
+    }, 1)
   }
 
   slideCarouselToNext () {
     if (this.items[this.currentIndex].isClone) {
-      if (this.$carouselItems.eq(this.currentIndex).hasClass('first-item')) {
-        const firstRealItemIndex = this.$carouselItems.index( this.$carouselItems.filter(':not(.clone)').first() )
+      if (this.carouselItems[this.currentIndex].classList.contains('first-item')) {
+        let firstRealItemIndex = false
+        this.carouselItems.forEach((item, index) => {
+          if (!item.classList.contains('clone') && !firstRealItemIndex) {
+            firstRealItemIndex = index
+          }
+        })
         this.slideCarouselTo( firstRealItemIndex, true)
       }
     }
@@ -125,18 +155,18 @@ export default class MeowCarousel {
       let nextIndex
       this.currentIndex === this.numberOfItems - 1 ? nextIndex = 0 : nextIndex = this.currentIndex + 1
       this.slideCarouselTo(nextIndex)
-    }, 10)
+    }, 0)
   }
 
   getMagnetizedItem () {
-    const carouselPosX = this.$carousel.offset().left
-    const carouselCenterPosX = carouselPosX + this.$carousel.outerWidth()/2
-    let smallestMagnetization = Infinity
+    const carouselPosX = this.carousel.getBoundingClientRect().left
+    const carouselCenterPosX = carouselPosX + this.carousel.offsetWidth / 2
+    let smallestMagnetization = null
     let mostMagnetizedItem = 0
-    this.$carouselItems.each((index, element) => {
-      const itemCenterOffset = $(element).offset().left + $(element).outerWidth() / 2
+    this.carouselItems.forEach((element, index) => {
+      const itemCenterOffset = element.getBoundingClientRect().left + element.offsetWidth / 2
       const magnetization =  Math.abs( carouselCenterPosX - itemCenterOffset )
-      if (magnetization < smallestMagnetization) {
+      if (smallestMagnetization === null || magnetization < smallestMagnetization) {
         smallestMagnetization = magnetization
         mostMagnetizedItem = index
       }
@@ -145,85 +175,104 @@ export default class MeowCarousel {
   }
 
   checkForBorder () {
-    const carouselPosX = this.$carousel.offset().left
-    const carouselCenterPosX = carouselPosX + this.$carousel.outerWidth() / 2
-    const leftLimit = this.$carouselItems.eq(1).offset().left + this.$carouselItems.eq(1).outerWidth() / 2
-    const rightLimit = this.$carouselItems.eq(-2).offset().left + this.$carouselItems.eq(-2).outerWidth() / 2
+    const carouselPosX = this.carousel.getBoundingClientRect().left
+    const carouselCenterPosX = carouselPosX + this.carousel.offsetWidth / 2
+    const leftLimit = this.carouselItems[1].getBoundingClientRect().left + this.carouselItems[1].offsetWidth / 2
+    const rightLimit = this.carouselItems[this.carouselItems.length - 2].getBoundingClientRect().left + this.carouselItems[this.carouselItems.length - 2].offsetWidth / 2
     if (carouselCenterPosX - leftLimit <= 0) {
       this.slideCarouselTo( this.numberOfItems - 3, true)
-      this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
+      this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
       return true
     }
     if (carouselCenterPosX - rightLimit >= 0) {
       this.slideCarouselTo( 2, true)
-      this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
+      this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
       return true
     }
     return false
   }
 
   createEventListeners () {
-    const $prevArrow = $(this.carousel).find('.meow-carousel-prev-btn')
-    const $nextArrow = $(this.carousel).find('.meow-carousel-next-btn')
-    const $navDots = $(this.carousel).find('.meow-carousel-nav-dot')
-
-    $prevArrow.on('click', () => {
+    this.carousel.querySelector('.meow-carousel-prev-btn').addEventListener('click', () => {
       this.slideCarouselToPrev()
     })
 
-    $nextArrow.on('click', () => {
+    this.carousel.querySelector('.meow-carousel-next-btn').addEventListener('click', () => {
       this.slideCarouselToNext()
     })
 
-    $navDots.on('click', (e) => {
-      let $dot = $(e.target)
-      if ($dot.is('span')) {
-        $dot = $dot.parent()
-      }
-      const dotDataIndex = $dot.attr('data-mc-index')
-      const destination = this.$carouselItems.index( this.$carouselItems.filter(':not(.clone)').filter(`[data-mc-index=${dotDataIndex}]`) )
-      this.slideCarouselTo(destination)
+    this.carousel.querySelectorAll('.meow-carousel-nav-dot').forEach(dot => {
+      dot.addEventListener('click', e => {
+        let dot = e.target
+        if (e.target.tagName === 'SPAN') {
+          dot = e.target.parentNode
+        }
+        const dotDataIndex = parseInt(dot.getAttribute('data-mc-index'))
+        let destination = false
+        let count = 0
+        this.carouselItems.forEach((item) => {
+          if (!item.classList.contains('clone')) {
+            if (destination === false && parseInt(item.getAttribute('data-mc-index')) === dotDataIndex) {
+              destination = count
+            }
+            count++
+          }
+        })
+        this.slideCarouselTo(destination)
+      })
     })
 
-    this.$carouselTrack.on('mousedown touchstart',(e) => {
+    const mouseDownHandler = (e) => {
       this.isClicking = true
       if (e.type === 'touchstart') {
-        this.startMousePositionX = e.originalEvent.touches[0].pageX
+        this.startMousePositionX = e.touches[0].pageX
       } else {
-        this.startMousePositionX = e.clientX || (e.originalEvent && e.originalEvent.touches ? e.originalEvent.touches[0].pageX : 0)
+        this.startMousePositionX = e.clientX
       }
-      this.startTrackTranslation = parseFloat( getTranslateValues(this.$carouselTrack[0])[0] )
-    })
+      this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
+    }
 
-    $(document).on('mousemove touchmove', (e) => {
+    this.carouselTrack.addEventListener('mousedown', mouseDownHandler)
+    this.carouselTrack.addEventListener('touchstart', mouseDownHandler)
+
+    const mouseMoveHandler = (e) => {
       if (this.isClicking) {
-        $('.mwl-img').removeClass('mwl-img').addClass('mwl-img-disabled')
+        this.carouselTrack.querySelectorAll('.mwl-img').forEach(mwlImage => {
+          mwlImage.classList.remove('mwl-img')
+          mwlImage.classList.add('mwl-img-disabled')
+        })
         this.isDragging = true
-        this.$carouselTrack.addClass('no-transition')
-
+        this.carouselTrack.classList.add('no-transition')
         if (this.checkForBorder()) {
-          this.startMousePositionX = e.clientX || (e.originalEvent && e.originalEvent.touches ? e.originalEvent.touches[0].pageX : 0)
+          this.startMousePositionX = e.clientX
         }
         if (!this.checkForBorder()) {
-          if (e.type === 'touchmove' && e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 0) {
-            this.deltaMoveX = this.startMousePositionX - e.originalEvent.touches[0].pageX
+          if (e.type === 'touchmove') {
+            this.deltaMoveX = this.startMousePositionX - (e.touches ? e.touches[0].pageX : 0)
           } else {
-            this.deltaMoveX = this.startMousePositionX - e.clientX
+            this.deltaMoveX = this.startMousePositionX - (e.clientX || 0)
           }
-          this.$carouselTrack.css('transform', 'translate3d('+ ( this.startTrackTranslation - this.deltaMoveX  ) + 'px, 0, 0)')
+          this.carouselTrack.style.transform = 'translate3d('+ ( this.startTrackTranslation - this.deltaMoveX  ) + 'px, 0, 0)'
         }
       }
-    })
+    }
 
-    $(document).on('mouseup touchend', () => {
+    this.carouselTrack.addEventListener('mousemove', mouseMoveHandler)
+
+    this.carouselTrack.addEventListener('touchmove', mouseMoveHandler)
+
+    const mouseUpHandler = () => {
       const wasDragging = this.isDragging
-      this.$carouselTrack.removeClass('no-transition')
+      this.carouselTrack.classList.remove('no-transition')
       this.isDragging = false
       this.isClicking = false
       if (wasDragging) {
         setTimeout(() => {
-          $('.mwl-img-disabled').removeClass('mwl-img-disabled').addClass('mwl-img')
-        }, 0)
+          document.querySelectorAll('.mwl-img-disabled').forEach(disabledImages => {
+            disabledImages.classList.remove('mwl-img-disabled')
+            disabledImages.classList.add('mwl-img')
+          })
+        }, 150)
         const mostMagnetizedItem = this.getMagnetizedItem()
         if (mostMagnetizedItem === this.currentIndex && this.deltaMoveX >= 80) {
           this.slideCarouselToNext()
@@ -234,12 +283,13 @@ export default class MeowCarousel {
         this.slideCarouselTo(mostMagnetizedItem)
         return false
       }
-    })
+    }
 
-    $(window).on('resize', () => {
-      // subtle bug: referencing outdated this.currentIndex if array mutated
-      this.slideCarouselTo(this.currentIndex, true)
+    this.carouselTrack.addEventListener('mouseup', mouseUpHandler)
+    this.carouselTrack.addEventListener('touchend', mouseUpHandler)
+
+    window.addEventListener('resize', () => {
+      this.slideCarouselTo(this.currentIndex, false)
     })
   }
 }
-```

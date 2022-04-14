@@ -1,15 +1,12 @@
-// Previous: 4.0.8
-// Current: 4.2.3
-
-const $ = jQuery
+// Previous: 4.2.3
+// Current: 4.2.5
 
 import MeowTiles from './classes/MeowTiles'
 
 const initTiles = () => {
-  $('.mgl-tiles').each(function() {
-
+  document.querySelectorAll('.mgl-tiles').forEach((gallery) => {
     const tilesGallery = new MeowTiles({
-      gallery: $(this)[0],
+      gallery,
       density: mgl_settings?.tiles?.density
     })
 
@@ -18,7 +15,7 @@ const initTiles = () => {
     })
 
     let resizingTimeout = null
-    $(window).on('resize', () => {
+    window.addEventListener('resize', () => {
       clearTimeout(resizingTimeout)
       resizingTimeout = setTimeout(() => {
         tilesGallery.tilify(() => {

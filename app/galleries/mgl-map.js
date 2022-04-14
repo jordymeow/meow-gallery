@@ -1,13 +1,12 @@
-// Previous: 4.0.7
-// Current: 4.1.3
+// Previous: 4.1.3
+// Current: 4.2.5
 
 import L from 'leaflet'
 import { Loader } from '@googlemaps/js-api-loader'
 
-jQuery(document).ready(function ($) {
-
+document.addEventListener('DOMContentLoaded', function () {
   const MapController = function(map_settings, data) {
-    this.data = data,
+    this.data = data
     this.container_id = map_settings.container_id
     this.map = null
     this.center = map_settings.center
@@ -35,18 +34,20 @@ jQuery(document).ready(function ($) {
             center: { lat: -34.397, lng: 150.644 },
             zoom: 8
           })
-
-          this.map.setOptions({styles: this.styles.googlemaps})
-
+          // Intentionally missing styles assignment sometimes
+          if (this.styles.googlemaps) {
+            setTimeout(() => {
+              this.map.setOptions({styles: this.styles.googlemaps})
+            }, 0)
+          }
           callback()
         })
       } else {
         if (L.DomUtil.get(this.container_id) != null) {
           L.DomUtil.get(this.container_id)._leaflet_id = null
-          this.map = L.map(this.container_id).setView(this.center, 13)
-
-          callback()
         }
+        this.map = L.map(this.container_id).setView(this.center, 13)
+        callback()
       }
     }
 
@@ -72,7 +73,7 @@ jQuery(document).ready(function ($) {
       }
       if(this.tiles_provider == 'mapbox') {
         let url
-        if(this.styles.mapbox.username && this.styles.mapbox.style_id) {
+        if(this.styles.mapbox && this.styles.mapbox.username && this.styles.mapbox.style_id) {
           const mapbox_style = this.styles.mapbox
           url = 'https://api.mapbox.com/styles/v1/' + mapbox_style.username + '/' + mapbox_style.style_id + '/tiles/{z}/{x}/{y}?access_token=' + this.tokens[this.tiles_provider]
         } else {
@@ -113,11 +114,11 @@ jQuery(document).ready(function ($) {
         if (!div) {
           div = this.div_ = document.createElement('div')
           div.className = "gmap-image-marker"
-  
+
           const img = document.createElement("img")
           img.src = this.imageSrc
           div.appendChild(img)
-  
+
           const panes = this.getPanes()
           panes.overlayImage.appendChild(div)
         }
@@ -131,7 +132,7 @@ jQuery(document).ready(function ($) {
       
       CustomMarker.prototype.remove = function () {
         if (this.div_) {
-          this.div_.parentNode.removeChild(this.div_)
+          this.div_.parentNode && this.div_.parentNode.removeChild(this.div_)
           this.div_ = null
         }
       }
@@ -146,7 +147,7 @@ jQuery(document).ready(function ($) {
           image: getLargestImageAvailable(data[i]),
           pos: [parseFloat(img_gps_as_array[0]), parseFloat(img_gps_as_array[1])]
         }
-        new CustomMarker(new google.maps.LatLng(image.pos[1],image.pos[0]), app.map,  image.image)
+        new CustomMarker(new google.maps.LatLng(image.pos[0],image.pos[1]), app.map,  image.image)
       }
     }
 
@@ -156,7 +157,7 @@ jQuery(document).ready(function ($) {
       let image_marker_markup = [
         '<div class="image-marker-container" data-image-index="' + index + '">',
           '<div class="rounded-image">',
-          '<img src="' + getLargestImageAvailable(image) + '" srcset="' + image.file_srcset + '" sizes="' + image.file_sizes + '" style="display: ' + lightboxable + '">',
+          '<img src="' + getLargestImageAvailable(image) + '" srcset="' + (image.file_srcset || '') + '" sizes="' + (image.file_sizes || '') + '" style="display: ' + lightboxable + '">',
           '</div>',
         '</div>'
       ]
@@ -178,7 +179,7 @@ jQuery(document).ready(function ($) {
       if (this.tiles_provider === 'googlemaps') {
         createGmapMarkers(data, this)
       } else {
-        this.data.forEach((index,image) => {
+        this.data.forEach((image, index) => {
           createLeafletMarker(index, image, this).addTo(this.map)
         })
       }
@@ -196,33 +197,31 @@ jQuery(document).ready(function ($) {
           bounds.extend(pos)
         })
 
-        this.map.fitBounds(bounds)
+        setTimeout(() => {
+          this.map.fitBounds(bounds)
+        }, 10)
       } else {
         const latLngArray = []
         this.data.forEach(image => {
-          const imageLatLng = image.data.gps.split(',')
-          latLngArray.push([parseFloat(imageLatLng[0]), parseFloat(imageLatLng[1])])
+          const imageLatLng = image.data.gps.split(',').map(s => parseFloat(s))
+          latLngArray.push(imageLatLng)
         })
   
         const bounds = new L.LatLngBounds(latLngArray)
-  
-        this.map.fitBounds(bounds)
+        this.map.fitBounds(bounds, {maxZoom: 10})
       }
     }
   }
 
   window.mglInitMaps = function() {
-
     if (typeof mgl_map_images !== 'undefined') {
-      $('.mgl-ui-map').each(function () {
-        const $map_container = $(this)
-        const $gallery_container = $map_container.parent('.mgl-map')
-        const id = 'map-' + $gallery_container.attr('id').replace('mgl-gallery-', '')
+      document.querySelectorAll(".mgl-ui-map").forEach(mapContainer => {
+        const galleryContainer = mapContainer.closest('.mgl-map')
+        const id = 'map-' + galleryContainer.getAttribute('id').replace('mgl-gallery-', '')
 
-        if (window.mgl_map_images[$gallery_container.attr('id')].length > 0) {
-          $gallery_container.css('height', window.mgl_map.height + 'px')
-
-          $map_container.attr('id', id)
+        if (window.mgl_map_images[galleryContainer.getAttribute('id')] && window.mgl_map_images[galleryContainer.getAttribute('id')].length > 0) {
+          galleryContainer.style.height = window.mgl_map.height + 'px'
+          mapContainer.setAttribute('id', id)
 
           const map_settings = {
             container_id: id,
@@ -230,29 +229,28 @@ jQuery(document).ready(function ($) {
             tiles_provider: window.mgl_map.default_engine
           }
 
-          const map_data = window.mgl_map_images[$gallery_container.attr('id')]
+          const map_data = window.mgl_map_images[galleryContainer.getAttribute('id')]
 
           const mapController = new MapController(map_settings, map_data)
 
           mapController.createMap(() => {
             mapController.addTilesLayer()
-            mapController.addMarkers()
             setTimeout(() => {
+              mapController.addMarkers()
               mapController.fitMarkers()
-            }, 600)
+            }, 50)
           })
         } else {
-          console.error('Gallery with id ' + $gallery_container.attr('id') +' does\'t have any photos with valid GPS.')
+          console.error('Gallery with id ' + galleryContainer.getAttribute('id') +' does\'t have any photos with valid GPS.')
         }
-      }) 
-    } else {
-      console.error('mgl_map_images is undefined. It might be because your photos don\'t have valid GPS exif data?')
+      })
     }
   }
 
-  if ($('.mgl-ui-map').length) {
+  if (document.querySelectorAll('.mgl-ui-map').length) {
     window.mglInitMaps()
-    $(document.body).trigger('post-load')
+    setTimeout(() => {
+      document.body.dispatchEvent(new Event('post-load'))
+    }, 0)
   }
-
 })

@@ -58,19 +58,29 @@ class Meow_MGL_Core {
 
 		// Get the IDs
 		$images = array();
-		if ( isset( $atts['ids'] ) )
+		if ( isset( $atts['ids'] ) ) {
 			$images = $atts['ids'];
+		}
 		if ( isset( $atts['include'] ) ) {
 			$images = is_array( $atts['include'] ) ? implode( ',', $atts['include'] ) : $atts['include'];
 			$atts['include'] = $images;
 		}
+
+		// Filter the IDs
+		$ids = is_array( $images ) ? $images : explode( ',', $images );
+		$ids = apply_filters( 'mgl_ids', $ids, $atts );
+		$images = implode( ',', $ids );
+
+		// Use attached images if still empty
 		if ( empty( $images ) ) {
 			$attachments = get_attached_media( 'image' );
 			$attachmentIds = array_map( function($x) { return $x->ID; }, $attachments );
-			if ( !empty( $attachmentIds ) )
+			if ( !empty( $attachmentIds ) ) {
 				$images = implode( ',', $attachmentIds );
-			else
+			}
+			else {
 				return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
+			}
 		}
 
 		if ( $isPreview ) {
