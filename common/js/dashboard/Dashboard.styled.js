@@ -60,7 +60,6 @@ const StyledPhpInfo = Styled.div`
     background: white;
     border-radius: 10px;
     padding: 10px;
-    font-family: Lato;
     max-width: 100%
     overflow: none;
 
