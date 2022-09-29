@@ -91,6 +91,7 @@ class Meow_MGL_Rest
 			'mgl_animation' => false,
 			'mgl_image_size' => 'srcset',
 			'mgl_infinite' => false,
+			'mgl_infinite_buffer' => 0,
 			'mgl_tiles_gutter' => 5,
 			'mgl_tiles_gutter_tablet' => 5,
 			'mgl_tiles_gutter_mobile' => 5,

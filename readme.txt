@@ -1,16 +1,16 @@
-=== Meow Gallery (+ Gallery Block) ===
+=== Gallery Block (Meow Gallery) ===
 Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
-Tested up to: 6.0
+Tested up to: 6.0.1
 Requires PHP: 7.0
-Stable tag: 4.2.6
+Stable tag: 4.2.7
 
-Polished and beautiful gallery built for image lovers. Designed to work for WordPress 5 (Gutenberg Block) but also the standard Gallery Shortcode.
+Polished and beautiful gallery built for simplicity, appareance and speed. It features a Gallery Block, but you can also use a shortcode or let it override the standard WordPress gallery.
 
 == Description ==
 
-Fast and smooth gallery built for image lovers. Designed to work with Gutenberg Blocks as well as the natural Gallery Shortcode. It's responsive, retina-friendly, has modern layouts, blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery/layouts/).
+Polished and beautiful gallery built for simplicity, appareance and speed. It features a Gallery Block, but you can also use a shortcode or let it override the standard WordPress gallery. It's responsive, retina-friendly, has modern layouts, blazing fast and tightly optimized. If you are interested in seeing the layouts in actions, click here: [Meow Gallery's Layouts](https://meowapps.com/meow-gallery/layouts/).
 
 === Features ===
 
@@ -20,7 +20,7 @@ Uses WordPress and Gutenberg naturally without hacking it, and more importantly,
 
 === Layouts ===
 
-Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram), only using CSS, so no more scripts to slow down your pages and the rendering. Demo [here](https://meowapps.com/meow-gallery/layouts/).
+Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram). Demo [here](https://meowapps.com/meow-gallery/layouts/).
 
 === Compatibility ===
 
@@ -48,9 +48,13 @@ Languages: English.
 
 == Changelog ==
 
+= 4.2.7 (2022/09/29) =
+* Add: Option to set the height buffer for infinite loading. 
+* Fix: Load script in the footer instead of header.
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+
 = 4.2.6 (2022/07/13) =
 * Fix: If the phpinfo() function doesn't exist, avoid calling it.
-* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
 
 = 4.2.5 (2022/04/14) =
 * Update: jQuery is not needed anymore.

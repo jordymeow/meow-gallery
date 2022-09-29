@@ -45,6 +45,7 @@ class Meow_MGL_Run {
 
 		wp_localize_script('mgl-js', 'mgl_settings',
 			array(
+				'infinite_buffer' => get_option( 'mgl_infinite_buffer', 0 ),
 				'disable_right_click' => !get_option( 'mgl_right_click', false ),
 				'tiles' => array( 'density' => $density )
 			)

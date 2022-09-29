@@ -78,7 +78,7 @@ const LicenseBlock = () => {
   const licenseTextStatus = isOverridenLicense ? 'Forced License' : isRegistered ? 'Enabled' : 'Disabled';
 
   const success = isOverridenLicense || (license && license.license === 'valid');
-  let message = 'Your license is active. Thanks a lot for your support :)';
+  let message = 'Your license is active. Thanks a lot for your support :)';
   if ( isOverridenLicense && license && license.check_url ) {
     message = <><span>{message}</span><br /><small>This license was enabled manually. To check your license status, please click <a target="_blank" href={license.check_url + '&cache=' + (Math.random() * (642000))}>here</a>.</small></>;
   }

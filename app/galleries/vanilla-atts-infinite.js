@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.2.3
+// Previous: 4.2.3
+// Current: 4.2.7
 
 (function() {
 
@@ -53,13 +53,11 @@
 	}
 
 	function isInViewport(el) {
-		const rect = el.getBoundingClientRect()	
-		return (
-			rect.bottom >= 0 && 
-			rect.right >= 0 && 
-			rect.top <= (window.innerHeight || document.documentElement.clientHeight) && 
-			rect.left <= (window.innerWidth || document.documentElement.clientWidth)
-		)
+		const buffer = parseInt(mgl_settings?.infinite_buffer || 0)
+		const rect = el.getBoundingClientRect()
+		const innerHeight = (window.innerHeight || document.documentElement.clientHeight) + buffer
+		const innerWidth = (window.innerWidth || document.documentElement.clientWidth)
+		return (rect.bottom >= 0 && rect.right >= 0 && rect.top <= innerHeight && rect.left <= innerWidth)
 	}
 
 	function registerListener(event, func) {
