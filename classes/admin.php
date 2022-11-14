@@ -2,16 +2,24 @@
 
 class Meow_MGL_Admin extends MeowCommon_Admin {
 
-	public function __construct() {
+	private $core;
+	public function __construct($core) {
 		parent::__construct( MGL_PREFIX, MGL_ENTRY, MGL_DOMAIN, class_exists( 'MeowPro_MGL_Core' ) );
+		$this->core = $core;
 		add_action( 'admin_menu', array( $this, 'app_menu' ) );
 		$blocks_enabled = function_exists( 'register_block_type' );
 		if ( $blocks_enabled ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		}
-		if ( get_option( 'mgl_captions', 'notset' ) === 'notset' ) {
+		$options = $this->core->get_all_options();
+		if ( ( $options['captions'] ?? 'notset' ) === 'notset' ) {
+			// MEOMO: mgl_captions_enabled option is used only here. Also, it deletes soon after being used.
+			//        So we keep this option what it is (not migrated to the mgl_options).
 			$captions_enabled = get_option( 'mgl_captions_enabled' );
-			update_option( 'mgl_captions', $captions_enabled ? 'hover-only' : false );
+			$this->core->update_options( array_merge(
+				$options,
+				[ 'captions' => $captions_enabled ? 'hover-only' : false ]
+			) );
 			delete_option( 'mgl_captions_enabled' );
 		}
 	}
@@ -41,7 +49,7 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 
 		// Localize and options
 		global $wplr;
-		wp_localize_script( 'mgl-admin-js', 'mgl_meow_gallery', array_merge( [
+		wp_localize_script( 'mgl-admin-js', 'mgl_meow_gallery', [
 			//'api_nonce' => wp_create_nonce( 'mfrh_media_file_renamer' ),
 			'api_url' => get_rest_url( null, '/meow-gallery/v1/' ),
 			'rest_url' => get_rest_url(),
@@ -52,7 +60,8 @@ class Meow_MGL_Admin extends MeowCommon_Admin {
 			'is_registered' => !!$this->is_registered(),
 			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			'wplr_collections' => $wplr ? $wplr->read_collections_recursively() : [],
-		] ) );
+			'options' => $this->core->get_all_options(),
+		] );
 
 		wp_enqueue_script( 'mgl-admin-js' );
 	}

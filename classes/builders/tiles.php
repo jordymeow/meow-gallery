@@ -11,6 +11,8 @@ class Meow_MGL_Builders_Tiles extends Meow_MGL_Builders_Core {
 		$class_id = '#' . $this->class_id;
 		
 		$isPreview = $this->isPreview;
+		
+		$options = get_option( Meow_MGL_Core::get_plugin_option_name(), null );
 
 		$gutter = [];
 		if ( isset( $this->atts['gutter'] ) ) {
@@ -19,9 +21,9 @@ class Meow_MGL_Builders_Tiles extends Meow_MGL_Builders_Core {
 			$gutter['mobile'] = $this->atts['gutter'];
 		}
 		else {
-			$gutter['desktop'] = get_option( 'mgl_tiles_gutter', 10 );
-			$gutter['tablet'] = get_option( 'mgl_tiles_gutter_tablet', 10 );
-			$gutter['mobile'] = get_option( 'mgl_tiles_gutter_mobile', 10 );
+			$gutter['desktop'] = $options['tiles_gutter'] ?? 10;
+			$gutter['tablet'] = $options['tiles_gutter_tablet'] ?? 10;
+			$gutter['mobile'] = $options['tiles_gutter_mobile'] ?? 10;
 		}
 
 		$density = [];
@@ -31,9 +33,9 @@ class Meow_MGL_Builders_Tiles extends Meow_MGL_Builders_Core {
 			$density['mobile'] = $this->atts['density'];
 		}
 		else {
-			$density['desktop'] = get_option( 'mgl_tiles_density', 'high' );
-			$density['tablet'] = get_option( 'mgl_tiles_density_tablet', 'medium' );
-			$density['mobile'] = get_option( 'mgl_tiles_density_mobile', 'low' );
+			$density['desktop'] = $options['tiles_density'] ?? 'high';
+			$density['tablet'] = $options['tiles_density_tablet'] ?? 'medium';
+			$density['mobile'] = $options['tiles_density_mobile'] ?? 'low';
 		}
 
 		ob_start();

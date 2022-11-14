@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 4.2.3
+// Previous: 4.2.3
+// Current: 4.2.8
 
 // Is written with Vanilla JS
 
@@ -8,6 +8,14 @@ window.addEventListener('load', () => {
     document.querySelectorAll('.mgl-gallery.mgl-horizontal').forEach(gallery => {
       const galleryTrack = gallery.querySelector('.meow-horizontal-track')
   
+      // Disable right click
+      const { right_click } = Settings;
+      if ( right_click ) {
+        gallery.addEventListener("contextmenu", (evt) => {
+          evt.preventDefault()
+        });
+      }
+
       // Scroll wheel converter
       gallery.addEventListener("wheel", (evt) => {
         evt.preventDefault()

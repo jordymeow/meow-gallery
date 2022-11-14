@@ -4,13 +4,15 @@ class Meow_MGL_Core {
 
 	private $gallery_process = false;
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
+	private static $plugin_option_name = 'mgl_options';
+	private $option_name = 'mgl_options';
 
 	public function __construct() {
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
 
 		// Initializes the classes needed
 		MeowCommon_Helpers::is_rest() && new Meow_MGL_Rest( $this );
-		is_admin() && new Meow_MGL_Admin();
+		is_admin() && new Meow_MGL_Admin( $this );
 		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core();
 
 		// The gallery build process should only be enabled if the request is non-asynchronous
@@ -103,7 +105,7 @@ class Meow_MGL_Core {
 		else if ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' )
 			$layout = $atts['mgl-layout'];
 		else
-			$layout = get_option( 'mgl_layout', 'tiles' );
+			$layout = $this->get_option( 'layout', 'tiles' );
 
 		// Check the settings
 		if ( $layout === 'none' )
@@ -130,7 +132,7 @@ class Meow_MGL_Core {
 		// This should be probably removed.
 		// wp_enqueue_style( 'mgl-css' );
 
-		$infinite = get_option( 'mgl_infinite', false ) && class_exists( 'MeowPro_MGL_Core' );
+		$infinite = $this->get_option( 'infinite', false ) && class_exists( 'MeowPro_MGL_Core' );
 		$gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
 		$result = $gen->build( $images );
 		$this->gallery_process = false;
@@ -141,6 +143,108 @@ class Meow_MGL_Core {
 
 		return $result;
 	}
+
+	// #region Options
+
+	static function get_plugin_option_name() {
+		return self::$plugin_option_name;
+	}
+
+	static function get_plugin_option( $option_name, $default = null ) {
+		$options = get_option( self::$plugin_option_name, null );
+		return $options[ $option_name ] ?? $default;
+	}
+
+	function get_option( $option_name, $default = null ) {
+		$options = $this->get_all_options();
+		return $options[ $option_name ] ?? $default;
+	}
+
+	function list_options() {
+		return array(
+			'layout' => 'tiles',
+			'captions' => 'none',
+			'animation' => false,
+			'image_size' => 'srcset',
+			'infinite' => false,
+			'infinite_buffer' => 0,
+			'tiles_gutter' => 5,
+			'tiles_gutter_tablet' => 5,
+			'tiles_gutter_mobile' => 5,
+			'tiles_density' => 'high',
+			'tiles_density_tablet' => 'medium',
+			'tiles_density_mobile' => 'low',
+			'masonry_gutter' => 5,
+			'masonry_columns' => 3,
+			'justified_gutter' => 5,
+			'justified_row_height' => 200,
+			'square_gutter' => 5,
+			'square_columns' => 5,
+			'cascade_gutter' => 5,
+			'horizontal_gutter' => 5,
+			'horizontal_image_height' => 500,
+			'horizontal_hide_scrollbar' => false,
+			'carousel_gutter' => 5,
+			'carousel_image_height' => 500,
+			'carousel_arrow_nav_enabled' => true,
+			'carousel_dot_nav_enabled' => true,
+			'map_engine' => '',
+			'map_height' => 400,
+			'googlemaps_token' => '',
+			'googlemaps_style' => '[]',
+			'mapbox_token' => '',
+			'mapbox_style' => '{"username":"", "style_id":""}',
+			'maptiler_token' => '',
+			'right_click' => false
+		);
+	}
+
+	function get_all_options() {
+		$options = get_option( $this->option_name, null );
+		$options = $this->check_options( $options );
+		return $options;
+	}
+
+	// Upgrade from the old way of storing options to the new way.
+	function check_options( $options = [] ) {
+		$plugin_options = $this->list_options();
+		$options = empty( $options ) ? [] : $options;
+		$hasChanges = false;
+		foreach ( $plugin_options as $option => $default ) {
+			// The option already exists
+			if ( isset( $options[$option] ) ) {
+				continue;
+			}
+			// The option does not exist, so we need to add it.
+			// Let's use the old value if any, or the default value.
+			$options[$option] = get_option( 'mgl_' . $option, $default );
+			delete_option( 'mgl_' . $option );
+			$hasChanges = true;
+		}
+		if ( $hasChanges ) {
+			update_option( $this->option_name , $options );
+		}
+		return $options;
+	}
+
+	function update_options( $options ) {
+		if ( !update_option( $this->option_name, $options, false ) ) {
+			return false;
+		}
+		$options = $this->sanitize_options();
+		return $options;
+	}
+
+
+	// Validate and keep the options clean and logical.
+	function sanitize_options() {
+		$options = $this->get_all_options();
+		// something to do
+		return $options;
+	}
+
+	# endregion
+
 }
 
 ?>

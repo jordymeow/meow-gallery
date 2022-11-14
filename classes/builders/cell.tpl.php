@@ -8,6 +8,7 @@
 								'img' => [
 									'src'      => true,
 									'srcset'   => true,
+									'loading'	 => true,
 									'sizes'    => true,
 									'class'    => true,
 									'id'       => true,
@@ -26,6 +27,7 @@
 						'img' => [
 							'src'      => true,
 							'srcset'   => true,
+							'loading'	 => true,
 							'sizes'    => true,
 							'class'    => true,
 							'id'       => true,

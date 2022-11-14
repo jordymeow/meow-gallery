@@ -2,8 +2,10 @@
 
 class Meow_MGL_Run {
 	private $isEnqueued = false;
+	private $core;
 
 	public function __construct( $core ) {
+		$this->core = $core;
 		add_shortcode( 'gallery', array( $core, 'gallery' ) );
 		add_shortcode( 'meow-gallery', array( $core, 'gallery' ) );
 
@@ -38,15 +40,15 @@ class Meow_MGL_Run {
 			$density['mobile'] = $this->atts['density'];
 		}
 		else {
-			$density['desktop'] = get_option( 'mgl_tiles_density', 'high' );
-			$density['tablet'] = get_option( 'mgl_tiles_density_tablet', 'medium' );
-			$density['mobile'] = get_option( 'mgl_tiles_density_mobile', 'low' );
+			$density['desktop'] = $this->core->get_option( 'tiles_density', 'high' );
+			$density['tablet'] = $this->core->get_option( 'tiles_density_tablet', 'medium' );
+			$density['mobile'] = $this->core->get_option( 'tiles_density_mobile', 'low' );
 		}
 
 		wp_localize_script('mgl-js', 'mgl_settings',
 			array(
-				'infinite_buffer' => get_option( 'mgl_infinite_buffer', 0 ),
-				'disable_right_click' => !get_option( 'mgl_right_click', false ),
+				'infinite_buffer' => $this->core->get_option( 'infinite_buffer', 0 ),
+				'disable_right_click' => !$this->core->get_option( 'right_click', false ),
 				'tiles' => array( 'density' => $density )
 			)
 		);

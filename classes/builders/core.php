@@ -22,6 +22,7 @@ abstract class Meow_MGL_Builders_Core {
 
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		$wpUploadDir = wp_upload_dir();
+		$options = get_option( Meow_MGL_Core::get_plugin_option_name(), null );
 		$this->id = uniqid();
 		$this->size = isset( $atts['size'] ) ? $atts['size'] : $this->size;
 		$this->size =  apply_filters( 'mgl_media_size', $this->size );
@@ -33,12 +34,12 @@ abstract class Meow_MGL_Builders_Core {
 		$this->isPreview = $isPreview;
 		$this->class_id = 'mgl-gallery-' . $this->id;
 		$this->updir = trailingslashit( $wpUploadDir['baseurl'] );
-		$this->captions = isset( $atts['captions'] ) ? $atts['captions'] : get_option( 'mgl_captions', 'none' );
+		$this->captions = isset( $atts['captions'] ) ? $atts['captions'] : ( $options['captions'] ?? 'none' );
 		$this->animation = null;
 		if ( isset( $atts['animation'] ) && $atts['animation'] != 'default' )
 			$this->animation = $atts['animation'];
 		else
-			$this->animation = get_option( 'mgl_animation', null );
+			$this->animation = $options['animation'] ?? null;
 	}
 
 	function build_inline_attributes( $id, $data ) {
@@ -76,15 +77,18 @@ abstract class Meow_MGL_Builders_Core {
 		$data['caption'] = apply_filters( 'mgl_caption', $data['caption'], $id );
 		$caption = $this->captions ? $data['caption'] : '';
 
-		$image_size = get_option( 'mgl_image_size', 'srcset' );
+		$image_size = Meow_MGL_Core::get_plugin_option( 'image_size', 'srcset' );
 		$imgSrc = null;
 		if ( empty( $image_size ) || $image_size === 'srcset' ) {
 			$imgSrc = wp_get_attachment_image( $id, $this->size, false,
-				$this->layout === 'carousel' ? array( 'class' => 'skip-lazy' ) : array( 'class' => 'wp-image-' . $id ) );
+				$this->layout === 'carousel' ? 
+					[ 'class' => 'skip-lazy' ] :
+					[ 'class' => 'wp-image-' . $id ],
+			);
 		}
 		else {
 			$info = wp_get_attachment_image_src( $id, $image_size );
-			$imgSrc = '<img src="' . $info[0] . '" class="' .
+			$imgSrc = '<img loading="lazy" src="' . $info[0] . '" class="' .
 				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
 		}
 		$attributes = $this->build_inline_attributes( $id, $data );
