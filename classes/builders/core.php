@@ -83,7 +83,7 @@ abstract class Meow_MGL_Builders_Core {
 			$imgSrc = wp_get_attachment_image( $id, $this->size, false,
 				$this->layout === 'carousel' ? 
 					[ 'class' => 'skip-lazy' ] :
-					[ 'class' => 'wp-image-' . $id ],
+					[ 'class' => 'wp-image-' . $id ]
 			);
 		}
 		else {

@@ -206,7 +206,7 @@ const Dashboard = () => {
                   <StyledPluginBlock title="Perfect Images (Retina)" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/wp-retina-2x.png`} />
                     <div>
-                      <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>Perfect Images + Retina</a></h2>
+                      <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>Perfect Images</a></h2>
                       <p>It handles Retina, help you managing the Image Sizes registered in your WP, and much more.</p>
                     </div>
                   </StyledPluginBlock>
