@@ -3,8 +3,8 @@ Contributors: TigrouMeow, kywyz
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 6.1
-Requires PHP: 7.4.30
-Stable tag: 4.2.9
+Requires PHP: 7.3
+Stable tag: 4.3.0
 
 Polished and beautiful gallery built for simplicity, appareance and speed. It features a Gallery Block, but you can also use a shortcode or let it override the standard WordPress gallery.
 
@@ -48,9 +48,13 @@ Languages: English.
 
 == Changelog ==
 
+= 4.3.0 (2022/12/28) =
+* Fix: Required PHP version was a bit too high.
+* Fix: There was useless console.logs  in the code and a useless call in the admin.
+* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
+
 = 4.2.9 (2022/11/28) =
 * Fix: There was a crash on some versions of PHP (not sure which ones).
-* Note: We need some love :) If you have a moment, please [review the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post) :) That motivates us a lot. Thank you!
 
 = 4.2.8 (2022/11/14) =
 * Fix: The right click handling was not implemented.
