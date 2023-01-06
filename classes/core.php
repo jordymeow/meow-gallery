@@ -3,6 +3,7 @@
 class Meow_MGL_Core {
 
 	private $gallery_process = false;
+	private $gallery_layout = 'tiles';
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
 	private static $plugin_option_name = 'mgl_options';
 	private $option_name = 'mgl_options';
@@ -152,12 +153,18 @@ class Meow_MGL_Core {
 
 	static function get_plugin_option( $option_name, $default = null ) {
 		$options = get_option( self::$plugin_option_name, null );
-		return $options[ $option_name ] ?? $default;
+		if ( array_key_exists( $option_name, $options ) ) {
+			return $options[$option_name];
+		}
+		return $default;
 	}
 
 	function get_option( $option_name, $default = null ) {
 		$options = $this->get_all_options();
-		return $options[ $option_name ] ?? $default;
+		if ( array_key_exists( $option_name, $options ) ) {
+			return $options[$option_name];
+		}
+		return $default;
 	}
 
 	function list_options() {
