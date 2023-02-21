@@ -25,14 +25,23 @@ const StyledPluginBlock = Styled(NekoBlock)`
     display: none;
   }
 
+  .plugin-desc {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 20px;
+
+  }
+
   .nui-block-content {
     display: flex;
     padding: 10px;
+    item-align: center;
 
     h2 {
       color: #055082;
-      font-size: 16px;
-      margin: 5px 0 5px 0;
+      font-size: 18px;
+      margin: 0;
 
       a {
         text-decoration: none;
@@ -41,7 +50,7 @@ const StyledPluginBlock = Styled(NekoBlock)`
 
     p {
       margin: 0px;
-      line-height: 18px;
+      font-size: 15px;
     }
   }
 `;

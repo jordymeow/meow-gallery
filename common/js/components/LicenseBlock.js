@@ -4,7 +4,7 @@ const { useState, useEffect } = wp.element;
 // NekoUI
 import { NekoButton, NekoTypo, NekoBlock, NekoSettings, NekoInput, 
   NekoMessageDanger, NekoMessageSuccess, NekoModal } from '@neko-ui';
-import { postFetch } from '@neko-ui';
+import { nekoFetch } from '@neko-ui';
 
 // From Main Plugin
 import { restUrl, prefix, domain, isPro, isRegistered, restNonce } from '@app/settings';
@@ -24,7 +24,10 @@ const LicenseBlock = () => {
       return;
     }
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/get_license`, { nonce: restNonce });
+    const res = await nekoFetch(`${CommonApiUrl}/get_license`, { 
+      method: 'POST',
+      nonce: restNonce
+    });
     setLicense(res.data);
     if (res.data.key) {
       setSerialKey(res.data.key);
@@ -34,7 +37,11 @@ const LicenseBlock = () => {
 
   const removeLicense = async () => {
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/set_license`, { nonce: restNonce, json: { serialKey: null } });
+    const res = await nekoFetch(`${CommonApiUrl}/set_license`, { 
+      method: 'POST',
+      nonce: restNonce,
+      json: { serialKey: null }
+    });
     if (res.success) {
       setSerialKey('');
       setLicense(null);
@@ -45,7 +52,14 @@ const LicenseBlock = () => {
 
   const forceLicense = async () => {
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/set_license`, { nonce: restNonce, json: { serialKey, override: true } });
+    const res = await nekoFetch(`${CommonApiUrl}/set_license`, {
+      method: 'POST',
+      nonce: restNonce,
+      json: { 
+        serialKey,
+        override: true
+      }
+    });
     if (res.success) {
       setLicense(res.data);
       if (res.data && !res.data.issue) {
@@ -63,7 +77,11 @@ const LicenseBlock = () => {
       return;
     }
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/set_license`, { nonce: restNonce, json: { serialKey } });
+    const res = await nekoFetch(`${CommonApiUrl}/set_license`, {
+      method: 'POST',
+      nonce: restNonce,
+      json: { serialKey }
+    });
     if (res.success) {
       setLicense(res.data);
       if (res.data && !res.data.issue) {

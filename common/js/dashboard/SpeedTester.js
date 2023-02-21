@@ -3,7 +3,7 @@ const { useState, useEffect } = wp.element;
 
 // NekoUI
 import { NekoButton, NekoTypo, NekoGauge } from '@neko-ui';
-import { postFetch } from '@neko-ui';
+import { nekoFetch } from '@neko-ui';
 
 // From Main Plugin
 import { restUrl, restNonce } from '@app/settings';
@@ -25,7 +25,10 @@ const SpeedTester = ({ request, title, max }) => {
     }
     setTimeout(async () => {
       const start = new Date().getTime();
-      await postFetch(`${CommonApiUrl}/${request}`, { nonce: restNonce });
+      await nekoFetch(`${CommonApiUrl}/${request}`, {
+        method: 'POST',
+        nonce: restNonce
+      });
       const end = new Date().getTime();
       const time = end - start;
       setResults(x => [ ...x, time ]);

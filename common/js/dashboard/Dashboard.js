@@ -5,12 +5,13 @@ import useSWR from 'swr';
 // NekoUI
 import { NekoTypo, NekoPage, NekoHeader, NekoWrapper, NekoTab, NekoTabs, NekoBlock, NekoButton,
   NekoColumn, NekoSettings, NekoCheckboxGroup, NekoCheckbox } from '@neko-ui';
-import { postFetch, jsonFetcher } from '@neko-ui';
+import { nekoFetch, jsonFetcher } from '@neko-ui';
 
 import { apiUrl, restUrl, pluginUrl, restNonce } from '@app/settings';
 import { SpeedTester } from './SpeedTester';
 import { TabText, StyledPluginBlock, StyledPluginImage, 
   StyledPhpErrorLogs, StyledPhpInfo } from './Dashboard.styled';
+import { withTheme } from 'styled-components';
 
 if ( !apiUrl || !restUrl || !pluginUrl ) {
   console.error("[@common/dashboard] apiUrl, restUrl and pluginUrl are mandatory.");
@@ -21,36 +22,32 @@ const CommonApiUrl = `${restUrl}/meow-common/v1`;
 const jsxTextStory = 
   <TabText>
     <NekoTypo p>
-      Meow Apps is run by Jordy Meow, a photographer and software developer living in Japan (and taking <a target="_blank" href="https://offbeatjapan.org">a lot of photos</a>). Meow Apps proposes a suite of plugins focusing on photography, imaging, optimization and SEO. The ultimate goal is to make your website better, faster, while making it easy. Meow Apps also teams up with the best players in the community. For more information, please check <a href="http://meowapps.com" target="_blank">Meow Apps</a>.
+      Meow Apps is a suite of plugins for photography, imaging, optimization, and SEO, run by <a target="_blank" href="https://offbeatjapan.org">Jordy Meow</a>, a photographer and developer in Japan. The goal is to improve and speed up your website. Learn more at <a href="http://meowapps.com" target="_blank">Meow Apps</a>.
     </NekoTypo>
   </TabText>;
 
 const jsxTextPerformance = 
   <TabText>
     <NekoTypo p>
-      The <b>Empty Request Time</b> helps you analyzing the raw performance of your install by giving you the average time it takes to run an empty request to your server. You can try to disable some plugins (or change their options) then Start this again to see how it influences the results. An excellent install would have an Empty Request Time of less than 500 ms. Keep it absolutely under 2,000 ms! For more information, <a href="https://meowapps.com/clean-optimize-wordpress/#Optimize_your_Empty_Request_Time" target="_blank">click here</a>.
+      ⭐️ The <b>Empty Request Time</b> helps you analyzing the raw performance of your install by giving you the average time it takes to run an empty request to your server. You can try to disable some plugins then start this again to see how it modifies the results. Keep it absolutely under 2,000 ms! That said, I recommend it to keep it below 500ms.
     </NekoTypo>
     <NekoTypo p>
-      <b>File Operation Time</b> creates a temporary size of 10MB every time. <b>SQL Request Time</b> counts the number of posts. Those two should be very fast, and almost the same as the <b>Empty Request Time</b>.
+      ⭐️ <b>File Operation Time</b> creates a temporary size of 10MB every time.
+    </NekoTypo>
+    <NekoTypo p>
+      ⭐️ <b>SQL Request Time</b> counts the number of posts. Those two should be very fast, and almost the same as the <b>Empty Request Time</b>.
     </NekoTypo>
   </TabText>;
 
 const jsxTextRecommendations = 
   <TabText>
     <NekoTypo p>
-      Too many WordPress installs are blown-up with useless and/or heavy plugins, and not aware of best practices. That's not the fault of the users; WordPress pretends to be simple but it is in fact very complex, and the immensity and diversity of the community around it makes it a real jungle where everything is possible.
-    </NekoTypo>
-    <NekoTypo p>
-      A rule of thumb is to keep your WordPress install as simple as possible, with the least number of plugins installed (run away from the heavy ones) and an excellent hosting service. Avoid VPS or self-hosted solutions; you must be a professional to actually set them up so that they are actually performant. 
-    </NekoTypo>
-    <NekoTypo p>
-      On the Meow Apps website, you will find articles which are always updated with the latest recommendations.
+      Keep your WordPress install simple and efficient by using only necessary plugins and a reliable hosting service. Avoid trying to self-host unless you have professional experience. Follow best practices and stay up-to-date with the latest recommendations on the Meow Apps website.
       <ul>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/how-to-debug-wordpress-errors/" target="_blank">How To Debug WordPress</a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-improve-seo-wordpress/" target="_blank">SEO Checklist &amp; Optimization</a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-faster-wordpress-optimize/" target="_blank">Optimize your WordPress Speed</a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-optimize-images-wordpress/" target="_blank">Optimize Images (CDN, and so on)</a></li>
-        <li>☘️&nbsp;&nbsp;<a href="https://meowapps.com/tutorial-hosting-service-wordpress/" target="_blank">Best Hosting Services for WordPress</a></li>
+        <li>💜 <a href="https://meowapps.com/tutorial-improve-seo-wordpress/" target="_blank">SEO Checklist &amp; Optimization</a></li>
+        <li>💜 <a href="https://meowapps.com/tutorial-faster-wordpress-optimize/" target="_blank">Optimize your WordPress Speed</a></li>
+        <li>💜 <a href="https://meowapps.com/tutorial-optimize-images-wordpress/" target="_blank">Optimize Images (CDN, and so on)</a></li>
+        <li>💜 <a href="https://meowapps.com/tutorial-hosting-service-wordpress/" target="_blank">The Best Hosting Services for WordPress</a></li>
       </ul>
     </NekoTypo>
   </TabText>;
@@ -85,7 +82,11 @@ const Dashboard = () => {
     newSettingsData[id] = value;
     mutateSwrSettings({ ...swrSettings, data: newSettingsData }, false);
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/update_option`, { json: { name: id, value }, nonce: restNonce });
+    const res = await nekoFetch(`${CommonApiUrl}/update_option`, { 
+      method: 'POST',
+      nonce: restNonce,
+      json: { name: id, value }
+    });
     setBusy(false);
     if (!res.success) {
       alert(res.message);
@@ -95,7 +96,10 @@ const Dashboard = () => {
 
   const loadErrorLogs = async () => {
     setBusy(true);
-    const res = await postFetch(`${CommonApiUrl}/error_logs`, { nonce: restNonce });
+    const res = await nekoFetch(`${CommonApiUrl}/error_logs`, {
+      method: 'POST',
+      nonce: restNonce
+    });
     let fresh = res && res.data ? res.data : [];
     setPhpErrorLogs(fresh.reverse());
     setBusy(false);
@@ -137,41 +141,41 @@ const Dashboard = () => {
 
                   <StyledPluginBlock title="Media Cleaner" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/media-cleaner.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/media-cleaner/'>Media Cleaner</a></h2>
-                      <p>The Cleaner analyzes your WordPress entirely to find out which files are not used. You can trash them, before deleting them permanently. Your WordPress will breath again :)</p>
+                      <p>Remove the useless media entries and files.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Database Cleaner" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/database-cleaner.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/database-cleaner/'>Database Cleaner</a></h2>
-                      <p>Clean your WordPress database. This plugin is simple, handles risk levels, and aims to work even on oversized databases on which other plugins fail to operate.</p>
+                      <p>Clean your database and make it faster.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Media File Renamer" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/media-file-renamer.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/media-file-renamer/'>Media File Renamer</a></h2>
-                      <p>The Renamer will help you in getting nicer filenames for an improved SEO and a tidier filesystem. It's mostly automatic and very fun to use.</p>
+                      <p>Rename your filenames for a better SEO.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Social Engine" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/social-engine.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/social-engine/'>Social Engine</a></h2>
-                      <p>Organize, schedule and automate the publishing of your content and photos on social accounts. Similar to Buffer, TweetDeck, etc, but without all the limitations, and in your WordPress.</p>
+                      <p>Share your articles and photos on the SNS.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Meow Analytics" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/meow-analytics.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-analytics/'>Meow Analytics</a></h2>
-                      <p>Are you tired of those heavy plugins, accessing your Google Analytics deliberately? Switch to Meow Analytics!</p>
+                      <p>Google Analytics for your website.</p>
                     </div>
                   </StyledPluginBlock>
                   
@@ -181,41 +185,41 @@ const Dashboard = () => {
 
                 <StyledPluginBlock title="Photo Engine" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/wplr-sync.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/wplr-sync/'>Photo Engine</a></h2>
-                      <p>Are you using Lightroom? So you know Photo Engine already. Wait, you don't? You must try it! This plugin will be your favorite very soon.</p>
+                      <p>Organize your photos in folders and collections.<br />Synchronize with Lightroom.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Meow Gallery" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/meow-gallery.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-gallery/'>Meow Gallery</a></h2>
-                      <p>This is the fastest gallery system... and it is pretty as well! It is 100% compatible with the native WordPress galleries and therefore, works right away.</p>
+                      <p>Fast and beautiful gallery with many layouts.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Meow Lightbox" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/meow-lightbox.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/meow-lightbox/'>Meow Lightbox</a></h2>
-                      <p>A very sleek and performant Lightbox which will also display your EXIF data (camera, lens, aperture...). Photographers love it.</p>
+                      <p>Sleek and performant lightbox with EXIF support.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Perfect Images (Retina)" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/wp-retina-2x.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/wp-retina-2x/'>Perfect Images</a></h2>
-                      <p>It handles Retina, help you managing the Image Sizes registered in your WP, and much more.</p>
+                      <p>Optimize your thumbnails, retina, replace images, etc.</p>
                     </div>
                   </StyledPluginBlock>
 
                   <StyledPluginBlock title="Contact Form Block" className="primary">
                     <StyledPluginImage src={`${pluginUrl}/common/img/contact-form-block.png`} />
-                    <div>
+                    <div className="plugin-desc">
                       <h2><a target='_blank' href='https://wordpress.org/plugins/contact-form-block/'>Contact Form Block</a></h2>
-                      <p>A simple, pretty and superlight contact form. If you simply want your visitors to get in touch with you, this contact form will be perfect for you and your WordPress.</p>
+                      <p>Simple and straightforward contact form, in one block.</p>
                     </div>
                   </StyledPluginBlock>
 
@@ -231,10 +235,7 @@ const Dashboard = () => {
                 <SpeedTester title="File Operation Time" request="file_operation" max={2600} />
                 <SpeedTester title="SQL Request Time" request="sql_request" max={2800} />
               </div>
-            </NekoTab>
-
-            <NekoTab title="Recommendations">
-              {jsxTextRecommendations}
+              {jsxTextRecommendations} 
             </NekoTab>
 
             <NekoTab title="PHP Info">
@@ -244,7 +245,7 @@ const Dashboard = () => {
             <NekoTab title="PHP Error Logs">
               <TabText>
                 <NekoButton style={{ marginBottom: 10 }} color={'#ccb027'} onClick={loadErrorLogs}>
-                    Load PHP Error Logs
+                  Load PHP Error Logs
                 </NekoButton>
                 <StyledPhpErrorLogs>
                   {phpErrorLogs.map(x => <li class={`log-${x.type}`}>
@@ -253,6 +254,9 @@ const Dashboard = () => {
                     <span class='log-content'>{x.content}</span>
                   </li>)}
                 </StyledPhpErrorLogs>
+                <NekoTypo p>
+                  If nothing appears after loading, it might be that your hosting service does not allow you to access the PHP error logs directly from here. Please contact them directly.
+                </NekoTypo>
               </TabText>
               {/* {jsxPhpErrorLogs}
               <StyledPhpErrorLogs dangerouslySetInnerHTML={{ __html: phpErrorLogs }} />
