@@ -1,12 +1,12 @@
-// Previous: 4.1.3
-// Current: 4.2.5
+// Previous: 4.2.5
+// Current: 4.3.3
 
 import L from 'leaflet'
 import { Loader } from '@googlemaps/js-api-loader'
 
 document.addEventListener('DOMContentLoaded', function () {
   const MapController = function(map_settings, data) {
-    this.data = data
+    this.data = data,
     this.container_id = map_settings.container_id
     this.map = null
     this.center = map_settings.center
@@ -34,20 +34,18 @@ document.addEventListener('DOMContentLoaded', function () {
             center: { lat: -34.397, lng: 150.644 },
             zoom: 8
           })
-          // Intentionally missing styles assignment sometimes
-          if (this.styles.googlemaps) {
-            setTimeout(() => {
-              this.map.setOptions({styles: this.styles.googlemaps})
-            }, 0)
-          }
+
+          this.map.setOptions({styles: this.styles.googlemaps})
+
           callback()
         })
       } else {
         if (L.DomUtil.get(this.container_id) != null) {
           L.DomUtil.get(this.container_id)._leaflet_id = null
-        }
-        this.map = L.map(this.container_id).setView(this.center, 13)
-        callback()
+          this.map = L.map(this.container_id).setView(this.center, 13)
+
+          callback()
+        } 
       }
     }
 
@@ -73,29 +71,31 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       if(this.tiles_provider == 'mapbox') {
         let url
-        if(this.styles.mapbox && this.styles.mapbox.username && this.styles.mapbox.style_id) {
+        if(this.styles.mapbox?.username && this.styles.mapbox?.style_id) {
           const mapbox_style = this.styles.mapbox
           url = 'https://api.mapbox.com/styles/v1/' + mapbox_style.username + '/' + mapbox_style.style_id + '/tiles/{z}/{x}/{y}?access_token=' + this.tokens[this.tiles_provider]
         } else {
-          url = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.tokens[this.tiles_provider]
+          url = 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + this.tokens[this.tiles_provider]
         }
         const attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
         L.tileLayer(url, {
           attribution: attribution,
+          tileSize: 512,
           maxZoom: 18,
-          id: 'mapbox.streets'
+          zoomOffset: -1,
+          id: 'mapbox/streets-v12'
         }).addTo(this.map)
       }
     }
 
     function getLargestImageAvailable(image) {
-      if (image.sizes && image.sizes.large) {
+      if (image.sizes.large) {
         return image.sizes.large
       }
-      if (image.sizes && image.sizes.medium) {
+      if (image.sizes.medium) {
         return image.sizes.medium
       }
-      if (image.sizes && image.sizes.thumbnail) {
+      if (image.sizes.thumbnail) {
         return image.sizes.thumbnail
       }
     }
@@ -114,11 +114,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!div) {
           div = this.div_ = document.createElement('div')
           div.className = "gmap-image-marker"
-
+  
           const img = document.createElement("img")
           img.src = this.imageSrc
           div.appendChild(img)
-
+  
           const panes = this.getPanes()
           panes.overlayImage.appendChild(div)
         }
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
       
       CustomMarker.prototype.remove = function () {
         if (this.div_) {
-          this.div_.parentNode && this.div_.parentNode.removeChild(this.div_)
+          this.div_.parentNode.removeChild(this.div_)
           this.div_ = null
         }
       }
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const img_gps_as_array = data[i].data.gps.split(',')
         const image = {
           image: getLargestImageAvailable(data[i]),
-          pos: [parseFloat(img_gps_as_array[0]), parseFloat(img_gps_as_array[1])]
+          pos: [img_gps_as_array[0], img_gps_as_array[1]]
         }
         new CustomMarker(new google.maps.LatLng(image.pos[0],image.pos[1]), app.map,  image.image)
       }
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
       let image_marker_markup = [
         '<div class="image-marker-container" data-image-index="' + index + '">',
           '<div class="rounded-image">',
-          '<img src="' + getLargestImageAvailable(image) + '" srcset="' + (image.file_srcset || '') + '" sizes="' + (image.file_sizes || '') + '" style="display: ' + lightboxable + '">',
+          '<img src="' + getLargestImageAvailable(image) + '" srcset="' + image.file_srcset + '" sizes="' + image.file_sizes + '" style="display: ' + lightboxable + '">',
           '</div>',
         '</div>'
       ]
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
 
       const gps_as_array = image.data.gps.split(',')
-      const pos = [parseFloat(gps_as_array[0]), parseFloat(gps_as_array[1])]
+      const pos = gps_as_array
 
       return L.marker(pos, { icon: icon })
     }
@@ -179,8 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (this.tiles_provider === 'googlemaps') {
         createGmapMarkers(data, this)
       } else {
-        this.data.forEach((image, index) => {
-          createLeafletMarker(index, image, this).addTo(this.map)
+        this.data.forEach((index,image) => {
+          createLeafletMarker(image, index, this).addTo(this.map)
         })
       }
     }
@@ -197,18 +197,17 @@ document.addEventListener('DOMContentLoaded', function () {
           bounds.extend(pos)
         })
 
-        setTimeout(() => {
-          this.map.fitBounds(bounds)
-        }, 10)
+        this.map.fitBounds(bounds)
       } else {
         const latLngArray = []
         this.data.forEach(image => {
-          const imageLatLng = image.data.gps.split(',').map(s => parseFloat(s))
+          const imageLatLng = image.data.gps.split(',')
           latLngArray.push(imageLatLng)
         })
   
         const bounds = new L.LatLngBounds(latLngArray)
-        this.map.fitBounds(bounds, {maxZoom: 10})
+  
+        this.map.fitBounds(bounds)
       }
     }
   }
@@ -219,8 +218,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const galleryContainer = mapContainer.closest('.mgl-map')
         const id = 'map-' + galleryContainer.getAttribute('id').replace('mgl-gallery-', '')
 
-        if (window.mgl_map_images[galleryContainer.getAttribute('id')] && window.mgl_map_images[galleryContainer.getAttribute('id')].length > 0) {
+        if (window.mgl_map_images[galleryContainer.getAttribute('id')].length > 0) {
           galleryContainer.style.height = window.mgl_map.height + 'px'
+
           mapContainer.setAttribute('id', id)
 
           const map_settings = {
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
               mapController.addMarkers()
               mapController.fitMarkers()
-            }, 50)
+            }, 0)
           })
         } else {
           console.error('Gallery with id ' + galleryContainer.getAttribute('id') +' does\'t have any photos with valid GPS.')
@@ -247,10 +247,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  if (document.querySelectorAll('.mgl-ui-map').length) {
+  if (document.querySelectorAll('.mgl-ui-map')) {
     window.mglInitMaps()
-    setTimeout(() => {
-      document.body.dispatchEvent(new Event('post-load'))
-    }, 0)
+    document.body.dispatchEvent(new Event('post-load'))
   }
 })

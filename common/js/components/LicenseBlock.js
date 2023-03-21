@@ -3,7 +3,7 @@ const { useState, useEffect } = wp.element;
 
 // NekoUI
 import { NekoButton, NekoTypo, NekoBlock, NekoSettings, NekoInput, 
-  NekoMessageDanger, NekoMessageSuccess, NekoModal } from '@neko-ui';
+  NekoMessage, NekoModal } from '@neko-ui';
 import { nekoFetch } from '@neko-ui';
 
 // From Main Plugin
@@ -97,18 +97,21 @@ const LicenseBlock = () => {
 
   const success = isOverridenLicense || (license && license.license === 'valid');
   let message = 'Your license is active. Thanks a lot for your support :)';
-  if ( isOverridenLicense && license && license.check_url ) {
-    message = <><span>{message}</span><br /><small>This license was enabled manually. To check your license status, please click <a target="_blank" href={license.check_url + '&cache=' + (Math.random() * (642000))}>here</a>.</small></>;
-  }
+  if ( isOverridenLicense ) {
+    message = 'This license has been force-enabled for you.';
+    if (license && license.check_url ) {
+      message = <><span>{message}</span><br /><small>To check your license status, please click <a target="_blank" href={license.check_url + '&cache=' + (Math.random() * (642000))}>here</a>.</small></>;
+    }
+  } 
   if (!success) {
     if (!license) {
       message = 'Unknown error :(';
     }
     else if (license.issue === 'no_activations_left') {
-      message = <span>There are no activations left for this license. You can visit your account at the <a target='_blank' rel="noreferrer" href='https://meowapps.com'>Meow Apps Store</a>, unregister a site, and click on <i>Retry to validate</i>.</span>;
+      message = <span>There are no activations left for this license. You can visit your account at <a target='_blank' rel="noreferrer" href='https://meowapps.com'>Meow Apps</a>, unregister a site, and click on <i>Retry to validate</i>.</span>;
     }
     else if (license.issue === 'expired') {
-      message = <span>Your license has expired. You can get another license or renew the current one by visiting your account at the <a target='_blank' rel="noreferrer" href='https://meowapps.com'>Meow Apps Store</a>.</span>;
+      message = <span>Your license has expired. You can get another license or renew the current one by visiting your account at <a target='_blank' rel="noreferrer" href='https://meowapps.com'>Meow Apps</a>.</span>;
     }
     else if (license.issue === 'missing') {
       message = 'This license does not exist.';
@@ -130,25 +133,24 @@ const LicenseBlock = () => {
 
   const jsxNonPro = 
     <NekoBlock title="Pro Version (Not Installed)" className="primary">
-      You will find more information about the Pro Version <a target='_blank' rel="noreferrer" href={`https://meowapps.com`}>here</a>. If you actually bought the Pro Version already, please remove the current plugin and download the Pro Version from your account at the <a target='_blank' rel="noreferrer" href='https://meowapps.com/'>Meow Apps Store</a>.
+      You will find more information about the Pro Version <a target='_blank' rel="noreferrer" href={`https://meowapps.com`}>here</a>. If you actually bought the Pro Version already, please remove the current plugin and download the Pro Version from your account at <a target='_blank' rel="noreferrer" href='https://meowapps.com/'>Meow Apps</a>.
     </NekoBlock>;
 
   const jsxProVersion = 
     <NekoBlock title={`Pro Version (${licenseTextStatus})`} busy={busy} className="primary">
 
-      <NekoSettings title="Serial Key" style={{ fontWeight: 'bold' }}><NekoInput id="mfrh_pro_serial" 
-        name="mfrh_pro_serial" disabled={busy} value={serialKey} onChange={(txt) => setSerialKey(txt)} placeholder="" />
-      </NekoSettings>
-
-      {license && !success && <NekoMessageDanger>{message}</NekoMessageDanger>}
-      {license && success && <NekoMessageSuccess>{message}</NekoMessageSuccess>}
-
-      {!license && <NekoTypo p>
-        Insert your serial key above. If you don&apos;t have one yet, you can get one <a href="https://meowapps.com">here</a>. If there was an error during the validation, try the <i>Retry</i> to <i>validate</i> button.
+      {!isOverridenLicense && !(license && license.key === serialKey) && <>
+        <div style={{ marginBottom: 10 }}>License Key:</div>
+        <NekoInput id="mfrh_pro_serial" name="mfrh_pro_serial" disabled={busy} value={serialKey}
+          onChange={(txt) => setSerialKey(txt)} placeholder="Type your license key..." />
+        <NekoTypo p>Insert your serial key above. If you don&apos;t have one yet, you can get one <a href="https://meowapps.com">here</a>. If there was an error during the validation, try the <i>Retry</i> to <i>validate</i> button.
         </NekoTypo>
-      }
+      </>}
 
-      <NekoSettings contentAlign="right">
+      {license && !success && <NekoMessage variant="danger">{message}</NekoMessage>}
+      {(isOverridenLicense || license) && success && <NekoMessage variant="success">{message}</NekoMessage>}
+      
+      <div style={{ marginTop: 15, display: 'flex', justifyContent: 'end' }}>
         {license && !success && <NekoButton className="secondary" disabled={busy || !serialKey} 
           onClick={validateLicense}>Retry to validate
         </NekoButton>}
@@ -159,7 +161,7 @@ const LicenseBlock = () => {
           onClick={validateLicense}>Validate License</NekoButton>
         {meowMode && !success && <NekoButton disabled={busy || !serialKey || (license && license.key === serialKey)} 
           onClick={forceLicense} className="danger">Force License</NekoButton>}
-      </NekoSettings>
+      </div>
 
       <NekoModal
         isOpen={currentModal === 'licenseAdded'}

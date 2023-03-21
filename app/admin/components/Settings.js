@@ -1,5 +1,5 @@
-// Previous: 4.2.8
-// Current: 4.3.2
+// Previous: 4.3.2
+// Current: 4.3.3
 
 // React & Vendor Libs
 const { useState } = wp.element;
@@ -13,7 +13,6 @@ import { apiUrl, prefix, domain, isRegistered, isPro, restNonce, options as defa
 import { LicenseBlock } from '@common';
 
 const Settings = () => {
-
   const [ options, setOptions ] = useState(defaultOptions);
   const [ busyAction, setBusyAction ] = useState(false);
   const busy = busyAction;
@@ -22,7 +21,7 @@ const Settings = () => {
   const mglAnimation = options?.animation;
   const mglCaptions = options?.captions;
   const mglInfinite = options?.infinite;
-  const mglInfiniteBuffer = options?.infinite_buffer;
+  const mglInfiniteBuffer = options?.infinite_buffer || 0;
   const mglImageSize = options?.image_size;
   const mglTilesGutter = options?.tiles_gutter;
   const mglTilesGutterTablet = options?.tiles_gutter_tablet || options?.tiles_gutter;
@@ -53,23 +52,21 @@ const Settings = () => {
   const mglMapTilerToken = options?.maptiler_token;
   const mglRightClick = options?.right_click;
 
-  const updateOption = async (value, id) => {
+  const updateOption = async (value, name) => {
     const newSettingsData = {
       ...options,
-      [id]: value,
+      [name]: value,
     };
     setBusyAction(true);
     try {
       const response = await postFetch(`${apiUrl}/update_option`, { json: { options: newSettingsData }, nonce: restNonce });
-      if (response.success === true) {
+      if (response.success) {
         setOptions(response.options);
       }
-    }
-    catch (err) {
+    } catch (err) {
       alert(err.message);
     }
-    // busy state will always be reset, even if updateOption is fast
-    setTimeout(() => setBusyAction(false), 300);
+    setBusyAction();
   }
 
   const mapEnginesOptions = [
@@ -82,17 +79,17 @@ const Settings = () => {
   const jsxMap =
     <NekoBlock busy={busy} title="Map" className="primary">
       <NekoSettings title="Default Engine">
-        <NekoSelect scrolldown id="map_engine" name="map_engine" disabled={busy} value={mglMapEngine}
+        <NekoSelect scrolldown name="map_engine" disabled={busy} value={mglMapEngine}
           description=""
           onChange={updateOption}>
-          {mapEnginesOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+          {mapEnginesOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
             label={option.label} requirePro={option.requirePro} />)
           }
         </NekoSelect>
       </NekoSettings>
       <NekoSettings title="Row Height">
         <NekoInput name="map_height" type="number" value={mglMapHeight} min="100" max="400" 
-          onEnter={updateOption} onChange={updateOption} description="Ideal height of the map." />
+          onEnter={updateOption} onBlur={updateOption} description="Ideal height of the map." />
       </NekoSettings>
       {mglMapEngine == 'googlemaps' &&
       <>
@@ -102,12 +99,12 @@ const Settings = () => {
             description={<span>You can get a token for Google Maps <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank">here</a>.</span>} />
         </NekoSettings>
         <NekoSettings title="Style">
-          <NekoTextArea id="googlemaps_style" value={mglGoogleMapsStyle} onEnter={updateOption}
+          <NekoTextArea name="googlemaps_style" value={mglGoogleMapsStyle} onEnter={updateOption} onBlur={updateOption}
             description={<span>Google Map Style JSON. You can find a lot of beautiful templates ready to use here: <a href="https://snazzymaps.com/" target="_blank">SnazzyMaps</a>. Remove it and it will reset to the default style.</span>} />
         </NekoSettings>
       </>
       }
-      {mglMapEngine == 'mapbox' &&
+      {mglMapEngine === 'mapbox' &&
       <>
         <NekoTypo h2 style={{ marginTop: 10 }}>Settings for MapBox</NekoTypo>
         <NekoSettings title="Token">
@@ -115,16 +112,16 @@ const Settings = () => {
             description={<span className="description">You can get a token for MapBox <a href="https://account.mapbox.com/access-tokens/" target="_blank">here</a>.</span>} />
         </NekoSettings>
         <NekoSettings title="Style">
-          <NekoTextArea id="mapbox_style" value={mglMapBoxStyle} onEnter={updateOption} onBlur={updateOption}
+          <NekoTextArea name="mapbox_style" value={mglMapBoxStyle} onEnter={updateOption} onBlur={updateOption}
             description={<span>Google Map Style JSON. You can find a lot of beautiful templates ready to use here: <a href="https://snazzymaps.com/" target="_blank">SnazzyMaps</a>. Remove it and it will reset to the default style.</span>} />
         </NekoSettings>
       </>
       }
-      {mglMapEngine == 'maptiler' &&
+      {mglMapEngine === 'maptiler' &&
       <>
         <NekoTypo h2 style={{ marginTop: 10 }}>Settings for MapTiler</NekoTypo>
         <NekoSettings title="Token">
-          <NekoInput name="maptiler_token" type="text" value={mglMapTilerToken} onEnter={updateOption}
+          <NekoInput name="maptiler_token" type="text" value={mglMapTilerToken} onEnter={updateOption} onBlur={updateOption}
             description={<span className="description">You can get a token for MapTiles <a href="https://cloud.maptiler.com/" target="_blank">here</a>.</span>} />
         </NekoSettings>
       </>
@@ -145,23 +142,23 @@ const Settings = () => {
       </NekoSettings>
       <NekoSettings title="Density">
         <div style={{ display: 'flex' }}>
-          <NekoSelect scrolldown id="tiles_density" name="tiles_density" disabled={busy} 
+          <NekoSelect scrolldown name="tiles_density" disabled={busy} 
             value={mglTilesDensity} style={{ flex: 1, marginRight: 5 }} description="Desktop" onChange={updateOption}>
-            <NekoOption key='low' id='low' value='low' label="Low" />
-            <NekoOption key='medium' id='medium' value='medium' label="Medium" />
-            <NekoOption key='high' id='high' value='high' label="High" />
+            <NekoOption key='low_d' id='low_d' value='low' label="Low" />
+            <NekoOption key='medium_d' id='medium_d' value='medium' label="Medium" />
+            <NekoOption key='high_d' id='high_d' value='high' label="High" />
           </NekoSelect>
-          <NekoSelect scrolldown id="tiles_density_tablet" name="tiles_density_tablet" disabled={busy} 
+          <NekoSelect scrolldown name="tiles_density_tablet" disabled={busy} 
             value={mglTilesDensityTablet} style={{ flex: 1, marginRight: 5 }} description="Tablet" onChange={updateOption}>
-            <NekoOption key='low' id='low' value='low' label="Minimal" />
-            <NekoOption key='medium' id='medium' value='medium' label="Medium" />
-            <NekoOption key='high' id='high' value='high' label="High" />
+            <NekoOption key='low_t' id='low_t' value='low' label="Minimal" />
+            <NekoOption key='medium_t' id='medium_t' value='medium' label="Medium" />
+            <NekoOption key='high_t' id='high_t' value='high' label="High" />
           </NekoSelect>
-          <NekoSelect scrolldown id="tiles_density_mobile" name="tiles_density_mobile" disabled={busy} 
+          <NekoSelect scrolldown name="tiles_density_mobile" disabled={busy} 
             value={mglTilesDensityMobile} style={{ flex: 1 }} description="Mobile" onChange={updateOption}>
-            <NekoOption key='low' id='low' value='low' label="Minimal" />
-            <NekoOption key='medium' id='medium' value='medium' label="Medium" />
-            <NekoOption key='high' id='high' value='high' label="High" />
+            <NekoOption key='low_m' id='low_m' value='low' label="Minimal" />
+            <NekoOption key='medium_m' id='medium_m' value='medium' label="Medium" />
+            <NekoOption key='high_m' id='high_m' value='high' label="High" />
           </NekoSelect>
         </div>
       </NekoSettings>
@@ -222,8 +219,8 @@ const Settings = () => {
           onEnter={updateOption} onBlur={updateOption} description="Height of the horizontal." />
       </NekoSettings>
       <NekoSettings title="Hide Scrollbar">
-        <NekoCheckbox id="horizontal_hide_scrollbar" disabled={busy} label="Enable"
-          checked={mglHorizontalHideScrollbar === true} onChange={updateOption} />
+        <NekoCheckbox name="horizontal_hide_scrollbar" disabled={busy} label="Enable"
+          checked={mglHorizontalHideScrollbar === "true"} onChange={updateOption} />
       </NekoSettings>
     </NekoBlock>;
 
@@ -238,12 +235,12 @@ const Settings = () => {
           onEnter={updateOption} onBlur={updateOption} description="Height of the carousel." />
       </NekoSettings>
       <NekoSettings title="Arrow Navigation">
-        <NekoCheckbox id="carousel_arrow_nav_enabled" disabled={busy} label="Enable"
+        <NekoCheckbox name="carousel_arrow_nav_enabled" disabled={busy} label="Enable"
           checked={!!mglCarouselArrowNavEnabled} onChange={updateOption} />
       </NekoSettings>
       <NekoSettings title="Dot Navigation">
-        <NekoCheckbox id="carousel_dot_nav_enabled" disabled={busy} label="Enable"
-          checked={!!mglCarouselDotNavEnabled} onChange={updateOption} />
+        <NekoCheckbox name="carousel_dot_nav_enabled" disabled={busy} label="Enable"
+          checked={mglCarouselDotNavEnabled} onChange={updateOption} />
       </NekoSettings>
     </NekoBlock>;
 
@@ -285,7 +282,7 @@ const Settings = () => {
 
   const jsxLayout =
     <NekoSettings title="Layout">
-      <NekoSelect scrolldown id="layout" name="layout"  disabled={busy} value={mglLayout}
+      <NekoSelect scrolldown name="layout" disabled={busy} value={mglLayout}
         description=""
         onChange={updateOption}>
         {layoutOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
@@ -296,7 +293,7 @@ const Settings = () => {
 
   const jsxAnimation =
     <NekoSettings title="Animation">
-      <NekoSelect scrolldown id="animation" name="animation" disabled={busy} value={mglAnimation}
+      <NekoSelect scrolldown name="animation" disabled={busy} value={mglAnimation}
         description=""
         onChange={updateOption}>
         {animationOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
@@ -307,7 +304,7 @@ const Settings = () => {
 
   const jsxImageSize =
     <NekoSettings title="Image Size">
-      <NekoSelect scrolldown id="image_size" name="image_size" disabled={busy} value={mglImageSize}
+      <NekoSelect scrolldown name="image_size" disabled={busy} value={mglImageSize}
         description=""
         onChange={updateOption}>
         {imageSizeOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
@@ -318,7 +315,7 @@ const Settings = () => {
 
   const jsxCaptions =
     <NekoSettings title="Captions">
-      <NekoSelect scrolldown id="captions" name="captions" disabled={busy} value={mglCaptions}
+      <NekoSelect scrolldown name="captions" disabled={busy} value={mglCaptions}
         onChange={updateOption}>
         {captionsOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
@@ -329,16 +326,16 @@ const Settings = () => {
   const jsxRightClick =
     <NekoSettings title="Right Click">
       <NekoCheckboxGroup max="1">
-        <NekoCheckbox id="right_click" disabled={busy} label="Allow" description="" value="1"
-          requirePro={!isRegistered} checked={!!mglRightClick} onChange={updateOption} />
+        <NekoCheckbox name="right_click" disabled={busy} label="Allow" description="" value="1"
+          requirePro={!isRegistered} checked={mglRightClick} onChange={updateOption} />
       </NekoCheckboxGroup>
     </NekoSettings>;
 
   const jsxInfinite =
     <NekoSettings title="Infinite Scroll">
       <NekoCheckboxGroup max="1">
-        <NekoCheckbox id="infinite" disabled={busy} label="Enable" value="1"
-          requirePro={!isRegistered} checked={!!mglInfinite} onChange={updateOption}
+        <NekoCheckbox name="infinite" disabled={busy} label="Enable" value="1"
+          requirePro={!isRegistered} checked={mglInfinite} onChange={updateOption}
           description="Images will be loaded only when they are in the visible part of the browser."
         />
       </NekoCheckboxGroup>
@@ -349,19 +346,19 @@ const Settings = () => {
       <NekoCheckboxGroup max="1">
         <NekoInput name="infinite_buffer" type="number"
           value={mglInfiniteBuffer} min="0" max="2800" 
-          disabled={busy || !!mglInfinite === false}
+          disabled={!mglInfinite}
           requirePro={!isRegistered} onEnter={updateOption} onBlur={updateOption}
           description="Images outside the visible part of the browser can be also loaded by specifying an extra number of pixels. Typically, 400 ~ 600 will load an additional row or two of images in advance." />
       </NekoCheckboxGroup>
     </NekoSettings>;
 
   return (
-		<NekoPage>
+    <NekoPage>
 
       <NekoHeader title='Meow Gallery | Settings' subtitle='By Meow Apps'>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <NekoButton className="primary"
-            onClick={() => window.open('https://meowapps.com/meow-gallery-tutorial/', "_blank")}>
+            onClick={() => window.open('https://meowapps.com/meow-gallery-tutorial/', "_self")}>
             Tutorial
           </NekoButton>
         </div>
@@ -379,7 +376,6 @@ const Settings = () => {
 
             <NekoTab title='Basics'>
               <NekoWrapper>
-
                 <NekoColumn minimal>
                   <NekoBlock busy={busy} title="Defaults" className="primary">
                     {jsxLayout}
@@ -391,7 +387,6 @@ const Settings = () => {
                     {jsxRightClick}
                   </NekoBlock>
                 </NekoColumn>
-
                 <NekoColumn minimal>
                   <NekoBlock busy={busy} title="Optimization" className="primary">
                     {jsxImageSize}
@@ -399,13 +394,11 @@ const Settings = () => {
                     {jsxInfiniteExtraHeight}
                   </NekoBlock>
                 </NekoColumn>
-              
               </NekoWrapper>
             </NekoTab>
 
             <NekoTab title='Layouts'>
               <NekoWrapper>
-
                 <NekoColumn minimal>
                   {jsxTiles}
                   {jsxJustified}
@@ -417,21 +410,17 @@ const Settings = () => {
                   {jsxCascade}
                   {jsxHorizontal}
                 </NekoColumn>
-              
               </NekoWrapper>
             </NekoTab>
 
             <NekoTab title='Pro Layouts' requirePro={!isRegistered}>
               <NekoWrapper>
-
                 <NekoColumn minimal>
                   {jsxCarousel}
                 </NekoColumn>
-
                 <NekoColumn minimal>
                   {jsxMap}
                 </NekoColumn>
-              
               </NekoWrapper>
             </NekoTab>
 
@@ -444,7 +433,7 @@ const Settings = () => {
         </NekoColumn>
       </NekoWrapper>
     </NekoPage>
-	);
+  );
 };
 
 export default Settings;
