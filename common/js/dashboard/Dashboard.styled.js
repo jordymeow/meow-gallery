@@ -21,7 +21,7 @@ const TabText = Styled.div`
 
 const StyledPluginBlock = Styled(NekoBlock)`
 
-  .nui-block-title {
+  .neko-block-title {
     display: none;
   }
 
@@ -30,10 +30,9 @@ const StyledPluginBlock = Styled(NekoBlock)`
     flex-direction: column;
     justify-content: center;
     margin-left: 20px;
-
   }
 
-  .nui-block-content {
+  .neko-block-content {
     display: flex;
     padding: 10px;
     item-align: center;
@@ -50,7 +49,9 @@ const StyledPluginBlock = Styled(NekoBlock)`
 
     p {
       margin: 0px;
-      font-size: 15px;
+      margin-top: 5px;
+      font-size: 13px;
+      line-height: 1.2;
     }
   }
 `;
@@ -67,6 +68,7 @@ const StyledPhpInfo = Styled.div`
 
   .center {
     background: white;
+    color: black;
     border-radius: 10px;
     padding: 10px;
     max-width: 100%
@@ -109,6 +111,7 @@ const StyledPhpErrorLogs = Styled.ul`
   white-space: pre;
   overflow-x: auto;
   width: calc(100vw - 276px);
+  color: black;
 
   .log-date {
     color: white;

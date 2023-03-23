@@ -1,11 +1,11 @@
-// Previous: 4.0.0
-// Current: 4.3.3
+// Previous: 4.3.3
+// Current: 4.3.4
 
 // React & Vendor Libs
 const { render } = wp.element;
 
 import NekoUI from '@neko-ui';
-
+import { Dashboard } from '@common';
 import Block from './blocks/index';
 
 // Meow Gallery
@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	let container = document.getElementById('mgl-admin-settings');
 	if (container) {
 		render((<NekoUI><Settings /></NekoUI>), container);
+	}
+
+	// Common
+	const meowDashboard = document.getElementById('meow-common-dashboard');
+	if (meowDashboard) {
+		render(<NekoUI><Dashboard /></NekoUI>, meowDashboard);
 	}
 
 });
