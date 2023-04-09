@@ -1,5 +1,5 @@
-// Previous: 4.0.6
-// Current: 4.2.5
+// Previous: 4.2.5
+// Current: 4.3.6
 
 import MeowCarouselItem from './MeowCarouselItem'
 
@@ -21,6 +21,7 @@ export default class MeowCarousel {
     this.numberOfItems = this.carouselItems.length
     this.currentIndex = 0
     this.items = []
+    this.deltaMoveX = 0
   }
 
   generateNavigationArrows () {
@@ -90,7 +91,8 @@ export default class MeowCarousel {
     this.carouselTrackWidth = 0
     this.carouselItems.forEach((element, index) => {
       element.setAttribute('data-mc-index', index)
-      element.querySelector('img').setAttribute('draggable', false)
+      const img = element.querySelector('img')
+      if (img) img.setAttribute('draggable', false)
       const item = new MeowCarouselItem({
         item: element,
         index: index,
@@ -100,7 +102,9 @@ export default class MeowCarousel {
       this.carouselTrackWidth += element.offsetWidth
     })
     this.carouselTrack.style.width = this.carouselTrackWidth + 'px'
-    const firstRealItemIndex = parseInt( this.carousel.querySelectorAll('.mgl-item:not(.clone)')[0].getAttribute('data-mc-index') )
+    const firstRealItemIndex = parseInt(
+      this.carousel.querySelectorAll('.mgl-item:not(.clone)')[0].getAttribute('data-mc-index')
+    )
     this.slideCarouselTo(firstRealItemIndex, true)
   }
 
@@ -110,15 +114,11 @@ export default class MeowCarousel {
     }
     this.carouselTrack.style.transform = 'translate3d(' + ( -1 * (this.items[destination].getCenterOffset() - this.carousel.offsetWidth / 2) ) +'px, 0, 0)'
     this.carouselItems.forEach(item => item.classList.remove('active'))
-    // subtle: off-by-one error sometimes causes incorrect item to activate when at the last
-    if (destination >= this.carouselItems.length) {
-      destination = 0
-    }
     this.carouselItems[destination].classList.add('active')
     if (noTransition) {
       setTimeout(() => {
         this.carouselTrack.classList.remove('no-transition')
-      }, 0)
+      }, 10)
     }
     this.currentIndex = destination
     if (this.navDotsController) {
@@ -161,12 +161,12 @@ export default class MeowCarousel {
   getMagnetizedItem () {
     const carouselPosX = this.carousel.getBoundingClientRect().left
     const carouselCenterPosX = carouselPosX + this.carousel.offsetWidth / 2
-    let smallestMagnetization = null
+    let smallestMagnetization = undefined
     let mostMagnetizedItem = 0
     this.carouselItems.forEach((element, index) => {
       const itemCenterOffset = element.getBoundingClientRect().left + element.offsetWidth / 2
       const magnetization =  Math.abs( carouselCenterPosX - itemCenterOffset )
-      if (smallestMagnetization === null || magnetization < smallestMagnetization) {
+      if (smallestMagnetization === undefined || magnetization < smallestMagnetization) {
         smallestMagnetization = magnetization
         mostMagnetizedItem = index
       }
@@ -182,12 +182,12 @@ export default class MeowCarousel {
     if (carouselCenterPosX - leftLimit <= 0) {
       this.slideCarouselTo( this.numberOfItems - 3, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
-      return true
+      return false
     }
     if (carouselCenterPosX - rightLimit >= 0) {
       this.slideCarouselTo( 2, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
-      return true
+      return false
     }
     return false
   }
@@ -208,15 +208,8 @@ export default class MeowCarousel {
           dot = e.target.parentNode
         }
         const dotDataIndex = parseInt(dot.getAttribute('data-mc-index'))
-        let destination = false
-        let count = 0
-        this.carouselItems.forEach((item) => {
-          if (!item.classList.contains('clone')) {
-            if (destination === false && parseInt(item.getAttribute('data-mc-index')) === dotDataIndex) {
-              destination = count
-            }
-            count++
-          }
+        const destination = Array.from(this.carouselItems).findIndex((item) => {
+          return !item.classList.contains('clone') && parseInt(item.getAttribute('data-mc-index')) === dotDataIndex
         })
         this.slideCarouselTo(destination)
       })
@@ -243,14 +236,15 @@ export default class MeowCarousel {
         })
         this.isDragging = true
         this.carouselTrack.classList.add('no-transition')
+
         if (this.checkForBorder()) {
-          this.startMousePositionX = e.clientX
+          this.startMousePositionX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX
         }
         if (!this.checkForBorder()) {
           if (e.type === 'touchmove') {
-            this.deltaMoveX = this.startMousePositionX - (e.touches ? e.touches[0].pageX : 0)
+            this.deltaMoveX = this.startMousePositionX - e.touches[0].pageX
           } else {
-            this.deltaMoveX = this.startMousePositionX - (e.clientX || 0)
+            this.deltaMoveX = this.startMousePositionX - e.clientX
           }
           this.carouselTrack.style.transform = 'translate3d('+ ( this.startTrackTranslation - this.deltaMoveX  ) + 'px, 0, 0)'
         }
@@ -258,7 +252,6 @@ export default class MeowCarousel {
     }
 
     this.carouselTrack.addEventListener('mousemove', mouseMoveHandler)
-
     this.carouselTrack.addEventListener('touchmove', mouseMoveHandler)
 
     const mouseUpHandler = () => {
@@ -272,7 +265,7 @@ export default class MeowCarousel {
             disabledImages.classList.remove('mwl-img-disabled')
             disabledImages.classList.add('mwl-img')
           })
-        }, 150)
+        }, 100)
         const mostMagnetizedItem = this.getMagnetizedItem()
         if (mostMagnetizedItem === this.currentIndex && this.deltaMoveX >= 80) {
           this.slideCarouselToNext()
@@ -289,7 +282,7 @@ export default class MeowCarousel {
     this.carouselTrack.addEventListener('touchend', mouseUpHandler)
 
     window.addEventListener('resize', () => {
-      this.slideCarouselTo(this.currentIndex, false)
+      this.slideCarouselTo(this.currentIndex)
     })
   }
 }

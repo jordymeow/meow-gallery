@@ -3,6 +3,7 @@
   "version": "4.0.0",
   "private": true,
   "author": "Meow Apps",
+  "sideEffects": false,
   "scripts": {
     "dev": "webpack --watch --config webpack.galleries.config.js --mode development ",
     "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
