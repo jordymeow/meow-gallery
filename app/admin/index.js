@@ -1,12 +1,14 @@
-// Previous: 4.3.3
-// Current: 4.3.4
+// Previous: 4.3.4
+// Current: 4.3.7
 
 // React & Vendor Libs
 const { render } = wp.element;
 
 import NekoUI from '@neko-ui';
 import { Dashboard } from '@common';
-import Block from './blocks/index';
+import { registerGalleryBlock } from './blocks/index';
+
+registerGalleryBlock();
 
 // Meow Gallery
 import Settings from '@app/components/Settings';

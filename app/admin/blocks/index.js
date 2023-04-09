@@ -1,7 +1,6 @@
-// Previous: 4.2.3
-// Current: 4.2.5
+// Previous: 4.2.5
+// Current: 4.3.7
 
-```jsx
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
 const { registerBlockType, createBlock } = wp.blocks;
@@ -33,7 +32,7 @@ const blockAttributes = {
 		default: 'default'
 	},
 	animation: {
-		type: 'string',
+		type: 'animation',
 		default: ''
 	},
 	useDefaults: {
@@ -41,7 +40,7 @@ const blockAttributes = {
 		default: 'default'
 	},
 	htmlPreview: {
-		type: 'string',
+		type: 'text',
 		default: null
 	},
 	useDefaults: {
@@ -76,8 +75,9 @@ const blockAttributes = {
 
 const buildCoreAttributes = function(attributes) {
 	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
-	let ids = (images && images.length > 0) ? images.map(x => x.id).join(',') : '';
+	let ids = images.map(x => x.id).join(',');
 	let attrs = `ids="${ids}" `;
+	
 	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
 	if (!useDefaults && animation)
@@ -132,87 +132,90 @@ const buildShortcode = function(attributes) {
 	return shortcode;
 }
 
-registerBlockType( 'meow-gallery/gallery', {
-	title: __( 'Meow Gallery' ),
-	description: __( 'Display photos using specialized layouts for photographers.' ),
-	icon: meowGalleryIcon,
-	category: 'layout',
-	keywords: [ __( 'images' ), __( 'photos' ), __( 'lightroom' ) ],
-	attributes: blockAttributes,
-	supports: {
-		className: false,
-		customClassName: false,
-		html: true,
-		align: [ 'full', 'wide' ],
-	},
+const registerGalleryBlock = () => {
 
-	edit,
+	registerBlockType( 'meow-gallery/gallery', {
+		title: __( 'Meow Gallery' ),
+		description: __( 'Display photos using specialized layouts for photographers.' ),
+		icon: meowGalleryIcon,
+		category: 'layout',
+		keywords: [ __( 'images' ), __( 'photos' ), __( 'lightroom' ) ],
+		attributes: blockAttributes,
+		supports: {
+			className: false,
+			customClassName: false,
+			html: true,
+			align: [ 'full', 'wide' ],
+		},
 
-	save({ attributes }) {
-		let str = buildShortcode(attributes);
-		return (<Fragment>{str}</Fragment>);
-	},
+		edit,
 
-	deprecated: [
-		{
-			attributes: blockAttributes,
-			save({ attributes }) {
-				let str = buildShortcode(attributes).replace(' captions="false"', '');
-				return (<Fragment>{str}</Fragment>);
+		save({ attributes }) {
+			let str = buildShortcode(attributes);
+			return (<Fragment>{str}</Fragment>);
+		},
+
+		deprecated: [
+			{
+				attributes: blockAttributes,
+				save({ attributes }) {
+					let str = buildShortcode(attributes).replace(' captions="false"', '');
+					return (<Fragment>{str}</Fragment>);
+				}
+			}, {
+				attributes: blockAttributes,
+				save({ attributes }) {
+					let oldAttributes = { ...attributes, layout: attributes.layout === 'default' ? 'tiles' : attributes.layout };
+					let str = buildShortcode(oldAttributes);
+					return (<Fragment>{str}</Fragment>);
+				}
 			}
-		}, {
-			attributes: blockAttributes,
-			save({ attributes }) {
-				let oldAttributes = { ...attributes, layout: attributes.layout === 'default' ? 'tiles' : attributes.layout };
-				let str = buildShortcode(oldAttributes);
-				return (<Fragment>{str}</Fragment>);
-			}
+		],
+
+		transforms: {
+			from: [
+				{
+					type: 'block',
+					isMultiBlock: false,
+					blocks: [ 'core/gallery' ],
+					transform: ({ images }) => {
+						return createBlock('meow-gallery/gallery', { images: images });
+					},
+				},
+				{
+					type: 'block',
+					isMultiBlock: true,
+					blocks: [ 'core/image' ],
+					transform: ( attributes ) => {
+						const validImages = attributes.filter(x => x.id && x.url != null);
+						return createBlock( 'meow-gallery/gallery', {
+							images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
+						} );
+					},
+				},
+			],
+			to: [
+				{
+					type: 'block',
+					blocks: [ 'core/image' ],
+					transform: ( { images, align } ) => {
+						if ( images.length > 0 ) {
+							return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
+						}
+						return createBlock( 'core/image', { align } );
+					},
+				},
+				{
+					type: 'block',
+					blocks: [ 'core/gallery' ],
+					transform: ( { images, align } ) => {
+						return createBlock( 'core/gallery', { images, align } );
+					},
+				},
+			],
 		}
-	],
+	});
 
-	transforms: {
-		from: [
-			{
-				type: 'block',
-				isMultiBlock: false,
-				blocks: [ 'core/gallery' ],
-				transform: ({ images }) => {
-					return createBlock('meow-gallery/gallery', { images: images });
-				},
-			},
-			{
-				type: 'block',
-				isMultiBlock: true,
-				blocks: [ 'core/image' ],
-				transform: ( attributes ) => {
-					const validImages = attributes.filter(x => x.id && x.url !== undefined);
-					return createBlock( 'meow-gallery/gallery', {
-						images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
-					} );
-				},
-			},
-		],
-		to: [
-			{
-				type: 'block',
-				blocks: [ 'core/image' ],
-				transform: ( { images, align } ) => {
-					if ( images && images.length > 0 ) {
-						return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
-					}
-					return createBlock( 'core/image', { align } );
-				},
-			},
-			{
-				type: 'block',
-				blocks: [ 'core/gallery' ],
-				transform: ( { images, align } ) => {
-					return createBlock( 'core/gallery', { images, align } );
-				},
-			},
-		],
-	}
-});
+}
 
-export default meowGalleryIcon;
-```
+export { registerGalleryBlock };

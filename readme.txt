@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 6.2
 Requires PHP: 7.3
-Stable tag: 4.3.6
+Stable tag: 4.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,8 +50,9 @@ Languages: English.
 
 == Changelog ==
 
-= 4.3.6 (2023/05/09) =
+= 4.3.7 (2023/05/09) =
 * Update: Common dashboard.
+* Fix: Issues with tiles in the editor.
 * Fix: Issues in the carousel.
 * Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 

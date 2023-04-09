@@ -1,5 +1,5 @@
-// Previous: 4.2.3
-// Current: 4.2.5
+// Previous: 4.2.5
+// Current: 4.3.7
 
 ```jsx
 const { __ } = wp.i18n;
@@ -48,8 +48,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		this.onRefresh({ images: newImages });
-
+		this.onRefresh({ images: images });
 	}
 
 	setLinkTo( value ) {
@@ -83,7 +82,7 @@ class GalleryEdit extends Component {
 
 	setRowHeight(value) {
 		this.props.setAttributes({ 'rowHeight': value });
-		this.onRefresh({ 'rowHeight': value });
+		// this.onRefresh({ 'rowHeight': value });
 	}
 
 	setWplrCollection(value) {
@@ -101,7 +100,9 @@ class GalleryEdit extends Component {
 
 	setColumns(value) {
 		this.props.setAttributes({ columns: value });
-		this.onRefresh({ columns: value });
+		if (this.props.attributes.layout === 'justified') {
+			this.onRefresh({ columns: value });
+		}
 	}
 
 	setLayout(layout) {
@@ -119,7 +120,7 @@ class GalleryEdit extends Component {
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
-		const ids = attributes.images.map(x => x.id);
+		const ids = attributes.images ? attributes.images.map(x => x.id) : [];
 		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }
 		if (!useDefaults) {
 			json['gutter'] = gutter;
@@ -138,8 +139,9 @@ class GalleryEdit extends Component {
 		finally {
 			this.setState( { isBusy: false } );
 		}
-		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
-		this.refreshLayout();
+		if (res && res.data) {
+			this.props.setAttributes( { htmlPreview: res.data } );
+		}
 	};
 
 	uploadFromFiles( event ) {
@@ -147,14 +149,14 @@ class GalleryEdit extends Component {
 	}
 
 	addFiles( files ) {
-		const currentImages = this.props.attributes.images;
+		const currentImages = this.props.attributes.images || [];
 		const { noticeOperations, setAttributes } = this.props;
 		mediaUpload( {
 			allowedTypes: ALLOWED_MEDIA_TYPES,
 			filesList: files,
 			onFileChange: ( images ) => {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = currentImages.concat( imagesNormalized );
+				let newImages = [...imagesNormalized, ...currentImages];
 				setAttributes({ images: newImages });
 				this.onRefresh({ images: newImages });
 			},
@@ -163,10 +165,11 @@ class GalleryEdit extends Component {
 	}
 
 	refreshTiles() {
-		if (window.mglInitTiles)
-			mglInitTiles();
-		else
-			console.log('Meow Gallery: mglInitTiles does not exist.');
+		window.setTimeout(() => {
+			if (window.mglInitTiles) {
+				mglInitTiles();
+			}
+		}, 10);
 	}
 
 	refreshCarousel() {
@@ -175,7 +178,7 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstChild; 
+		return div;
 	}
 
 	refreshMap() {
@@ -193,14 +196,21 @@ class GalleryEdit extends Component {
 
 	refreshLayout() {
 		let { layout } = this.props.attributes;
-		if (layout === 'tiles')
+		if (!layout) {
+			this.props.setAttributes({ layout: 'tiles' });
+		}
+		if (layout === 'tiles') {
 			this.refreshTiles();
-		else if (layout === 'carousel')
+		}
+		else if (layout === 'carousel') {
 			this.refreshCarousel();
-		else if (layout === 'map')
+		}
+		else if (layout === 'map') {
 			this.refreshMap();
-		else
-			this.refreshTiles();	
+		}
+		else {
+			this.refreshTiles();
+		}
 	}
 
 	componentDidMount() {
@@ -212,6 +222,12 @@ class GalleryEdit extends Component {
 	}
 
 	componentDidUpdate( prevProps ) {
+		if (prevProps.attributes.htmlPreview !== this.props.attributes.htmlPreview) {
+			this.refreshLayout();
+		}
+		if (prevProps.attributes.layout !== this.props.attributes.layout) {
+			this.onRefresh();
+		}
 	}
 
 	render() {
@@ -249,7 +265,7 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === 'true'
+					disabled: x.is_folder === true
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
