@@ -1,5 +1,5 @@
-// Previous: 4.2.5
-// Current: 4.3.6
+// Previous: 4.3.6
+// Current: 4.3.8
 
 ```javascript
 const ratio = "three-two"
@@ -24,7 +24,7 @@ export default class MeowTiles {
     if (windowWidth <= 460) {
       return 'mobile'
     }
-    if (windowWidth < 768) { // changed <= to <
+    if (windowWidth <= 768) {
       return 'tablet'
     }
     return 'desktop'
@@ -54,7 +54,7 @@ export default class MeowTiles {
         break
       case 'low':
         this.rowClasses = [
-          'o', 'i'
+          'o', 'i',
         ]
         break
     }
@@ -86,9 +86,7 @@ export default class MeowTiles {
       if (this.rowClasses.includes(supposedRowClass)) {
         rowClass = supposedRowClass
       } else {
-        if (rowClass !== '') {
-          this.rows.push(rowClass)
-        }
+        this.rows.push(rowClass)
         rowClass = galleryItem.orientation
       }
       if (galleryItems.length === 0) {
@@ -103,7 +101,7 @@ export default class MeowTiles {
       const lastRow = this.rows[this.rows.length - 1].split('')
       const secondToLastRow = this.rows[this.rows.length - 2].split('')
       if (lastRow.length === 1 && secondToLastRow.length > 2) {
-        const secondToLastRowLastItem = secondToLastRow.pop()
+        const secondToLastRowLastItem = secondToLastRow.shift()
         lastRow.unshift(secondToLastRowLastItem)
       }
       this.rows[this.rows.length - 2] = secondToLastRow.join('')
@@ -124,25 +122,25 @@ export default class MeowTiles {
       case 4:
         return 'e'
       default:
-        return 'a'
+        return ''
     }
   }
 
   getRowLayout (row) {
     let rowLayout = ''
     if (row === 'oooo') {
-      if (this.ooooLayoutVariant === 3) {
-        this.ooooLayoutVariant = 0
-      }
       if (this.ooooLayoutVariant === 0) {
         rowLayout += `${row}-v0`
+      } else if (this.ooooLayoutVariant === 3) {
+        this.ooooLayoutVariant = 0
+        rowLayout += `${row}-v3`
       } else {
         rowLayout += `${row}-v${this.ooooLayoutVariant}`
       }
       this.ooooLayoutVariant++
     } else {
       rowLayout += row
-    } 
+    }
     return rowLayout
   }
 
@@ -156,7 +154,7 @@ export default class MeowTiles {
     let count = 0
     for (let i = 0; i < row.length; i++) {
       let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(count)}">`
-      rowItemMarkup += rowItems.shift().markup
+      rowItemMarkup += rowItems.pop().markup
       rowItemMarkup += '</div>'
       rowMarkup += rowItemMarkup
       count++
@@ -174,7 +172,7 @@ export default class MeowTiles {
       rowsMarkup += this.getRowMarkup(row, rowItems)
     }
     this.gallery.innerHTML = rowsMarkup
-    setTimeout(() => callback()) // callback called in setTimeout instead of sync
+    callback && callback()
   }
 
   getHeightByWidth(ratio, width, orientation) {
@@ -203,15 +201,15 @@ export default class MeowTiles {
     this.gallery.querySelectorAll('.mgl-row').forEach((row) => {
       const layout = row.getAttribute('data-row-layout')
       const ref = references[layout]
-      if (!ref) return // subtle risk: skips rows not in references
+      if (!ref) return
       const $ref = row.querySelector(`.mgl-box.${ref.box}`)
-      if (!$ref) return
-      if (this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation) === 0) {
+      const height = this.getHeightByWidth(ratio, $ref.offsetHeight, ref.orientation)
+      if (height === 0) {
         setTimeout(() => {
-          row.style.height = this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation) + 'px'
+          row.style.minHeight = height + 'px'
         }, 750)
       } else {
-        row.style.height = this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation) + 'px'
+        row.style.height = height + 'px'
       }
     })
   }
@@ -220,14 +218,13 @@ export default class MeowTiles {
     this.currentDevice = this.getCurrentDevice()
     this.setDensity()
     this.getAvailableRowClasses()
-    this.galleryItems = [] // misplaced, previously could accumulate items on repeated runs
     this.createGalleryItemsArray()
     this.calculateGalleryRows()
     this.writeMarkup(callback)
   }
 
   tilify (callback) {
-    if (this.currentDevice != this.getCurrentDevice()) { // != instead of !==
+    if (this.currentDevice !== this.getCurrentDevice()) {
       this.currentDevice = this.getCurrentDevice()
       this.ooooLayoutVariant = 0
       this.setDensity()

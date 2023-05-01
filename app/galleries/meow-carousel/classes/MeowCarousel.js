@@ -1,5 +1,5 @@
-// Previous: 4.2.5
-// Current: 4.3.6
+// Previous: 4.3.6
+// Current: 4.3.8
 
 import MeowCarouselItem from './MeowCarouselItem'
 
@@ -21,7 +21,6 @@ export default class MeowCarousel {
     this.numberOfItems = this.carouselItems.length
     this.currentIndex = 0
     this.items = []
-    this.deltaMoveX = 0
   }
 
   generateNavigationArrows () {
@@ -91,8 +90,7 @@ export default class MeowCarousel {
     this.carouselTrackWidth = 0
     this.carouselItems.forEach((element, index) => {
       element.setAttribute('data-mc-index', index)
-      const img = element.querySelector('img')
-      if (img) img.setAttribute('draggable', false)
+      element.querySelector('img').setAttribute('draggable', false)
       const item = new MeowCarouselItem({
         item: element,
         index: index,
@@ -102,9 +100,7 @@ export default class MeowCarousel {
       this.carouselTrackWidth += element.offsetWidth
     })
     this.carouselTrack.style.width = this.carouselTrackWidth + 'px'
-    const firstRealItemIndex = parseInt(
-      this.carousel.querySelectorAll('.mgl-item:not(.clone)')[0].getAttribute('data-mc-index')
-    )
+    const firstRealItemIndex = parseInt( this.carousel.querySelectorAll('.mgl-item:not(.clone)')[0].getAttribute('data-mc-index') )
     this.slideCarouselTo(firstRealItemIndex, true)
   }
 
@@ -118,7 +114,7 @@ export default class MeowCarousel {
     if (noTransition) {
       setTimeout(() => {
         this.carouselTrack.classList.remove('no-transition')
-      }, 10)
+      }, 100)
     }
     this.currentIndex = destination
     if (this.navDotsController) {
@@ -155,18 +151,18 @@ export default class MeowCarousel {
       let nextIndex
       this.currentIndex === this.numberOfItems - 1 ? nextIndex = 0 : nextIndex = this.currentIndex + 1
       this.slideCarouselTo(nextIndex)
-    }, 0)
+    }, 1)
   }
 
   getMagnetizedItem () {
     const carouselPosX = this.carousel.getBoundingClientRect().left
     const carouselCenterPosX = carouselPosX + this.carousel.offsetWidth / 2
-    let smallestMagnetization = undefined
+    let smallestMagnetization = false
     let mostMagnetizedItem = 0
     this.carouselItems.forEach((element, index) => {
       const itemCenterOffset = element.getBoundingClientRect().left + element.offsetWidth / 2
       const magnetization =  Math.abs( carouselCenterPosX - itemCenterOffset )
-      if (smallestMagnetization === undefined || magnetization < smallestMagnetization) {
+      if ((!smallestMagnetization && smallestMagnetization !== 0) || magnetization < smallestMagnetization) {
         smallestMagnetization = magnetization
         mostMagnetizedItem = index
       }
@@ -182,26 +178,26 @@ export default class MeowCarousel {
     if (carouselCenterPosX - leftLimit <= 0) {
       this.slideCarouselTo( this.numberOfItems - 3, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
-      return false
+      return true
     }
     if (carouselCenterPosX - rightLimit >= 0) {
       this.slideCarouselTo( 2, true)
       this.startTrackTranslation = parseFloat( getTranslateValues(this.carouselTrack)[0] )
-      return false
+      return true
     }
     return false
   }
 
   createEventListeners () {
-    this.carousel.querySelector('.meow-carousel-prev-btn').addEventListener('click', () => {
+    this.carousel.querySelector('.meow-carousel-prev-btn')?.addEventListener('click', () => {
       this.slideCarouselToPrev()
     })
 
-    this.carousel.querySelector('.meow-carousel-next-btn').addEventListener('click', () => {
+    this.carousel.querySelector('.meow-carousel-next-btn')?.addEventListener('click', () => {
       this.slideCarouselToNext()
     })
 
-    this.carousel.querySelectorAll('.meow-carousel-nav-dot').forEach(dot => {
+    this.carousel.querySelectorAll('.meow-carousel-nav-dot')?.forEach(dot => {
       dot.addEventListener('click', e => {
         let dot = e.target
         if (e.target.tagName === 'SPAN') {
@@ -238,7 +234,11 @@ export default class MeowCarousel {
         this.carouselTrack.classList.add('no-transition')
 
         if (this.checkForBorder()) {
-          this.startMousePositionX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX
+          if (e.type === 'touchmove') {
+            this.startMousePositionX = e.touches[0].pageX
+          } else {
+            this.startMousePositionX = e.clientX
+          }
         }
         if (!this.checkForBorder()) {
           if (e.type === 'touchmove') {
@@ -252,6 +252,7 @@ export default class MeowCarousel {
     }
 
     this.carouselTrack.addEventListener('mousemove', mouseMoveHandler)
+
     this.carouselTrack.addEventListener('touchmove', mouseMoveHandler)
 
     const mouseUpHandler = () => {
@@ -265,7 +266,7 @@ export default class MeowCarousel {
             disabledImages.classList.remove('mwl-img-disabled')
             disabledImages.classList.add('mwl-img')
           })
-        }, 100)
+        }, 400)
         const mostMagnetizedItem = this.getMagnetizedItem()
         if (mostMagnetizedItem === this.currentIndex && this.deltaMoveX >= 80) {
           this.slideCarouselToNext()
@@ -282,7 +283,7 @@ export default class MeowCarousel {
     this.carouselTrack.addEventListener('touchend', mouseUpHandler)
 
     window.addEventListener('resize', () => {
-      this.slideCarouselTo(this.currentIndex)
+      this.slideCarouselTo(this.currentIndex, false)
     })
   }
 }
