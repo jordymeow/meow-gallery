@@ -7,6 +7,13 @@ class Meow_MGL_Core {
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
 	private static $plugin_option_name = 'mgl_options';
 	private $option_name = 'mgl_options';
+	private $infinite_layouts = [
+		'tiles',
+		'masonry',
+		'justified',
+		'square',
+		'cascade',
+	];
 
 	public function __construct() {
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
@@ -14,7 +21,6 @@ class Meow_MGL_Core {
 		// Initializes the classes needed
 		MeowCommon_Helpers::is_rest() && new Meow_MGL_Rest( $this );
 		is_admin() && new Meow_MGL_Admin( $this );
-		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core();
 
 		// The gallery build process should only be enabled if the request is non-asynchronous
 		if ( !MeowCommon_Helpers::is_asynchronous_request()  ) {
@@ -23,6 +29,9 @@ class Meow_MGL_Core {
 				new Meow_MGL_Run( $this );
 			}
 		}
+
+		// Load the Pro version *after* loading the Run class due to the JS file was gatherd into one file.
+		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core();
 	}
 
 	public function can_access_settings() {
@@ -60,26 +69,26 @@ class Meow_MGL_Core {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 
 		// Get the IDs
-		$images = array();
+		$image_ids = array();
 		if ( isset( $atts['ids'] ) ) {
-			$images = $atts['ids'];
+			$image_ids = $atts['ids'];
 		}
 		if ( isset( $atts['include'] ) ) {
-			$images = is_array( $atts['include'] ) ? implode( ',', $atts['include'] ) : $atts['include'];
-			$atts['include'] = $images;
+			$image_ids = is_array( $atts['include'] ) ? implode( ',', $atts['include'] ) : $atts['include'];
+			$atts['include'] = $image_ids;
 		}
 
 		// Filter the IDs
-		$ids = is_array( $images ) ? $images : explode( ',', $images );
+		$ids = is_array( $image_ids ) ? $image_ids : explode( ',', $image_ids );
 		$ids = apply_filters( 'mgl_ids', $ids, $atts );
-		$images = implode( ',', $ids );
+		$image_ids = implode( ',', $ids );
 
 		// Use attached images if still empty
-		if ( empty( $images ) ) {
+		if ( empty( $image_ids ) ) {
 			$attachments = get_attached_media( 'image' );
 			$attachmentIds = array_map( function($x) { return $x->ID; }, $attachments );
 			if ( !empty( $attachmentIds ) ) {
-				$images = implode( ',', $attachmentIds );
+				$image_ids = implode( ',', $attachmentIds );
 			}
 			else {
 				return "<p class='meow-error'><b>Meow Gallery:</b> The gallery is empty.</p>";
@@ -87,16 +96,16 @@ class Meow_MGL_Core {
 		}
 
 		if ( $isPreview ) {
-			$check = explode( ',', $images );
+			$check = explode( ',', $image_ids );
 			$check = array_slice( $check, 0, 40 );
-			$images = implode( ',', $check );
+			$image_ids = implode( ',', $check );
 		}
 
 		// Ordering
 		if ( isset( $atts['orderby'] ) ) {
-			$images = explode( ',', $images );
-			$images = Meow_MGL_OrderBy::run( $images, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : 'asc' );
-			$images = implode( ',', $images );
+			$image_ids = explode( ',', $image_ids );
+			$image_ids = Meow_MGL_OrderBy::run( $image_ids, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : 'asc' );
+			$image_ids = implode( ',', $image_ids );
 		}
 		
 		// Layout
@@ -134,15 +143,160 @@ class Meow_MGL_Core {
 		// wp_enqueue_style( 'mgl-css' );
 
 		$infinite = $this->get_option( 'infinite', false ) && class_exists( 'MeowPro_MGL_Core' );
-		$gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
-		$result = $gen->build( $images );
+		// $gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
+		// $result = $gen->build( $image_ids );
 		$this->gallery_process = false;
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		//$result = apply_filters( 'post_gallery', $result, $atts, null );
 
-		do_action( 'mgl_gallery_created' );
+		do_action( 'mgl_gallery_created', $atts, explode( ',', $image_ids ), $layout );
 
-		return $result;
+		$gallery_options = $this->get_gallery_options( $image_ids, $atts, $infinite, $isPreview, $layout );
+
+		// If infinite scroll option was enabled, get the images up to 12 at first.
+		$loading_image_ids = explode(',', $image_ids);
+		if (!$isPreview && $infinite && in_array( $layout, $this->infinite_layouts ) ) {
+			$loading_image_ids = array_slice( $loading_image_ids, 0, 12 );
+		}
+		$gallery_images = $this->get_gallery_images( $loading_image_ids, $atts, $layout, $gallery_options['size'] );
+
+		$data_atts = htmlspecialchars( json_encode( $atts ), ENT_QUOTES, 'UTF-8' );
+		$data_gallery_options = htmlspecialchars( json_encode( $gallery_options ), ENT_QUOTES, 'UTF-8' );
+		$data_gallery_images = htmlspecialchars( json_encode( $gallery_images ), ENT_QUOTES, 'UTF-8' );
+
+		// return $result;
+		return '<div class="mgl-root" data-gallery-options="' . $data_gallery_options . '" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" ></div>';
+	}
+
+	public function get_gallery_options(string $image_ids, array $atts, bool $infinite, bool $is_preview, string $layout) {
+		$image_ids = explode(',', $image_ids);
+		$wp_upload_dir = wp_upload_dir();
+		$options = $this->get_all_options();
+		$id = uniqid();
+		$size = isset( $atts['size'] ) ? $atts['size'] : 'large';
+		$size =  apply_filters( 'mgl_media_size', $size );
+		$custom_class = isset( $atts['custom-class'] ) ? $atts['custom-class'] : null;
+		$link = isset( $atts['link'] ) ? $atts['link'] : null;
+		$align = isset( $atts['align'] ) ? $atts['align'] : null;
+		$updir = trailingslashit( $wp_upload_dir['baseurl'] );
+		$captions = isset( $atts['captions'] ) ? $atts['captions'] : ( $options['captions'] ?? 'none' );
+		$animation = null;
+		if ( isset( $atts['animation'] ) && $atts['animation'] != 'default' ) {
+			$animation = $atts['animation'];
+		} else {
+			$animation = $options['animation'] ?? null;
+		}
+		$class_id = 'mgl-gallery-' . $id;
+		$layouts = [];
+
+		// Justified
+		$justified_row_height = $options['justified_row_height'];
+		$justified_gutter = $options['justified_gutter'];
+		if ( $layout === 'justified' ) {
+			$justified_row_height = $atts['row-height'] ?? $options['justified_row_height'];
+			$justified_gutter = $atts['gutter'] ?? $options['justified_gutter'];
+		}
+		// Masonry
+		$masonry_gutter = $options['masonry_gutter'];
+		$masonry_columns = $options['masonry_columns'];
+		if ( $layout === 'masonry' ) {
+			$masonry_gutter = $atts['gutter'] ?? $options['masonry_gutter'];
+			$masonry_columns = $atts['columns'] ?? $options['masonry_columns'];
+		}
+		// Square
+		$square_gutter = $options['square_gutter'];
+		$square_columns = $options['square_columns'];
+		if ( $layout === 'square' ) {
+			$square_gutter = $atts['gutter'] ?? $options['square_gutter'];
+			$square_columns = $atts['columns'] ?? $options['square_columns'];
+		}
+		// Cascade
+		$cascade_gutter = $options['cascade_gutter'];
+		if ( $layout === 'cascade' ) {
+			$layouts = [ 'o', 'i', 'ii' ];
+			$cascade_gutter = $atts['gutter'] ?? $options['cascade_gutter'];
+		}
+		// Tiles
+		$tiles_gutter = $options['tiles_gutter'];
+		$tiles_gutter_tablet = $options['tiles_gutter_tablet'];
+		$tiles_gutter_mobile = $options['tiles_gutter_mobile'];
+		$tiles_density = $options['tiles_density'];
+		$tiles_density_tablet = $options['tiles_density_tablet'];
+		$tiles_density_mobile = $options['tiles_density_mobile'];
+		if ( $layout === 'tiles' ) {
+			$tiles_gutter = $atts['gutter'] ?? $options['tiles_gutter'];
+			$tiles_gutter_tablet = $atts['gutter'] ?? $options['tiles_gutter_tablet'];
+			$tiles_gutter_mobile = $atts['gutter'] ?? $options['tiles_gutter_mobile'];
+			$tiles_density = $atts['density'] ?? $options['tiles_density'];
+			$tiles_density_tablet = $atts['density'] ?? $options['tiles_density_tablet'];
+			$tiles_density_mobile = $atts['density'] ?? $options['tiles_density_mobile'];
+		}
+		// Horizontal
+		$horizontal_gutter = $options['horizontal_gutter'];
+		$horizontal_image_height = $options['horizontal_image_height'];
+		$horizontal_hide_scrollbar = $options['horizontal_hide_scrollbar'];
+		if ( $layout === 'horizontal' ) {
+			$horizontal_gutter = $atts['gutter'] ?? $options['horizontal_gutter'];
+			$horizontal_image_height = $atts['image_height'] ?? $options['horizontal_image_height'];
+			$horizontal_hide_scrollbar = $atts['hide_scrollbar'] ?? $options['horizontal_hide_scrollbar'];
+		}
+		// Carousel
+		$carousel_gutter = $options['carousel_gutter'];
+		$carousel_arrow_nav_enabled = $options['carousel_arrow_nav_enabled'];
+		$carousel_dot_nav_enabled = $options['carousel_dot_nav_enabled'];
+		$carousel_image_height = $options['carousel_image_height'];
+		if ( $layout === 'carousel' ) {
+			$carousel_gutter = $atts['gutter'] ?? $options['carousel_gutter'];
+			$carousel_arrow_nav_enabled = $atts['arrow_nav_enabled'] ?? $options['carousel_arrow_nav_enabled'];
+			$carousel_dot_nav_enabled = $atts['dot_nav_enabled'] ?? $options['carousel_dot_nav_enabled'];
+			$carousel_image_height = $atts['image_height'] ?? $options['carousel_image_height'];
+		}
+		// Map
+		$map_gutter = $options['map_gutter'];
+		$map_height = $options['map_height'];
+		if ( $layout === 'map' ) {
+			$map_gutter = $atts['gutter'] ?? $options['map_gutter'];
+			$map_height = $atts['map_height'] ?? $options['map_height'];
+		}
+
+		return compact(
+			'image_ids',
+			'id',
+			'size',
+			'infinite',
+			'custom_class',
+			'link',
+			'align',
+			'is_preview',
+			'updir',
+			'captions',
+			'animation',
+			'layout',
+			'justified_row_height',
+			'justified_gutter',
+			'masonry_gutter',
+			'masonry_columns',
+			'square_gutter',
+			'square_columns',
+			'cascade_gutter',
+			'class_id',
+			'layouts',
+			'tiles_gutter',
+			'tiles_gutter_tablet',
+			'tiles_gutter_mobile',
+			'tiles_density',
+			'tiles_density_tablet',
+			'tiles_density_mobile',
+			'horizontal_gutter',
+			'horizontal_image_height',
+			'horizontal_hide_scrollbar',
+			'carousel_gutter',
+			'carousel_arrow_nav_enabled',
+			'carousel_dot_nav_enabled',
+			'carousel_image_height',
+			'map_gutter',
+			'map_height',
+		);
 	}
 
 	// #region Options
@@ -153,7 +307,7 @@ class Meow_MGL_Core {
 
 	static function get_plugin_option( $option_name, $default = null ) {
 		$options = get_option( self::$plugin_option_name, null );
-		if ( array_key_exists( $option_name, $options ) ) {
+		if ( !empty( $options ) && array_key_exists( $option_name, $options ) ) {
 			return $options[$option_name];
 		}
 		return $default;
@@ -175,9 +329,9 @@ class Meow_MGL_Core {
 			'image_size' => 'srcset',
 			'infinite' => false,
 			'infinite_buffer' => 0,
-			'tiles_gutter' => 5,
-			'tiles_gutter_tablet' => 5,
-			'tiles_gutter_mobile' => 5,
+			'tiles_gutter' => 10,
+			'tiles_gutter_tablet' => 10,
+			'tiles_gutter_mobile' => 10,
 			'tiles_density' => 'high',
 			'tiles_density_tablet' => 'medium',
 			'tiles_density_mobile' => 'low',
@@ -187,8 +341,8 @@ class Meow_MGL_Core {
 			'justified_row_height' => 200,
 			'square_gutter' => 5,
 			'square_columns' => 5,
-			'cascade_gutter' => 5,
-			'horizontal_gutter' => 5,
+			'cascade_gutter' => 10,
+			'horizontal_gutter' => 10,
 			'horizontal_image_height' => 500,
 			'horizontal_hide_scrollbar' => false,
 			'carousel_gutter' => 5,
@@ -196,7 +350,8 @@ class Meow_MGL_Core {
 			'carousel_arrow_nav_enabled' => true,
 			'carousel_dot_nav_enabled' => true,
 			'map_engine' => '',
-			'map_height' => 400,
+			'map_height' => 500,
+			'map_gutter' => 10,
 			'googlemaps_token' => '',
 			'googlemaps_style' => '[]',
 			'mapbox_token' => '',
@@ -252,6 +407,174 @@ class Meow_MGL_Core {
 
 	# endregion
 
+	function get_gallery_images( array $image_ids, array $atts, string $layout, string $size ) {
+		global $wpdb;
+
+		// Escape the array of IDs for SQL
+		$ids = array_map( 'intval', $image_ids );
+		$ids_str = implode( ',', $ids );
+
+		$query = "SELECT p.ID id, p.post_excerpt caption, m.meta_value meta
+			FROM $wpdb->posts p, $wpdb->postmeta m
+			WHERE m.meta_key = '_wp_attachment_metadata'
+			AND p.ID = m.post_id
+			AND p.ID IN (" . $ids_str . ")
+		";
+		$res = $wpdb->get_results( $query );
+
+		$ids = explode( ',', $ids_str );
+		$images = [];
+		foreach ( $res as $r ) {
+			$images[$r->id] = [
+				'caption' => $r->caption,
+				'meta' => unserialize( $r->meta ),
+			];
+		}
+		$cleanIds = [];
+		foreach ( $ids as $id ) {
+			if ( isset( $images[$id] ) )
+				array_push( $cleanIds, $id );
+		}
+		$ids = apply_filters( 'mgl_sort', $cleanIds, $images, $layout, $atts );
+
+		return $layout === 'map'
+			? $this->get_map_images( $ids, $images )
+			: array_map( function ( $id ) use ( $images, $layout, $size, $atts ) {
+					$image = $images[$id];
+					$orientation = ($layout === 'tiles')
+						? [ 'orientation' => ($image['meta']['width'] > $image['meta']['height'] ? 'o' : 'i')]
+						: [];
+					return array_merge(
+						$image,
+						[
+							'id' => $id,
+							'caption' => wp_kses_post( apply_filters( 'mgl_caption', $image['caption'], $id ) ),
+							'img_tag' => apply_filters( 'mgl_gallery_written', $this->get_img_tag( $id, $size, $layout, $atts, $image ), $layout ),
+							'link_url' => $this->get_link_url( $id, $atts['link'] ?? null, $image ),
+							'attributes' => $this->get_attributes( $id, $image, $layout ),
+						],
+						$orientation,
+					);
+				}, $ids );
+	}
+
+	private function get_img_tag( $id, $size, $layout, $atts, $data ) {
+		$image_size = $this->get_option( 'image_size', 'srcset' );
+		$img_tag = null;
+		if ( empty( $image_size ) || $image_size === 'srcset' ) {
+			$img_tag = wp_get_attachment_image(
+				$id,
+				$size,
+				false,
+				$layout === 'carousel' ? [ 'class' => 'skip-lazy', 'draggable' => 'false' ] : [ 'class' => 'wp-image-' . $id ]
+			);
+		} else {
+			$info = wp_get_attachment_image_src( $id, $image_size );
+			$img_tag = '<img loading="lazy" src="' . $info[0] . '" class="' .
+				( $layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
+		}
+
+		if ( $layout === 'masonry' ) {
+			$masonry_column = $this->get_option( 'masonry_column', 3 );
+			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $masonry_column ) + 1;
+			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
+		} elseif ( $layout === 'square' ) {
+			$square_column = $this->get_option( 'square_columns', 5 );
+			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $square_column ) + 1;
+			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
+		} elseif ( $layout === 'cascade' ) {
+			$img_tag = str_replace( '100vw', 100 / 3 . 'vw', $img_tag );
+		}
+
+		return wp_kses( $img_tag, [ 
+			'img' => [
+				'src'      => true,
+				'srcset'   => true,
+				'loading'  => true,
+				'sizes'    => true,
+				'class'    => true,
+				'id'       => true,
+				'width'    => true,
+				'height'   => true,
+				'alt'      => true,
+				'align'    => true,
+				'draggable' => true,
+				]
+			]
+		);
+	}
+
+	private function get_link_url( $id, $link, $data ) {
+		$link_url = null;
+		if ( $link === 'attachment' ) {
+			$link_url = get_permalink( (int)$id );
+		} else if ( $link === 'media' || $link === 'file' ) {
+			$wpUploadDir = wp_upload_dir();
+			$updir = trailingslashit( $wpUploadDir['baseurl'] );
+			$link_url = $updir . $data['meta']['file'];
+		}
+		$link_url = apply_filters( 'mgl_link', $link_url, (int)$id, $data );
+		return esc_url($link_url);
+	}
+
+	private function get_attributes( $id, $data, $layout ) {
+		$attributes = '';
+		if ( $layout === 'raw' ) {
+			if ( isset( $data['meta'] ) && isset( $data['meta']['width'] ) && isset( $data['meta']['height'] ) ) {
+				$attributes = 'data-mgl-id=' . $id . ' data-mgl-width=' . $data['meta']['width'] . ' data-mgl-height=' . $data['meta']['height'];
+			}
+		} elseif ( $layout === 'tiles' ) {
+			if ( isset( $data['meta'] ) && isset( $data['meta']['width'] ) && isset( $data['meta']['height'] ) ) {
+				$attributes = 'data-mgl-id=' . $id . ' data-mgl-width=' . $data['meta']['width'] . ' data-mgl-height=' . $data['meta']['height'];
+			}
+		}
+		$attributes = apply_filters( 'mgl_attributes', $attributes, $id, $data );
+		if ( $attributes === '' ) {
+			return [];
+		}
+
+		$attribute_list = explode( ' ', $attributes );
+		$attributes = [];
+		foreach ( $attribute_list as $attribute ) {
+			list( $key, $value ) = explode( '=', $attribute );
+			$attributes[$key] = $value;
+		}
+		return $attributes;
+	}
+
+	private function get_map_images( $ids, $images ) {
+		$map_images = array_map( function ( $id ) use ( $images ) {
+			$image = $images[$id];
+			$geo_coordinates = MeowPro_MGL_Exif::get_gps_data( $id, $image['meta'] );
+			if ( empty( $geo_coordinates ) ) {
+				return null;
+			}
+			$callback = function ( &$value, $key ) use ( $id ) {
+				$imgsrc = wp_get_attachment_image_src( $id, $key );
+				$value = $imgsrc[0];
+			};
+			array_walk( $image['meta']['sizes'], $callback );
+			return array_merge(
+				$image,
+				[
+					'id' => $id,
+					'file' => $image['meta']['file'],
+					'file_srcset' => wp_get_attachment_image_srcset( $id, 'full' ),
+					'file_sizes' => wp_get_attachment_image_sizes( $id, 'full' ),
+					'dimension' => [
+						'width' => $image['meta']['width'],
+						'height' => $image['meta']['height'],
+					],
+					'sizes' => $image['meta']['sizes'],
+					'data' => [
+						'caption' => $image['meta']['image_meta']['caption'],
+						'gps' => $geo_coordinates,
+					]
+				]
+			);
+		}, $ids );
+		return array_values( array_filter( $map_images ) );
+	}
 }
 
 ?>

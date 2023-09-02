@@ -1,17 +1,29 @@
-// Previous: 4.2.8
-// Current: 4.3.0
+// Previous: 4.3.0
+// Current: 5.0.0
 
-import Settings from './settings.js';
+import { render } from 'preact'
+import { MeowGallery } from '../libs/MeowGallery.js';
+import { options, apiUrl, restNonce } from './settings.js';
+import { MeowGalleryContextProvider } from '../libs/context.js';
 
-require('./tiles.js')
-require('./horizontal.js')
+const renderMeowGalleries = () => {
+  const galleryElements = document.querySelectorAll('.mgl-root')
+  if (galleryElements.length) {
+    galleryElements.forEach((galleryElement) => {
+      const galleryOptions = JSON.parse(galleryElement.dataset.galleryOptions);
+      const galleryImages = JSON.parse(galleryElement.dataset.galleryImages);
+      const atts = JSON.parse(galleryElement.dataset.atts);
 
-const { right_click } = Settings;
-//console.log(Settings);
-if (right_click) {
-  document.querySelectorAll('.mgl-gallery').forEach((gallery) => {
-    gallery.addEventListener("contextmenu", (evt) => {
-      evt.preventDefault()
+      render(<MeowGalleryContextProvider options={options} galleryOptions={galleryOptions} galleryImages={galleryImages} atts={atts} apiUrl={apiUrl} restNonce={restNonce}>
+        <MeowGallery /></MeowGalleryContextProvider>, galleryElement);
     });
-  });
+  }
 }
+window.renderMeowGalleries = renderMeowGalleries;
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!options || !apiUrl || !restNonce) {
+    return
+  }
+  renderMeowGalleries();
+})

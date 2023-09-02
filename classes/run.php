@@ -49,7 +49,10 @@ class Meow_MGL_Run {
 			array(
 				'infinite_buffer' => $this->core->get_option( 'infinite_buffer', 0 ),
 				'disable_right_click' => !$this->core->get_option( 'right_click', false ),
-				'tiles' => array( 'density' => $density )
+				'tiles' => array( 'density' => $density ),
+				'api_url' => get_rest_url( null, '/meow-gallery/v1/' ),
+				'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+				'options' => $this->core->get_all_options(),
 			)
 		);
 		wp_enqueue_style( 'mgl-css', plugins_url( '/app/style.min.css', __DIR__ ), null, $cache_buster );

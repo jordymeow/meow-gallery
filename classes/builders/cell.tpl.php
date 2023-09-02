@@ -42,7 +42,7 @@
 			<?php endif; ?>
 		</div>
 	</div>
-	<?php if ( $caption ): ?>
+	<?php if ( !empty( $caption ) ): ?>
 	<figcaption class="mgl-caption">
 			<p><?php echo wp_kses_post( $caption ) ?></p>
 	</figcaption>

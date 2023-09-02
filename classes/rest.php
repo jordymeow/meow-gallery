@@ -41,6 +41,19 @@ class Meow_MGL_Rest
 			'permission_callback' => array( $this->core, 'can_access_features' ),
 			'callback' => array( $this, 'preview' ),
 		) );
+
+		// Gallery
+		register_rest_route( $this->namespace, '/images/', array(
+			'methods' => 'GET',
+			'permission_callback' => '__return_true',
+			'callback' => array( $this, 'rest_images' ),
+			'args' => array(
+				'imageIds' => array( 'required' => true ),
+				'atts' => array( 'required' => true ),
+				'layout' => array( 'required' => true ),
+				'size' => array( 'required' => true ),
+			)
+		) );
 	}
 
 	function preview( WP_REST_Request $request ) {
@@ -68,6 +81,18 @@ class Meow_MGL_Rest
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
 		}
+	}
+
+	function rest_images( $request ) {
+		$image_ids = trim( $request->get_param('imageIds') );
+		$atts = trim( $request->get_param('atts') );
+		$layout = trim( $request->get_param('layout') );
+		$size = trim( $request->get_param('size') );
+
+		return new WP_REST_Response( [
+			'success' => true,
+			'data' => $this->core->get_gallery_images( json_decode( $image_ids, true ), json_decode($atts, true), $layout, $size )
+		], 200 );
 	}
 
 }

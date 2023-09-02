@@ -20,6 +20,7 @@ abstract class Meow_MGL_Builders_Core {
 
 	abstract function inline_css();
 
+	// MEMO: Done migration to the React version.
 	public function __construct( $atts, $infinite, $isPreview = false ) {
 		$wpUploadDir = wp_upload_dir();
 		$options = get_option( Meow_MGL_Core::get_plugin_option_name(), null );
@@ -46,6 +47,8 @@ abstract class Meow_MGL_Builders_Core {
 		return '';
 	}
 
+
+	// MEMO: Done migration to the React version.
 	function prepare_data( $idsStr ) {
 		global $wpdb;
 
@@ -92,6 +95,7 @@ abstract class Meow_MGL_Builders_Core {
 				( $this->layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
 		}
 		$attributes = $this->build_inline_attributes( $id, $data );
+		$attributes = apply_filters( 'mgl_attributes', $attributes, $id, $data );
 		if ( !empty( $attributes ) ) {
 			$attributes = ' ' . $attributes;
 		}
@@ -109,6 +113,7 @@ abstract class Meow_MGL_Builders_Core {
 		return $html;
 	}
 
+	// MEMO: Done migration to the React version.
 	function build_container_classes() {
 		$classes = 'mgl-' . $this->layout . '-container';
 		
@@ -118,6 +123,7 @@ abstract class Meow_MGL_Builders_Core {
 		return $classes;
 	}
 
+	// MEMO: Done migration to the React version.
 	function build_classes() {
 		$classes = 'mgl-gallery';
 
@@ -138,6 +144,7 @@ abstract class Meow_MGL_Builders_Core {
 		return $classes;
 	}
 
+	// MEMO: Done migration to the React version.
 	function build_styles() {
 		return "";
 	}
@@ -156,6 +163,7 @@ abstract class Meow_MGL_Builders_Core {
 		$out .= '</div>';
 		$out = apply_filters( 'mgl_gallery_written', $out, $this->layout );
 
+		// MEMO: Done migration to the React version.
 		// Generate gallery container
 		$container_classes = $this->build_container_classes();
 		$inline_css = $this->inline_css();

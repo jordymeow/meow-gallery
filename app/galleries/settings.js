@@ -1,6 +1,9 @@
-// Previous: 4.2.8
-// Current: 4.3.0
+// Previous: 4.3.0
+// Current: 5.0.0
 
-const right_click = (typeof mgl_settings !== 'undefined') ? mgl_settings?.disable_right_click : false;
+const existsMglSettings = typeof mgl_settings !== "undefined";
+const options = existsMglSettings ? mgl_settings.options : undefined;
+const apiUrl = existsMglSettings ? mgl_settings.api_url.replace(/\/+$/, "") : undefined;
+const restNonce = existsMglSettings ? mgl_settings.rest_nonce : undefined;
 
-export default { right_click };
+export { options, apiUrl, restNonce };

@@ -1,16 +1,16 @@
-// Previous: 4.2.3
-// Current: 4.2.8
+// Previous: 4.2.8
+// Current: 5.0.0
 
 // Is written with Vanilla JS
+import { options } from "./settings";
 
 window.addEventListener('load', () => {
   if (document.querySelector('.mgl-gallery.mgl-horizontal')) {
     document.querySelectorAll('.mgl-gallery.mgl-horizontal').forEach(gallery => {
       const galleryTrack = gallery.querySelector('.meow-horizontal-track')
-  
+
       // Disable right click
-      const { right_click } = Settings;
-      if ( right_click ) {
+      if ( !options.right_click ) {
         gallery.addEventListener("contextmenu", (evt) => {
           evt.preventDefault()
         });
@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
       let originalOffset = 0
       let isTouching = false
       let isDragging = false
-      
+
       gallery.addEventListener('mousedown', (e) => {
         e.preventDefault()
         originalOffset = galleryTrack.scrollLeft
@@ -48,7 +48,7 @@ window.addEventListener('load', () => {
           } else {
             isDragging = false
           }
-  
+
           if (isDragging) {
             galleryTrack.scrollLeft = originalOffset + deltaX
           }
@@ -59,7 +59,7 @@ window.addEventListener('load', () => {
         if (isTouching) {
           isTouching = false
           isDragging = false
-  
+
           galleryTrack.querySelectorAll('img').forEach(image => {
             image.classList.add('mwl-img')
             image.classList.remove('mwl-img-disabled')
