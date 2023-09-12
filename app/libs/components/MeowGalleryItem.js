@@ -4,7 +4,8 @@ import useMeowGalleryContext, { isLayoutJustified } from "../context";
 export const MeowGalleryItem = ({ image }) => {
 
   const { isPreview, captions, layout } = useMeowGalleryContext();
-  const { img_tag: img, link_url: linkUrl, meta, caption, id, attributes, classNames = [] } = image;
+  const { img_tag: img, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel,
+    meta, caption, id, attributes, classNames = [] } = image;
   const className = ['mgl-item', ...classNames].join(' ');
 
   const itemStyle = useMemo(() => {
@@ -20,7 +21,9 @@ export const MeowGalleryItem = ({ image }) => {
       <div className="mgl-icon">
         {!isPreview && linkUrl ? (
           <div className="mgl-img-container">
-            <a href={linkUrl} dangerouslySetInnerHTML={{ __html: img }} />
+            <a href={linkUrl} target={linkTarget} rel={linkRel}
+              dangerouslySetInnerHTML={{ __html: img }}
+            />
           </div>
         ) : (
           <div className="mgl-img-container" dangerouslySetInnerHTML={{ __html: img }} />

@@ -17,6 +17,7 @@ abstract class Meow_MGL_Builders_Core {
 	public $updir = null;
 	public $captions = false;
 	public $animation = null;
+	public $infinite = false;
 
 	abstract function inline_css();
 

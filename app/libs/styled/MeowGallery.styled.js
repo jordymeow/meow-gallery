@@ -55,21 +55,12 @@ export const MeowGalleryContainer = styled('div')`
         }
 
         #${props.classId} {
-            --columns-in-percentage: 20%;
-            --5columns-in-percentage: 20%;
-            --4columns-in-percentage: 25%;
-            --3columns-in-percentage: 33.33%;
-            --2columns-in-percentage: 50%;
-            --1columns-in-percentage: 100%;
-        }
-
-        #${props.classId} {
 		    margin: ${-1 * props.gutter / 2}px;
         }
 
         #${props.classId} .mgl-item {
-            width: var(--${props.columns}columns-in-percentage);
-            padding-bottom: var(--${props.columns}columns-in-percentage);
+            width: calc(100% / ${props.columns});
+            padding-bottom: calc(100% / ${props.columns});
         }
 
         ${props.columns > 2 && `
@@ -91,7 +82,7 @@ export const MeowGalleryContainer = styled('div')`
         `}
 
         #${props.classId}.custom-gallery-class .mgl-item {
-            padding-bottom: calc(var(--${props.columns}columns-in-percentage) / 1.5) !important;
+            padding-bottom: calc(100% / ${props.columns} / 1.5) !important;
         }
 
         #${props.classId} .mgl-item .mgl-icon {

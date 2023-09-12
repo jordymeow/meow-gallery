@@ -96,7 +96,6 @@ const convertToOptions = (options) => {
     size: options.size,
     customClass: options.custom_class,
     link: options.link,
-    align: options.align,
     isPreview: options.is_preview,
     updir: options.updir,
     classId: options.class_id,
@@ -243,7 +242,6 @@ const initialState = {
   size: 'large',
   customClass: '',
   link: null,
-  align: null,
   isPreview: false,
   updir: null,
   classId: null,
@@ -346,12 +344,9 @@ const globalStateReducer = (state, action) => {
     }
 
     case SET_CONTAINER_CLASS_NAMES: {
-      const { layout, align } = action;
+      const { layout } = action;
       const classNameList = [];
       classNameList.push('mgl-' + layout + '-container');
-      if (align) {
-        classNameList.push('align' + align);
-      }
       return { ...state, containerClassName: classNameList.join(' ') };
     }
 
@@ -494,7 +489,7 @@ const useMeowGalleryContext = () => {
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
   const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
 
-  const { layout, customClass, animation, captions, justifiedRowHeight, align, tilesGutter, tilesGutterMobile, tilesGutterTablet,
+  const { layout, customClass, animation, captions, justifiedRowHeight, tilesGutter, tilesGutterMobile, tilesGutterTablet,
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
@@ -515,7 +510,7 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
 
   // Set class names ans inline styles
   useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
-  useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout, align }); }, [layout, align]);
+  useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
   useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
     cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
@@ -525,7 +520,7 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds.length]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

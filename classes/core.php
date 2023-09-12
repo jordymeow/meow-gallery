@@ -107,7 +107,7 @@ class Meow_MGL_Core {
 			$image_ids = Meow_MGL_OrderBy::run( $image_ids, $atts['orderby'], isset( $atts['order'] ) ? $atts['order'] : 'asc' );
 			$image_ids = implode( ',', $image_ids );
 		}
-		
+
 		// Layout
 		$layout = 'none';
 		if ( isset( $atts['layout'] ) && $atts['layout'] != 'default' )
@@ -125,7 +125,7 @@ class Meow_MGL_Core {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
 			return "<p class='meow-error'><b>Meow Gallery:</b> The layout $layout is not available in this version.</p>";
 		}
-		
+
 		// Captions
 		if ( isset( $atts['captions'] ) && ( $atts['captions'] === false || $atts['captions'] === 'false' ) ) {
 			// This is to avoid issues linked to the old block editor for the Meow Gallery
@@ -160,12 +160,14 @@ class Meow_MGL_Core {
 		}
 		$gallery_images = $this->get_gallery_images( $loading_image_ids, $atts, $layout, $gallery_options['size'] );
 
-		$data_atts = htmlspecialchars( json_encode( $atts ), ENT_QUOTES, 'UTF-8' );
-		$data_gallery_options = htmlspecialchars( json_encode( $gallery_options ), ENT_QUOTES, 'UTF-8' );
-		$data_gallery_images = htmlspecialchars( json_encode( $gallery_images ), ENT_QUOTES, 'UTF-8' );
+		// Get the class and data attributes
+		$class = $this->get_mgl_root_class( $atts );
+		$data_atts = $this->get_data_as_json( $atts );
+		$data_gallery_options = $this->get_data_as_json( $gallery_options );
+		$data_gallery_images = $this->get_data_as_json( $gallery_images );
 
 		// return $result;
-		return '<div class="mgl-root" data-gallery-options="' . $data_gallery_options . '" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" ></div>';
+		return '<div class="'. $class . '" data-gallery-options="' . $data_gallery_options . '" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" ></div>';
 	}
 
 	public function get_gallery_options(string $image_ids, array $atts, bool $infinite, bool $is_preview, string $layout) {
@@ -177,7 +179,6 @@ class Meow_MGL_Core {
 		$size =  apply_filters( 'mgl_media_size', $size );
 		$custom_class = isset( $atts['custom-class'] ) ? $atts['custom-class'] : null;
 		$link = isset( $atts['link'] ) ? $atts['link'] : null;
-		$align = isset( $atts['align'] ) ? $atts['align'] : null;
 		$updir = trailingslashit( $wp_upload_dir['baseurl'] );
 		$captions = isset( $atts['captions'] ) ? $atts['captions'] : ( $options['captions'] ?? 'none' );
 		$animation = null;
@@ -266,7 +267,6 @@ class Meow_MGL_Core {
 			'infinite',
 			'custom_class',
 			'link',
-			'align',
 			'is_preview',
 			'updir',
 			'captions',
@@ -437,52 +437,77 @@ class Meow_MGL_Core {
 		}
 		$ids = apply_filters( 'mgl_sort', $cleanIds, $images, $layout, $atts );
 
-		return $layout === 'map'
-			? $this->get_map_images( $ids, $images )
-			: array_map( function ( $id ) use ( $images, $layout, $size, $atts ) {
-					$image = $images[$id];
-					$orientation = ($layout === 'tiles')
-						? [ 'orientation' => ($image['meta']['width'] > $image['meta']['height'] ? 'o' : 'i')]
-						: [];
-					return array_merge(
-						$image,
-						[
-							'id' => $id,
-							'caption' => wp_kses_post( apply_filters( 'mgl_caption', $image['caption'], $id ) ),
-							'img_tag' => apply_filters( 'mgl_gallery_written', $this->get_img_tag( $id, $size, $layout, $atts, $image ), $layout ),
-							'link_url' => $this->get_link_url( $id, $atts['link'] ?? null, $image ),
-							'attributes' => $this->get_attributes( $id, $image, $layout ),
-						],
-						$orientation,
-					);
-				}, $ids );
+		if ($layout === 'map') {
+			return $this->get_map_images($ids, $images);
 	}
 
-	private function get_img_tag( $id, $size, $layout, $atts, $data ) {
+		$result = [];
+		foreach ($ids as $id) {
+			$image = $images[$id];
+
+			// Determine orientation if layout is 'tiles'
+			$orientation = [];
+			if ($layout === 'tiles') {
+				$orientation = [
+					'orientation' => ($image['meta']['width'] > $image['meta']['height'] ? 'o' : 'i')
+				];
+			}
+			
+			$link_attr = $this->get_link_attributes( $id, $atts['link'] ?? null, $image );
+			$no_lightbox = $link_attr['type'] === 'link';
+
+			$mergedArray = [
+				'id' => $id,
+				'caption' => wp_kses_post( apply_filters( 'mgl_caption', $image['caption'], $id ) ),
+				'img_tag' => apply_filters( 'mgl_gallery_written', 
+					$this->get_img_tag( $id, $size, $layout, $atts, $image, $no_lightbox ),
+					$layout
+				),
+				'link_href' => $link_attr['href'] ?? null,
+				'link_target' => $link_attr['target'] ?? null,
+				'link_rel' => $link_attr['rel'] ?? null,
+				'attributes' => $this->get_attributes( $id, $image, $layout ),
+			];
+
+			$result[] = array_merge( $image, $mergedArray, $orientation );
+		}
+
+		return $result;
+	}
+
+	private function get_image_class( $id, $layout, $noLightbox ) {
+    $base_class = $layout === 'carousel' ? 'skip-lazy' : 'wp-image-' . $id;
+    if ( $noLightbox ) {
+      $base_class .= ' no-lightbox';
+    }
+    return $base_class;
+	}
+
+	private function get_img_tag( $id, $size, $layout, $atts, $data, $noLightbox ) {
 		$image_size = $this->get_option( 'image_size', 'srcset' );
 		$img_tag = null;
 		if ( empty( $image_size ) || $image_size === 'srcset' ) {
-			$img_tag = wp_get_attachment_image(
-				$id,
-				$size,
-				false,
-				$layout === 'carousel' ? [ 'class' => 'skip-lazy', 'draggable' => 'false' ] : [ 'class' => 'wp-image-' . $id ]
-			);
-		} else {
+			$img_tag = wp_get_attachment_image( $id, $size, false, [
+				'class' => $this->get_image_class( $id, $layout, $noLightbox ),
+				'draggable' => $layout === 'carousel' ? 'false' : null
+			]);
+		}
+		else {
 			$info = wp_get_attachment_image_src( $id, $image_size );
-			$img_tag = '<img loading="lazy" src="' . $info[0] . '" class="' .
-				( $layout === 'carousel' ? 'skip-lazy' : ( 'wp-image-' . $id ) ) . '" />';
+			$img_tag = '<img loading="lazy" src="' . $info[0] . '" class="' . $this->get_image_class( $id, $layout, $noLightbox ) . '" />';
 		}
 
 		if ( $layout === 'masonry' ) {
 			$masonry_column = $this->get_option( 'masonry_column', 3 );
 			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $masonry_column ) + 1;
 			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
-		} elseif ( $layout === 'square' ) {
+		}
+		else if ( $layout === 'square' ) {
 			$square_column = $this->get_option( 'square_columns', 5 );
 			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $square_column ) + 1;
 			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
-		} elseif ( $layout === 'cascade' ) {
+		}
+		else if ( $layout === 'cascade' ) {
 			$img_tag = str_replace( '100vw', 100 / 3 . 'vw', $img_tag );
 		}
 
@@ -504,17 +529,24 @@ class Meow_MGL_Core {
 		);
 	}
 
-	private function get_link_url( $id, $link, $data ) {
+	private function get_link_attributes( $id, $link, $data ) {
 		$link_url = null;
 		if ( $link === 'attachment' ) {
 			$link_url = get_permalink( (int)$id );
-		} else if ( $link === 'media' || $link === 'file' ) {
+		}
+		else {
+			// if ( $link === 'media' || $link === 'file' )
 			$wpUploadDir = wp_upload_dir();
 			$updir = trailingslashit( $wpUploadDir['baseurl'] );
 			$link_url = $updir . $data['meta']['file'];
 		}
-		$link_url = apply_filters( 'mgl_link', $link_url, (int)$id, $data );
-		return esc_url($link_url);
+		$link_attr = [
+			'href' => !empty( $link_url ) ? esc_url( $link_url ) : null,
+			'target' => '_self',
+			'type' => 'media',
+			'rel' => null,
+		];
+		return apply_filters( 'mgl_link_attributes', $link_attr, (int)$id, $data );
 	}
 
 	private function get_attributes( $id, $data, $layout ) {
@@ -523,7 +555,8 @@ class Meow_MGL_Core {
 			if ( isset( $data['meta'] ) && isset( $data['meta']['width'] ) && isset( $data['meta']['height'] ) ) {
 				$attributes = 'data-mgl-id=' . $id . ' data-mgl-width=' . $data['meta']['width'] . ' data-mgl-height=' . $data['meta']['height'];
 			}
-		} elseif ( $layout === 'tiles' ) {
+		}
+		elseif ( $layout === 'tiles' ) {
 			if ( isset( $data['meta'] ) && isset( $data['meta']['width'] ) && isset( $data['meta']['height'] ) ) {
 				$attributes = 'data-mgl-id=' . $id . ' data-mgl-width=' . $data['meta']['width'] . ' data-mgl-height=' . $data['meta']['height'];
 			}
@@ -574,6 +607,16 @@ class Meow_MGL_Core {
 			);
 		}, $ids );
 		return array_values( array_filter( $map_images ) );
+	}
+
+	private function get_mgl_root_class( $atts ) {
+		$classes = ['mgl-root'];
+		$classes[] = isset( $atts['align'] ) ?  'align' . $atts['align'] : '';
+		return implode( ' ', $classes );
+	}
+
+	private function get_data_as_json( $data ) {
+		return htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' );
 	}
 }
 

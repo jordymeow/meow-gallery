@@ -2,9 +2,9 @@
 Contributors: TigrouMeow
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
-Tested up to: 6.2
-Requires PHP: 6.3
-Stable tag: 5.0.0
+Tested up to: 6.3.1
+Requires PHP: 7.4
+Stable tag: 5.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,12 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 5.0.1 (2023/09/12) =
+* Fix: Links from Gallery Custom Links were not supported.
+* Fix: Alignment issue (fullwidth, etc).
+* Fix: Square Layout was not working with more than 5 columns.
+* Fix: Compatibility with PHP 8.4.
 
 = 5.0.0 (2023/09/02) =
 * Update: Big rewriting to make the plugin more modern and faster, and allow more features in the future.

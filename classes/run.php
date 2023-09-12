@@ -3,6 +3,7 @@
 class Meow_MGL_Run {
 	private $isEnqueued = false;
 	private $core;
+	private $atts;
 
 	public function __construct( $core ) {
 		$this->core = $core;

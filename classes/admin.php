@@ -3,6 +3,7 @@
 class Meow_MGL_Admin extends MeowCommon_Admin {
 
 	private $core;
+	
 	public function __construct($core) {
 		parent::__construct( MGL_PREFIX, MGL_ENTRY, MGL_DOMAIN, class_exists( 'MeowPro_MGL_Core' ) );
 		$this->core = $core;
