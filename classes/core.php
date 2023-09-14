@@ -166,8 +166,13 @@ class Meow_MGL_Core {
 		$data_gallery_options = $this->get_data_as_json( $gallery_options );
 		$data_gallery_images = $this->get_data_as_json( $gallery_images );
 
-		// return $result;
-		return '<div class="'. $class . '" data-gallery-options="' . $data_gallery_options . '" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" ></div>';
+		$html = '<div class="'. $class . '" data-gallery-options="' . $data_gallery_options . 
+		'" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" >';
+		// foreach ( $gallery_images as $image ) {
+		// 	$html .= $image['img_tag'];
+		// }
+		$html .= '</div>';
+		return $html;
 	}
 
 	public function get_gallery_options(string $image_ids, array $atts, bool $infinite, bool $is_preview, string $layout) {
@@ -534,8 +539,7 @@ class Meow_MGL_Core {
 		if ( $link === 'attachment' ) {
 			$link_url = get_permalink( (int)$id );
 		}
-		else {
-			// if ( $link === 'media' || $link === 'file' )
+		else if ( $link === 'media' || $link === 'file' ) {
 			$wpUploadDir = wp_upload_dir();
 			$updir = trailingslashit( $wpUploadDir['baseurl'] );
 			$link_url = $updir . $data['meta']['file'];

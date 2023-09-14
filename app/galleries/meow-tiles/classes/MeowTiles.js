@@ -1,5 +1,5 @@
-// Previous: 4.3.6
-// Current: 4.3.8
+// Previous: 4.3.8
+// Current: 5.0.2
 
 ```javascript
 const ratio = "three-two"
@@ -61,6 +61,7 @@ export default class MeowTiles {
   }
 
   createGalleryItemsArray () {
+    this.galleryItems = []
     this.gallery.querySelectorAll('.mgl-item').forEach(galleryItem => {
       const galleryItemWidth = parseInt(galleryItem.getAttribute('data-mgl-width'))
       const galleryItemHeight = parseInt(galleryItem.getAttribute('data-mgl-height'))
@@ -86,7 +87,9 @@ export default class MeowTiles {
       if (this.rowClasses.includes(supposedRowClass)) {
         rowClass = supposedRowClass
       } else {
-        this.rows.push(rowClass)
+        if (rowClass.length > 0) {
+          this.rows.push(rowClass)
+        }
         rowClass = galleryItem.orientation
       }
       if (galleryItems.length === 0) {
@@ -129,18 +132,18 @@ export default class MeowTiles {
   getRowLayout (row) {
     let rowLayout = ''
     if (row === 'oooo') {
+      if (this.ooooLayoutVariant === 3) {
+        this.ooooLayoutVariant = 0
+      }
       if (this.ooooLayoutVariant === 0) {
         rowLayout += `${row}-v0`
-      } else if (this.ooooLayoutVariant === 3) {
-        this.ooooLayoutVariant = 0
-        rowLayout += `${row}-v3`
       } else {
         rowLayout += `${row}-v${this.ooooLayoutVariant}`
       }
       this.ooooLayoutVariant++
     } else {
       rowLayout += row
-    }
+    } 
     return rowLayout
   }
 
@@ -154,7 +157,9 @@ export default class MeowTiles {
     let count = 0
     for (let i = 0; i < row.length; i++) {
       let rowItemMarkup = `<div class="mgl-box ${this.getLetterFromIndex(count)}">`
-      rowItemMarkup += rowItems.pop().markup
+      if (rowItems.length > 0) {
+        rowItemMarkup += rowItems.pop().markup
+      }
       rowItemMarkup += '</div>'
       rowMarkup += rowItemMarkup
       count++
@@ -172,18 +177,18 @@ export default class MeowTiles {
       rowsMarkup += this.getRowMarkup(row, rowItems)
     }
     this.gallery.innerHTML = rowsMarkup
-    callback && callback()
+    setTimeout(() => callback(), 0)
   }
 
   getHeightByWidth(ratio, width, orientation) {
-    if (orientation === 'landscape') {
+    if (orientation == 'landscape') {
       switch (ratio) {
         case 'three-two':
           return (2 * width) / 3
         case 'five-four':
           return (4 * width) / 5
         default:
-          return 0
+          return width
       }
     } else {
       switch (ratio) {
@@ -192,21 +197,20 @@ export default class MeowTiles {
         case 'five-four':
           return (5 * width) / 4
         default:
-          return 0
+          return width
       }
     }
   }
 
   setRowsHeight () {
-    this.gallery.querySelectorAll('.mgl-row').forEach((row) => {
+    Array.from(this.gallery.querySelectorAll('.mgl-row')).forEach((row) => {
       const layout = row.getAttribute('data-row-layout')
       const ref = references[layout]
-      if (!ref) return
       const $ref = row.querySelector(`.mgl-box.${ref.box}`)
-      const height = this.getHeightByWidth(ratio, $ref.offsetHeight, ref.orientation)
+      const height = this.getHeightByWidth(ratio, $ref.offsetWidth, ref.orientation)
       if (height === 0) {
         setTimeout(() => {
-          row.style.minHeight = height + 'px'
+          row.style.height = height + 'px'
         }, 750)
       } else {
         row.style.height = height + 'px'
@@ -231,6 +235,8 @@ export default class MeowTiles {
       this.getAvailableRowClasses()
       this.calculateGalleryRows()
       this.writeMarkup(callback)
+    } else {
+      this.setRowsHeight()
     }
   }
 }

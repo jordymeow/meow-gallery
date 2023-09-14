@@ -1,5 +1,5 @@
-// Previous: 5.0.0
-// Current: 5.0.1
+// Previous: 5.0.1
+// Current: 5.0.2
 
 import { render } from 'preact'
 import { MeowGallery } from '../libs/MeowGallery.js';
@@ -16,6 +16,10 @@ const renderMeowGalleries = () => {
 
       render(<MeowGalleryContextProvider options={options} galleryOptions={galleryOptions} galleryImages={galleryImages} atts={atts} apiUrl={apiUrl} restNonce={restNonce}>
         <MeowGallery /></MeowGalleryContextProvider>, galleryElement);
+
+      Object.keys(galleryElement.dataset).forEach(dataKey => {
+        delete galleryElement.dataset[dataKey];
+      });
     });
   }
 }

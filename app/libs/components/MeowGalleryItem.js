@@ -4,7 +4,7 @@ import useMeowGalleryContext, { isLayoutJustified } from "../context";
 export const MeowGalleryItem = ({ image }) => {
 
   const { isPreview, captions, layout } = useMeowGalleryContext();
-  const { img_tag: img, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel,
+  const { img_tag: img, img_element: element, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel,
     meta, caption, id, attributes, classNames = [] } = image;
   const className = ['mgl-item', ...classNames].join(' ');
 
