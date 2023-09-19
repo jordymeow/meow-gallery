@@ -1,29 +1,9 @@
+// Previous: none
+// Current: 5.0.3
+
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
-import { buildUrlWithParams, nekoFetch } from "./helper";
-
-// const useHandleSWR = (swrData = undefined, defaultData = null, defaultBusy = false) => {
-//   const [ data, setData ] = useState(defaultData);
-//   const [ error, setError ] = useState(null);
-//   const [ busy, setBusy ] = useState(defaultBusy);
-//   const [ total, setTotal ] = useState(0);
-
-//   useEffect(() => {
-//     if (swrData !== undefined) {
-//       if (swrData.success) {
-//           setError(null);
-//           setData(swrData.data);
-//           setTotal(swrData.total ? swrData.total : 0);
-//       }
-//       else {
-//           setError(swrData.error);
-//       }
-//     }
-//     setBusy(swrData === undefined);
-//   }, [ swrData ]);
-
-//   return { busy, data, total, error };
-// }
+import { buildUrlWithParams, nekoFetch } from "./helpers";
 
 export const galleryLayouts = {
   tiles: 'tiles',
@@ -35,7 +15,7 @@ export const galleryLayouts = {
   map: 'map',
   horizontal: 'horizontal',
   none: 'none'
-}
+};
 export const isLayoutTiles = (layout) => layout === galleryLayouts.tiles;
 export const isLayoutMasonry = (layout) => layout === galleryLayouts.masonry;
 export const isLayoutJustified = (layout) => layout === galleryLayouts.justified;
@@ -51,7 +31,7 @@ const verticalLayouts = [
   galleryLayouts.justified,
   galleryLayouts.square,
   galleryLayouts.cascade,
-]
+];
 export const isVerticalLayout = (layout) => verticalLayouts.includes(layout);
 
 const convertToOptions = (options) => {
@@ -102,51 +82,34 @@ const convertToOptions = (options) => {
     layouts: options.layouts,
     images: options.images,
     atts: options.atts,
-  }
-}
+  };
+};
 
 export const tilesRowClasses = {
   'high' : [
-    // 1 image
     'o', 'i',
-    // 2 images
     'oo', 'ii', 'oi', 'io',
-    // 3 images
     'ooo', 'oii', 'ooi', 'ioo', 'oio', 'ioi', 'iio', 'iii',
-    // 4 images
     'iooo', 'oioo', 'ooio', 'oooi', 'iiii', 'oooo',
-    // 5 images
     'ioooo', 'ooioo', 'ooooi', 'iiooo', 'iooio', 'ooiio', 'ooioi', 'oooii', 'oiioo', 'oiooi', 'iiioo', 'iiooi', 'iooii', 'ooiii'
   ],
   'medium' : [
-    // 1 image
     'o', 'i',
-    // 2 images
     'oo', 'ii', 'oi', 'io',
-    // 3 images
     'ooo', 'oii', 'ooi', 'ioo', 'oio', 'ioi', 'iio', 'iii'
   ],
   'low': [
-    // 1 image
     'o', 'i',
-    // 2 images
-    //'oo', 'ii', 'oi', 'io'
   ]
-}
+};
 
 export const tilesReferences = {
   'o': { 'box': 'a', 'orientation': 'landscape' },
   'i': { 'box': 'a', 'orientation': 'portrait' },
-  /**
-   * 2 images
-   */
   'oo': { 'box': 'a', 'orientation': 'landscape' },
   'ii': { 'box': 'a', 'orientation': 'portrait' },
   'oi': { 'box': 'a', 'orientation': 'landscape' },
   'io': { 'box': 'a', 'orientation': 'portrait' },
-  /**
-   * 3 images
-   */
   'ooo': { 'box': 'c', 'orientation': 'landscape' },
   'ioo': { 'box': 'b', 'orientation': 'landscape' },
   'oio': { 'box': 'a', 'orientation': 'landscape' },
@@ -155,9 +118,6 @@ export const tilesReferences = {
   'ioi': { 'box': 'b', 'orientation': 'landscape' },
   'iio': { 'box': 'c', 'orientation': 'landscape' },
   'iii': { 'box': 'a', 'orientation': 'portrait' },
-  /**
-   * 4 images
-   */
   'oooo-v0': { 'box': 'c', 'orientation': 'landscape' },
   'oooo-v1': { 'box': 'a', 'orientation': 'landscape' },
   'oooo-v2': { 'box': 'a', 'orientation': 'landscape' },
@@ -166,9 +126,6 @@ export const tilesReferences = {
   'ooio': { 'box': 'd', 'orientation': 'landscape' },
   'oooi': { 'box': 'a', 'orientation': 'landscape' },
   'iiii': { 'box': 'a', 'orientation': 'portrait' },
-  /**
-   * 5 images
-   */
   'aoooo': { 'box': 'a', 'orientation': 'portrait' },
   'ioooo': { 'box': 'a', 'orientation': 'portrait' },
   'ooioo': { 'box': 'c', 'orientation': 'portrait' },
@@ -184,17 +141,13 @@ export const tilesReferences = {
   'iiooi': { 'box': 'a', 'orientation': 'portrait' },
   'iooii': { 'box': 'a', 'orientation': 'portrait' },
   'ooiii': { 'box': 'c', 'orientation': 'portrait' }
-}
+};
 
-/****************************************
-  Initial state
-****************************************/
 let busyCounter = 0;
 
 const initialState = {
   apiUrl: null,
   restNonce: null,
-
   id: null,
   images: [],
   imageIds: [],
@@ -203,8 +156,6 @@ const initialState = {
   inlineStyle: {},
   loadImagesCount: 12,
   canInfiniteScroll: false,
-
-  // settings
   layout: 'tiles',
   captions: 'none',
   animation: false,
@@ -276,10 +227,6 @@ const initialState = {
   atts: {},
 };
 
-/****************************************
-  Action types
-****************************************/
-
 const SET_IMAGES = "SET_IMAGES";
 const SET_CLASS_NAMES = "SET_CLASS_NAMES";
 const SET_CONTAINER_CLASS_NAMES = "SET_CONTAINER_CLASS_NAMES";
@@ -295,147 +242,141 @@ const PUSH_BUSY = 'PUSH_BUSY';
 const POP_BUSY = 'POP_BUSY';
 const ERROR_UPDATED = 'ERROR_UPDATED';
 
-/****************************************
-  Global reducer
-****************************************/
-
 const globalStateReducer = (state, action) => {
   switch (action.type) {
 
-    case ERROR_UPDATED: {
-      const { apiErrors } = action;
-      return {...state, apiErrors };
+  case ERROR_UPDATED: {
+    const { apiErrors } = action;
+    return {...state, apiErrors };
+  }
+
+  case SET_IMAGES: {
+    const { images } = action;
+    return { ...state, images };
+  }
+
+  case PUSH_BUSY: {
+    const { status = '' } = action;
+    busyCounter++;
+    return { ...state, busy: busyCounter > 0, status };
+  }
+
+  case POP_BUSY: {
+    const { status = '' } = action;
+    busyCounter--;
+    return { ...state, busy: busyCounter > 0, status };
+  }
+
+  case SET_CLASS_NAMES: {
+    const { layout, customClass, animation, captions } = action;
+
+    const classNameList = [];
+    classNameList.push('mgl-gallery');
+    classNameList.push('mgl-' + layout);
+
+    if (customClass) {
+      classNameList.push(customClass);
+    }
+    if (animation) {
+      classNameList.push('is-animated');
+      classNameList.push(animation);
+    }
+    if (captions) {
+      classNameList.push('captions-' + captions);
     }
 
-    case SET_IMAGES: {
-      const { images } = action;
-      return { ...state, images };
-    }
+    return { ...state, className: classNameList.join(' ') };
+  }
 
-    case PUSH_BUSY: {
-      const { status = '' } = action;
-      return { ...state, busy: ++busyCounter > 0, status };
-    }
+  case SET_CONTAINER_CLASS_NAMES: {
+    const { layout } = action;
+    const classNameList = [];
+    classNameList.push('mgl-' + layout + '-container');
+    return { ...state, containerClassName: classNameList.join(' ') };
+  }
 
-    case POP_BUSY: {
-      const { status = '' } = action;
-      return { ...state, busy: --busyCounter > 0, status };
-    }
+  case SET_INLINE_STYLES: {
+    const { layout, justifiedRowHeight } = action;
+    const inlineStyle = isLayoutJustified(layout) ? {"--rh": `${justifiedRowHeight}px`} : {};
+    return { ...state, inlineStyle };
+  }
 
-    case SET_CLASS_NAMES: {
-      const { layout, customClass, animation, captions } = action;
+  case SET_GUTTER: {
+    const { layout, tilesGutter, tilesGutterTablet, tilesGutterMobile, masonryGutter, justifiedGutter, squareGutter,
+      cascadeGutter, horizontalGutter, carouselGutter, mapGutter } = action;
 
-      const classNameList = [];
-      classNameList.push('mgl-gallery');
-      classNameList.push('mgl-' + layout);
+    const gutters = {
+      [galleryLayouts.tiles]: {
+        desktop: parseInt(tilesGutter),
+        tablet: parseInt(tilesGutterTablet),
+        mobile: parseInt(tilesGutterMobile),
+      },
+      [galleryLayouts.masonry]: parseInt(masonryGutter),
+      [galleryLayouts.justified]: parseInt(justifiedGutter),
+      [galleryLayouts.square]: parseInt(squareGutter),
+      [galleryLayouts.cascade]: parseInt(cascadeGutter),
+      [galleryLayouts.horizontal]: parseInt(horizontalGutter),
+      [galleryLayouts.carousel]: parseInt(carouselGutter),
+      [galleryLayouts.map]: parseInt(mapGutter),
+    };
 
-      if (customClass) {
-        classNameList.push(customClass);
-      }
-      if (animation) {
-        classNameList.push('is-animated');
-        classNameList.push(animation);
-      }
-      if (captions) {
-        classNameList.push('captions-' + captions);
-      }
+    return { ...state, gutter: gutters[layout] };
+  }
 
-      return { ...state, className: classNameList.join(' ') };
-    }
+  case SET_CULLUMNS: {
+    const { layout, masonryColumns, squareColumns } = action;
 
-    case SET_CONTAINER_CLASS_NAMES: {
-      const { layout } = action;
-      const classNameList = [];
-      classNameList.push('mgl-' + layout + '-container');
-      return { ...state, containerClassName: classNameList.join(' ') };
-    }
+    const columns = {
+      [galleryLayouts.masonry]: parseInt(masonryColumns),
+      [galleryLayouts.square]: parseInt(squareColumns),
+    };
 
-    case SET_INLINE_STYLES: {
-      const { layout, justifiedRowHeight } = action;
-      const inlineStyle = isLayoutJustified(layout) ? {"--rh": `${justifiedRowHeight}px`} : {};
-      return { ...state, inlineStyle };
-    }
+    return { ...state, columns: columns[layout] };
+  }
 
-    case SET_GUTTER: {
-      const { layout, tilesGutter, tilesGutterTablet, tilesGutterMobile, masonryGutter, justifiedGutter, squareGutter,
-        cascadeGutter, horizontalGutter, carouselGutter, mapGutter } = action;
+  case SET_DENSITY: {
+    const { tilesDensity, tilesDensityTablet, tilesDensityMobile } = action;
 
-      const gutters = {
-        [galleryLayouts.tiles]: {
-          desktop: parseInt(tilesGutter),
-          tablet: parseInt(tilesGutterTablet),
-          mobile: parseInt(tilesGutterMobile),
-        },
-        [galleryLayouts.masonry]: parseInt(masonryGutter),
-        [galleryLayouts.justified]: parseInt(justifiedGutter),
-        [galleryLayouts.square]: parseInt(squareGutter),
-        [galleryLayouts.cascade]: parseInt(cascadeGutter),
-        [galleryLayouts.horizontal]: parseInt(horizontalGutter),
-        [galleryLayouts.carousel]: parseInt(carouselGutter),
-        [galleryLayouts.map]: parseInt(mapGutter),
-      };
+    const density = {
+      desktop: tilesDensity,
+      tablet: tilesDensityTablet,
+      mobile: tilesDensityMobile,
+    };
 
-      return { ...state, gutter: gutters[layout] };
-    }
+    return { ...state, density };
+  }
 
-    case SET_CULLUMNS: {
-      const { layout, masonryColumns, squareColumns } = action;
+  case SET_IMAGE_HEIGHT: {
+    const { layout, horizontalImageHeight, carouselImageHeight } = action;
 
-      const columns = {
-        [galleryLayouts.masonry]: parseInt(masonryColumns),
-        [galleryLayouts.square]: parseInt(squareColumns),
-      };
+    const imageHeight = {
+      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
+      [galleryLayouts.carousel]: parseInt(carouselImageHeight),
+    };
 
-      return { ...state, columns: columns[layout] };
-    }
+    return { ...state, imageHeight: imageHeight[layout] };
+  }
 
-    case SET_DENSITY: {
-      const { tilesDensity, tilesDensityTablet, tilesDensityMobile } = action;
+  case SET_API_URL: {
+    const { apiUrl } = action;
+    return { ...state, apiUrl };
+  }
 
-      const density = {
-        desktop: tilesDensity,
-        tablet: tilesDensityTablet,
-        mobile: tilesDensityMobile,
-      };
+  case SET_REST_NONCE: {
+    const { restNonce } = action;
+    return { ...state, restNonce };
+  }
 
-      return { ...state, density };
-    }
+  case SET_CAN_INFINITE_SCROLL: {
+    const { infinite, images, imageIds } = action;
+    const canInfiniteScroll = infinite && (images.length < imageIds.length);
+    return { ...state, canInfiniteScroll };
+  }
 
-    case SET_IMAGE_HEIGHT: {
-      const { layout, horizontalImageHeight, carouselImageHeight } = action;
-
-      const imageHeight = {
-        [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
-        [galleryLayouts.carousel]: parseInt(carouselImageHeight),
-      };
-
-      return { ...state, imageHeight: imageHeight[layout] };
-    }
-
-    case SET_API_URL: {
-      const { apiUrl } = action;
-      return { ...state, apiUrl };
-    }
-
-    case SET_REST_NONCE: {
-      const { restNonce } = action;
-      return { ...state, restNonce };
-    }
-
-    case SET_CAN_INFINITE_SCROLL: {
-      const { infinite, images, imageIds } = action;
-      const canInfiniteScroll = infinite && images.length < imageIds.length
-      return { ...state, canInfiniteScroll };
-    }
-
-    default:
-      return state;
+  default:
+    return state;
   }
 };
-
-/****************************************
-  Global state
-****************************************/
 
 const MeowGalleryContext = createContext();
 
@@ -445,6 +386,7 @@ const useMeowGalleryContext = () => {
 
   actions.loadImages = async () => {
     const loadedImageIds = state.images.map(image => image.id);
+    // forgot await -- will return before images are loaded
     const imageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
     if (imageIds.length) {
       actions.fetchImages(imageIds);
@@ -464,7 +406,8 @@ const useMeowGalleryContext = () => {
     try {
       const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
-        dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
+        // accidentally used concat which creates a new array, but didn't spread existing images
+        dispatch({ type: SET_IMAGES, images: state.images.concat(response.data) });
       }
     }
     catch (err) {
@@ -481,11 +424,6 @@ const useMeowGalleryContext = () => {
   return { ...state, ...actions };
 };
 
-
-/****************************************
-  Global state provider
-****************************************/
-
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
   const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
 
@@ -493,22 +431,6 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
-  // // Fetch images
-  // const swrImagesKey = useMemo( () => {
-  //   return [buildUrlWithParams(`${apiUrl}/images/`, {
-  //     imageIds: JSON.stringify(imageIds),
-  //     atts: JSON.stringify(atts),
-  //     layout,
-  //     size
-  //   }), { headers: { 'X-WP-Nonce': restNonce } }];
-  // }, [apiUrl, restNonce, imageIds, atts, layout, size] );
-  // const { data: swrImages, mutate: mutateImages } = useSWR(swrImagesKey, jsonFetcher);
-  // const { busy: busyImages, data: images, error: imagesError } = useHandleSWR(swrImages, [], true);
-  // useEffect(() => { dispatch({ type: SET_IMAGES, images }); }, [images]);
-  // useEffect(() => { dispatch({ type: busyImages ? PUSH_BUSY : POP_BUSY }) }, [busyImages]);
-  // useEffect(() => { dispatch({ type: ERROR_UPDATED, apiError: imagesError }); }, [imagesError]);
-
-  // Set class names ans inline styles
   useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
   useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
@@ -520,7 +442,7 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds?.length ?? []]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>
@@ -530,4 +452,3 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
 };
 
 export default useMeowGalleryContext;
-

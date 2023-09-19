@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 5.0
 Tested up to: 6.3.1
 Requires PHP: 7.4
-Stable tag: 5.0.2
+Stable tag: 5.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,10 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 5.0.3 (2023/10/19) =
+* Update: Back to using the DOM naturally for the images. This will be easier for lightboxes to work with the gallery, and SEO scripts to work with the images.
+* Update: Code cleaning, libs optimization, etc.
 
 = 5.0.2 (2023/10/14) =
 * Fix: Removed useless data attributes.

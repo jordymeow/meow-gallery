@@ -155,6 +155,7 @@ class Meow_MGL_Core {
 
 		// If infinite scroll option was enabled, get the images up to 12 at first.
 		$loading_image_ids = explode(',', $image_ids);
+		$loading_image_ids = apply_filters( 'mgl_sort', $loading_image_ids, [], $layout, $atts );
 		if (!$isPreview && $infinite && in_array( $layout, $this->infinite_layouts ) ) {
 			$loading_image_ids = array_slice( $loading_image_ids, 0, 12 );
 		}
@@ -167,11 +168,31 @@ class Meow_MGL_Core {
 		$data_gallery_images = $this->get_data_as_json( $gallery_images );
 
 		$html = '<div class="'. $class . '" data-gallery-options="' . $data_gallery_options . 
-		'" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '" >';
-		// foreach ( $gallery_images as $image ) {
-		// 	$html .= $image['img_tag'];
-		// }
+		'" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '">';
+		
+		// The Gallery Container is where the images in the right layout will be rendered.
+		$html .= '<div class="mgl-gallery-container"></div>';
+
+		// Use the DOM to generate the images (so that lightboxes can hook into them, and for better SEO)
+		// If there are no images, the JS will look for the img_html and build the gallery from there.
+		// TODO: We should check why it's not working with the carousel (for map, it's normal).
+		if ( $layout !== 'map' && $layout !== 'carousel' && $this->get_option( 'rendering_mode', 'dom' ) === 'dom' ) {
+			$html .= '<div class="mgl-gallery-images">';
+			foreach ( $gallery_images as $image ) {
+				if ( !empty( $image['link_href'] ) ) {
+					$html .= '<a href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . '">';
+					$html .= $image['img_html'];
+					$html .= '</a>';
+				}
+				else {
+					$html .= $image['img_html'];
+				}
+			}
+			$html .= '</div>';
+		}
+
 		$html .= '</div>';
+
 		return $html;
 	}
 
@@ -334,6 +355,7 @@ class Meow_MGL_Core {
 			'image_size' => 'srcset',
 			'infinite' => false,
 			'infinite_buffer' => 0,
+			'rendering_mode' => 'dom', // Can be 'dom' or 'js'
 			'tiles_gutter' => 10,
 			'tiles_gutter_tablet' => 10,
 			'tiles_gutter_mobile' => 10,
@@ -464,8 +486,8 @@ class Meow_MGL_Core {
 			$mergedArray = [
 				'id' => $id,
 				'caption' => wp_kses_post( apply_filters( 'mgl_caption', $image['caption'], $id ) ),
-				'img_tag' => apply_filters( 'mgl_gallery_written', 
-					$this->get_img_tag( $id, $size, $layout, $atts, $image, $no_lightbox ),
+				'img_html' => apply_filters( 'mgl_gallery_written', 
+					$this->get_img_html( $id, $size, $layout, $atts, $image, $no_lightbox ),
 					$layout
 				),
 				'link_href' => $link_attr['href'] ?? null,
@@ -488,35 +510,35 @@ class Meow_MGL_Core {
     return $base_class;
 	}
 
-	private function get_img_tag( $id, $size, $layout, $atts, $data, $noLightbox ) {
+	private function get_img_html( $id, $size, $layout, $atts, $data, $noLightbox ) {
 		$image_size = $this->get_option( 'image_size', 'srcset' );
-		$img_tag = null;
+		$img_html = null;
 		if ( empty( $image_size ) || $image_size === 'srcset' ) {
-			$img_tag = wp_get_attachment_image( $id, $size, false, [
+			$img_html = wp_get_attachment_image( $id, $size, false, [
 				'class' => $this->get_image_class( $id, $layout, $noLightbox ),
 				'draggable' => $layout === 'carousel' ? 'false' : null
 			]);
 		}
 		else {
 			$info = wp_get_attachment_image_src( $id, $image_size );
-			$img_tag = '<img loading="lazy" src="' . $info[0] . '" class="' . $this->get_image_class( $id, $layout, $noLightbox ) . '" />';
+			$img_html = '<img loading="lazy" src="' . $info[0] . '" class="' . $this->get_image_class( $id, $layout, $noLightbox ) . '" />';
 		}
 
 		if ( $layout === 'masonry' ) {
 			$masonry_column = $this->get_option( 'masonry_column', 3 );
 			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $masonry_column ) + 1;
-			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
+			$img_html = str_replace( '100vw', 100 / $columns . 'vw', $img_html );
 		}
 		else if ( $layout === 'square' ) {
 			$square_column = $this->get_option( 'square_columns', 5 );
 			$columns = ( isset( $atts['columns'] ) ? $atts['columns'] : $square_column ) + 1;
-			$img_tag = str_replace( '100vw', 100 / $columns . 'vw', $img_tag );
+			$img_html = str_replace( '100vw', 100 / $columns . 'vw', $img_html );
 		}
 		else if ( $layout === 'cascade' ) {
-			$img_tag = str_replace( '100vw', 100 / 3 . 'vw', $img_tag );
+			$img_html = str_replace( '100vw', 100 / 3 . 'vw', $img_html );
 		}
 
-		return wp_kses( $img_tag, [ 
+		return wp_kses( $img_html, [ 
 			'img' => [
 				'src'      => true,
 				'srcset'   => true,

@@ -1,5 +1,5 @@
-// Previous: 4.3.0
-// Current: 5.0.0
+// Previous: 5.0.0
+// Current: 5.0.3
 
 const existsMglSettings = typeof mgl_settings !== "undefined";
 const options = existsMglSettings ? mgl_settings.options : undefined;

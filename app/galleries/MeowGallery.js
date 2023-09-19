@@ -1,47 +1,51 @@
+// Previous: none
+// Current: 5.0.3
+
 import { h } from "preact";
 import { setup } from "goober";
 import { useCallback, useEffect, useMemo } from "preact/hooks";
+
 import useMeowGalleryContext, { galleryLayouts, isVerticalLayout } from "./context";
-import { Justified } from "./layouts/Justified";
+import { MeowJustified } from "./justified/MeowJustified";
 import { MeowGalleryContainer } from "./styled/MeowGallery.styled";
-import { Masonry } from "./layouts/Masonry";
-import { Square } from "./layouts/Square";
-import { Cascade } from "./layouts/Cascade";
-import { Tiles } from "./layouts/Tiles";
-import { Horizontal } from "./layouts/Horizontal";
-import { Carousel } from "./layouts/Carousel";
-import { Map } from "./layouts/Map";
+import { MeowMasonry } from "./masonry/MeowMasonry";
+import { MeowSquare } from "./square/MeowSquare";
+import { MeowCascade } from "./cascade/MeowCascade";
+import { MeowTiles } from "./tiles/MeowTiles";
+import { MeowHorizontal } from "./horizontal/MeowHorizontal";
+import { MeowCarousel } from "./carousel/MeowCarousel";
+import { MeowMap } from "./map/MeowMap";
 
 setup(h);
 
 export const MeowGallery = () => {
-  const { layout, containerClassName, isPreview, gutter, density, columns, classId,
+  const { layout, containerClassName, isPreview, gutter, columns, classId,
     imageHeight, rightClick, mapHeight, infinite, infiniteBuffer, busy, canInfiniteScroll } = useMeowGalleryContext();
   const { loadImages } = useMeowGalleryContext();
   const isVertical = isVerticalLayout(layout);
 
   const galleryContent = useMemo(() => {
     switch (layout) {
-      case galleryLayouts.justified:
-        return <Justified />;
-      case galleryLayouts.masonry:
-        return <Masonry />;
-      case galleryLayouts.square:
-        return <Square />;
-      case galleryLayouts.cascade:
-        return <Cascade />;
-      case galleryLayouts.tiles:
-        return <Tiles />;
-      case galleryLayouts.horizontal:
-        return <Horizontal />;
-      case galleryLayouts.carousel:
-        return <Carousel />;
-      case galleryLayouts.map:
-        return <Map />;
-      default:
-        return (
-          <p>Sorry, not implemented yet! : {layout}</p>
-        );
+    case galleryLayouts.justified:
+      return <MeowJustified />;
+    case galleryLayouts.masonry:
+      return <MeowMasonry />;
+    case galleryLayouts.square:
+      return <MeowSquare />;
+    case galleryLayouts.cascade:
+      return <MeowCascade />;
+    case galleryLayouts.tiles:
+      return <MeowTiles />;
+    case galleryLayouts.horizontal:
+      return <MeowHorizontal />;
+    case galleryLayouts.carousel:
+      return <MeowCarousel />;
+    case galleryLayouts.map:
+      return <MeowMap />;
+    default:
+      return (
+        <p>Sorry, not implemented yet! : {layout}</p>
+      );
     }
   }, [layout]);
 
@@ -53,7 +57,7 @@ export const MeowGallery = () => {
 
   useEffect(() => {
     if (infinite && isVertical) {
-      const onScroll = (e) => {
+      const onScroll = () => {
         if (busy) {
           return;
         }
@@ -67,7 +71,7 @@ export const MeowGallery = () => {
         if (needsLoading) {
           loadImages();
         }
-      }
+      };
       if (!canInfiniteScroll) {
         return () => window.removeEventListener('scroll', onScroll);
       }
@@ -86,10 +90,9 @@ export const MeowGallery = () => {
       classId={classId}
       imageHeight={imageHeight}
       mapHeight={mapHeight}
-      onContextMenu={onContextMenu}
-    >
+      onContextMenu={onContextMenu}>
       {galleryContent}
       {canInfiniteScroll && isVertical && <div className="mgl-infinite-scroll"></div>}
     </MeowGalleryContainer>
-  )
-}
+  );
+};
