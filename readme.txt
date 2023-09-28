@@ -1,10 +1,10 @@
 === Gallery Block (Meow Gallery) ===
 Contributors: TigrouMeow
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
-Requires at least: 5.0
+Requires at least: 6.0
 Tested up to: 6.3.1
 Requires PHP: 7.4
-Stable tag: 5.0.3
+Stable tag: 5.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,11 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 5.0.4 (2023/10/28) =
+* Fix: Previously generated gallery previews were not showing at all, now handled properly.
+* Update: Adjusted infinite scroll images to fit parent div.
+* Fix: Initial Map Layout size.
 
 = 5.0.3 (2023/10/19) =
 * Update: Back to using the DOM naturally for the images. This will be easier for lightboxes to work with the gallery, and SEO scripts to work with the images.

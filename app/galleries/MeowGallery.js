@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.4
 
 import { h } from "preact";
 import { setup } from "goober";
@@ -92,7 +92,8 @@ export const MeowGallery = () => {
       mapHeight={mapHeight}
       onContextMenu={onContextMenu}>
       {galleryContent}
-      {canInfiniteScroll && isVertical && <div className="mgl-infinite-scroll"></div>}
+      {canInfiniteScroll && isVertical && 
+      <div className="mgl-infinite-scroll"><div className="mgl-skeleton"></div></div>}
     </MeowGalleryContainer>
   );
 };

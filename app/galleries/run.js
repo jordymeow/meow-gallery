@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.4
 
 import { render } from 'preact';
 import { MeowGallery } from './MeowGallery.js';
@@ -18,7 +18,7 @@ const renderMeowGalleries = () => {
       const atts = JSON.parse(galleryRoot?.dataset?.atts || '{}');
 
       if (!galleryElement) {
-        console.error('Meow Gallery: No gallery element found.', { galleryRoot, galleryElement, galleryOptions, galleryImages, atts });
+        console.error('Meow Gallery: The container for the Meow Gallery was not found; the code is probably from an old version and needs to be refreshed.', { galleryRoot, galleryElement, galleryOptions, galleryImages, atts });
         return;
       }
 

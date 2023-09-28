@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.4
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
@@ -35,7 +35,7 @@ export const MeowGalleryItem = ({ image }) => {
     return linkUrl ? (
       <a href={linkUrl} target={linkTarget} rel={linkRel} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     ) : (
-      <div dangerouslySetInnerHTML={{ __html: imgHTML }} />
+      <div style={{height: '100%'}} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     );
   };
 

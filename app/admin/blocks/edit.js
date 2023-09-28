@@ -1,7 +1,7 @@
-// Previous: 4.3.7
-// Current: 5.0.0
+// Previous: 5.0.0
+// Current: 5.0.4
 
-```jsx
+```javascript
 const { __ } = wp.i18n;
 const { Component, Fragment, createRef } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -42,6 +42,7 @@ class GalleryEdit extends Component {
 
 		this.state = {
 			isBusy: false,
+			error: null,
 			selectedImage: null,
 		};
 	}
@@ -116,7 +117,7 @@ class GalleryEdit extends Component {
 	}
 
 	async onRefresh(newAttributes = {}) {
-		this.setState( { isBusy: true } );
+		this.setState( { error: null, isBusy: true } );
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
 			captions, wplrCollection, wplrFolder } = attributes;
@@ -139,7 +140,7 @@ class GalleryEdit extends Component {
 		finally {
 			this.setState( { isBusy: false } );
 		}
-		this.props.setAttributes( { htmlPreview: res.data } );
+		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
 	};
 
 	uploadFromFiles( event ) {
@@ -172,6 +173,10 @@ class GalleryEdit extends Component {
 		if (mglPreview == null || mglPreview.querySelector('.mgl-root') == null) {
 			return null;
 		}
+		if (mglPreview.querySelector('.mgl-gallery-container') == null) {
+			this.setState({ error: 'The preview of this gallery seems to have been built from an old version of the Meow Gallery.' });
+			return null;
+		}
 		renderMeowGalleries();
 	}
 
@@ -179,7 +184,6 @@ class GalleryEdit extends Component {
 		let { images, wplrCollection, wplrFolder, htmlPreview } = this.props.attributes;
 		const hasImagesToShow = images.length > 0 || !!wplrCollection || !!wplrFolder;
 		if (hasImagesToShow && !htmlPreview) this.onRefresh();
-
 		this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
 	}
 
@@ -190,7 +194,7 @@ class GalleryEdit extends Component {
 	}
 
 	render() {
-		const { isBusy } = this.state;
+		const { isBusy, error } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation,
 			captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
@@ -231,7 +235,7 @@ class GalleryEdit extends Component {
 			wplrCollections = (
 				<SelectControl
 					label={__('LR Folder or Collection', 'meow-gallery')}
-					value={wplrCollection ? wplrCollection : wplrFolder}
+					value={wplrCollection || wplrFolder}
 					onChange={value => this.setWplrCollection(value)}
 					options={categories}>
 				</SelectControl>)
@@ -321,10 +325,18 @@ class GalleryEdit extends Component {
 				{ noticeUI }
 				<div ref={this.ref} className="test">
 					{ dropZone }
-					{isBusy && (<div className={'mgl-gtb-container' + (isBusy ? ' mgl-busy' : '')}>
+					{error && (<div className="components-notice is-error">
+						<div className="components-notice__content">
+							<p>
+								<span>{error}</span>
+								<span> Please <a style={{cursor: 'pointer'}} onClick={() => this.onRefresh()}>click here</a> to refresh the preview.</span>
+							</p>
+						</div>
+					</div>)}
+					{!error && isBusy && (<div className={'mgl-gtb-container' + (isBusy ? ' mgl-busy' : '')}>
 						<span className='components-spinner' style={{  }} /></div>)}
-					{htmlPreview && (<div className="mgl-preview" dangerouslySetInnerHTML={{__html: htmlPreview}}></div>)}
-					{hasImagesToShow && !htmlPreview && (<p>Please <a style={{cursor: 'pointer'}}
+					{!error && htmlPreview && (<div className="mgl-preview" dangerouslySetInnerHTML={{__html: htmlPreview}}></div>)}
+					{!error && hasImagesToShow && !htmlPreview && (<p>Please <a style={{cursor: 'pointer'}}
 						onClick={() => this.onRefresh()}>click here</a> to refresh the preview.</p>)}
 				</div>
 			</Fragment>
