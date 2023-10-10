@@ -1,11 +1,11 @@
-// Previous: 5.0.3
-// Current: 5.0.4
+// Previous: 5.0.4
+// Current: 5.0.5
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
 
 export const MeowGalleryItem = ({ image }) => {
-  const { isPreview, captions, layout } = useMeowGalleryContext();
+  const { isPreview, captions, layout, carouselAspectRatio } = useMeowGalleryContext();
   const { img_html: imgHTML, domElement, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel } = image;
   const { meta, caption, attributes, classNames = [] } = image;
 
@@ -35,12 +35,12 @@ export const MeowGalleryItem = ({ image }) => {
     return linkUrl ? (
       <a href={linkUrl} target={linkTarget} rel={linkRel} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     ) : (
-      <div style={{height: '100%'}} dangerouslySetInnerHTML={{ __html: imgHTML }} />
+      <div style={{height: '100%', display: 'flex'}} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     );
   };
 
   const renderCaption = () => {
-    if (captions && caption) {
+    if (captions && caption && layout !== 'carousel') {
       return (
         <figcaption className="mgl-caption">
           <p dangerouslySetInnerHTML={{ __html: caption }} />
@@ -53,7 +53,7 @@ export const MeowGalleryItem = ({ image }) => {
   return (
     <figure className={className} style={itemStyle} {...attributes}>
       <div className="mgl-icon">
-        <div className="mgl-img-container" ref={imgContainerRef}>
+        <div className={`mgl-img-container${carouselAspectRatio ? '-aspect-ratio':''}`} ref={imgContainerRef}>
           {renderImageContent()}
         </div>
       </div>

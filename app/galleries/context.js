@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.5
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
@@ -39,6 +39,7 @@ const convertToOptions = (options) => {
     id: options.id,
     layout: options.layout,
     captions: options.captions,
+    loading: options.loading,
     animation: options.animation,
     imageSize: options.image_size,
     infinite: options.infinite,
@@ -63,6 +64,8 @@ const convertToOptions = (options) => {
     carouselImageHeight: options.carousel_image_height,
     carouselArrowNavEnabled: options.carousel_arrow_nav_enabled,
     carouselDotNavEnabled: options.carousel_dot_nav_enabled,
+    carouselAspectRatio: options.carousel_aspect_ratio,
+    carouselAutoplay: options.carousel_autoplay,
     mapEngine: options.map_engine,
     mapHeight: options.map_height,
     mapGutter: options.map_gutter,
@@ -257,23 +260,21 @@ const globalStateReducer = (state, action) => {
 
   case PUSH_BUSY: {
     const { status = '' } = action;
-    busyCounter++;
+    ++busyCounter;
     return { ...state, busy: busyCounter > 0, status };
   }
 
   case POP_BUSY: {
     const { status = '' } = action;
-    busyCounter--;
+    --busyCounter;
     return { ...state, busy: busyCounter > 0, status };
   }
 
   case SET_CLASS_NAMES: {
     const { layout, customClass, animation, captions } = action;
-
     const classNameList = [];
     classNameList.push('mgl-gallery');
     classNameList.push('mgl-' + layout);
-
     if (customClass) {
       classNameList.push(customClass);
     }
@@ -284,7 +285,6 @@ const globalStateReducer = (state, action) => {
     if (captions) {
       classNameList.push('captions-' + captions);
     }
-
     return { ...state, className: classNameList.join(' ') };
   }
 
@@ -297,7 +297,7 @@ const globalStateReducer = (state, action) => {
 
   case SET_INLINE_STYLES: {
     const { layout, justifiedRowHeight } = action;
-    const inlineStyle = isLayoutJustified(layout) ? {"--rh": `${justifiedRowHeight}px`} : {};
+    const inlineStyle = isLayoutJustified(layout) ? {"--rh": `${justifiedRowHeight}px`} : state.inlineStyle;
     return { ...state, inlineStyle };
   }
 
@@ -307,17 +307,17 @@ const globalStateReducer = (state, action) => {
 
     const gutters = {
       [galleryLayouts.tiles]: {
-        desktop: parseInt(tilesGutter),
-        tablet: parseInt(tilesGutterTablet),
-        mobile: parseInt(tilesGutterMobile),
+        desktop: parseInt(tilesGutter, 10),
+        tablet: parseInt(tilesGutterTablet, 10),
+        mobile: parseInt(tilesGutterMobile, 10),
       },
-      [galleryLayouts.masonry]: parseInt(masonryGutter),
-      [galleryLayouts.justified]: parseInt(justifiedGutter),
-      [galleryLayouts.square]: parseInt(squareGutter),
-      [galleryLayouts.cascade]: parseInt(cascadeGutter),
-      [galleryLayouts.horizontal]: parseInt(horizontalGutter),
-      [galleryLayouts.carousel]: parseInt(carouselGutter),
-      [galleryLayouts.map]: parseInt(mapGutter),
+      [galleryLayouts.masonry]: parseInt(masonryGutter, 10),
+      [galleryLayouts.justified]: parseInt(justifiedGutter, 10),
+      [galleryLayouts.square]: parseInt(squareGutter, 10),
+      [galleryLayouts.cascade]: parseInt(cascadeGutter, 10),
+      [galleryLayouts.horizontal]: parseInt(horizontalGutter, 10),
+      [galleryLayouts.carousel]: parseInt(carouselGutter, 10),
+      [galleryLayouts.map]: parseInt(mapGutter, 10),
     };
 
     return { ...state, gutter: gutters[layout] };
@@ -327,8 +327,8 @@ const globalStateReducer = (state, action) => {
     const { layout, masonryColumns, squareColumns } = action;
 
     const columns = {
-      [galleryLayouts.masonry]: parseInt(masonryColumns),
-      [galleryLayouts.square]: parseInt(squareColumns),
+      [galleryLayouts.masonry]: parseInt(masonryColumns, 10),
+      [galleryLayouts.square]: parseInt(squareColumns, 10),
     };
 
     return { ...state, columns: columns[layout] };
@@ -350,11 +350,11 @@ const globalStateReducer = (state, action) => {
     const { layout, horizontalImageHeight, carouselImageHeight } = action;
 
     const imageHeight = {
-      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
-      [galleryLayouts.carousel]: parseInt(carouselImageHeight),
+      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight, 10),
+      [galleryLayouts.carousel]: parseInt(carouselImageHeight, 10),
     };
 
-    return { ...state, imageHeight: imageHeight[layout] };
+    return { ...state, imageHeight: imageHeight };
   }
 
   case SET_API_URL: {
@@ -369,7 +369,7 @@ const globalStateReducer = (state, action) => {
 
   case SET_CAN_INFINITE_SCROLL: {
     const { infinite, images, imageIds } = action;
-    const canInfiniteScroll = infinite && (images.length < imageIds.length);
+    const canInfiniteScroll = infinite && images.length < imageIds.length;
     return { ...state, canInfiniteScroll };
   }
 
@@ -386,8 +386,7 @@ const useMeowGalleryContext = () => {
 
   actions.loadImages = async () => {
     const loadedImageIds = state.images.map(image => image.id);
-    // forgot await -- will return before images are loaded
-    const imageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
+    const imageIds = state.imageIds.filter(imageId => loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
     if (imageIds.length) {
       actions.fetchImages(imageIds);
     }
@@ -397,7 +396,7 @@ const useMeowGalleryContext = () => {
     dispatch({ type: PUSH_BUSY });
 
     const url = buildUrlWithParams(`${state.apiUrl}/images/`, {
-      imageIds: JSON.stringify(imageIds),
+      imageIds: JSON.stringify(imageIds || []),
       atts: JSON.stringify(state.atts),
       layout: state.layout,
       size: state.size
@@ -406,8 +405,7 @@ const useMeowGalleryContext = () => {
     try {
       const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
-        // accidentally used concat which creates a new array, but didn't spread existing images
-        dispatch({ type: SET_IMAGES, images: state.images.concat(response.data) });
+        dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
       }
     }
     catch (err) {
@@ -431,18 +429,18 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
-  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
+  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
-  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
+  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight }); }, [layout]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
     cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
   , [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
-  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns, squareColumns]);
+  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns]);
   useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityMobile, tilesDensityTablet]);
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds?.length ?? []]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

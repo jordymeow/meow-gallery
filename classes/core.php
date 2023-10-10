@@ -118,8 +118,9 @@ class Meow_MGL_Core {
 			$layout = $this->get_option( 'layout', 'tiles' );
 
 		// Check the settings
-		if ( $layout === 'none' )
+		if ( $layout === 'none' ){
 			return gallery_shortcode( $atts );
+		}
 		$layoutClass = 'Meow_MGL_Builders_' . ucfirst( $layout );
 		if ( !class_exists( $layoutClass ) ) {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
@@ -143,6 +144,7 @@ class Meow_MGL_Core {
 		// wp_enqueue_style( 'mgl-css' );
 
 		$infinite = $this->get_option( 'infinite', false ) && class_exists( 'MeowPro_MGL_Core' );
+
 		// $gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
 		// $result = $gen->build( $image_ids );
 		$this->gallery_process = false;
@@ -169,8 +171,16 @@ class Meow_MGL_Core {
 
 		$html = '<div class="'. $class . '" data-gallery-options="' . $data_gallery_options . 
 		'" data-gallery-images="'. $data_gallery_images .'" data-atts="'. $data_atts . '">';
+
+		// Run at /wp-includes/formatting.php on line 3501
+		$textarr = preg_split( '/(<.*>)/U', $html , -1, PREG_SPLIT_DELIM_CAPTURE);
+		if ( $textarr === false ) {
+			$error = preg_last_error();
+			error_log( "[MEOW GALLERY] Regex: " . preg_last_error_msg() . " (Code $error)" );
+			return "<p class='meow-error'><b>Meow Gallery:</b> There was an error while building the gallery. Check your PHP Logs.</p>";
+		}
 		
-		// The Gallery Container is where the images in the right layout will be rendered.
+		//The Gallery Container is where the images in the right layout will be rendered.
 		$html .= '<div class="mgl-gallery-container"></div>';
 
 		// Use the DOM to generate the images (so that lightboxes can hook into them, and for better SEO)
@@ -178,6 +188,7 @@ class Meow_MGL_Core {
 		// TODO: We should check why it's not working with the carousel (for map, it's normal).
 		if ( $layout !== 'map' && $layout !== 'carousel' && $this->get_option( 'rendering_mode', 'dom' ) === 'dom' ) {
 			$html .= '<div class="mgl-gallery-images">';
+
 			foreach ( $gallery_images as $image ) {
 				if ( !empty( $image['link_href'] ) ) {
 					$html .= '<a href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . '">';

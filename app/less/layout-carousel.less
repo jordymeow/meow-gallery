@@ -45,6 +45,21 @@
 					max-width: none;
 				}
 			}
+
+			.mgl-img-container-aspect-ratio {
+				height: 100% !important;
+				width: 600px !important;
+
+				overflow: hidden;
+
+				img {
+					object-fit: contain;
+					max-width: 100%;
+					max-height: 100%;
+					width: auto;
+					height: auto;
+				}
+			}
 		}
 
 		figcaption {
@@ -100,12 +115,86 @@
 		}
 	}
 
+	.meow-carousel-autoplay-btn {
+		position: absolute;
+		top: 30px;
+		transform: translateY(-50%);
+		right: 20px;
+		width: 40px;
+		height: 40px;
+		background: rgba(255,255,255,.9);
+		border-radius: 50%;
+		line-height: 40px;
+		text-align: center;
+		opacity: 0.4;
+		cursor: pointer;
+		user-select: none;
+
+		svg {
+			display: inline-block;
+			height: 20px;
+			margin-top: 10px;
+			line-height: 40px;
+		}
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
 	.meow-carousel-prev-btn {
 		left: 20px;
 	}
 
 	.meow-carousel-next-btn {
 		right: 20px;
+	}
+
+	.meow-carousel-caption-container {
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		box-sizing: border-box;
+		background: transparent;
+		color: white;
+		z-index: 9;
+
+		.meow-carousel-caption {
+			margin: 0;
+			box-sizing: border-box;
+			opacity: 0;
+			display: none;
+		
+			border-radius: 5px;
+			text-align: center;
+
+			font-size: 16px;
+			background-color: rgba(0, 0, 0, 0.5);
+			animation: slide 0.8s ease-in-out forwards;
+
+			@keyframes slide {
+				0% {
+					opacity: 0;
+					transform: translateY(-10%);
+				}
+				100% {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			p {
+				margin: 0;
+				padding: 5px;
+				box-sizing: border-box;
+			}
+
+			&.active {
+				opacity: 1;
+				display: block;
+			}
+				
+		}
 	}
 
 	.meow-carousel-nav-dots-container {

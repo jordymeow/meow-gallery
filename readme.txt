@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.3.1
 Requires PHP: 7.4
-Stable tag: 5.0.4
+Stable tag: 5.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,13 @@ Languages: English.
 
 == Changelog ==
 
+= 5.0.5 (2023/10/10) =
+* Add: Carousel autoplay and better captions.
+* Add: Option to keep the images's aspect ratio with Carousel.
+* Update: Infinite Scroll now has its own section and loading styles.
+* Fix: Display an error message instead of crashing for backtrack limit exhaustion. 
+* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
+
 = 5.0.4 (2023/10/28) =
 * Fix: Previously generated gallery previews were not showing at all, now handled properly.
 * Update: Adjusted infinite scroll images to fit parent div.
@@ -77,7 +84,6 @@ Languages: English.
 * Update: Common dashboard.
 * Fix: Issues with tiles in the editor.
 * Fix: Issues in the carousel.
-* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 
 = 4.3.5 (2023/04/23) =
 * Update: Minimal for mobile now means one column.

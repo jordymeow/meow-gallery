@@ -1,5 +1,5 @@
-// Previous: 5.0.3
-// Current: 5.0.4
+// Previous: 5.0.4
+// Current: 5.0.5
 
 import { h } from "preact";
 import { setup } from "goober";
@@ -20,7 +20,7 @@ setup(h);
 
 export const MeowGallery = () => {
   const { layout, containerClassName, isPreview, gutter, columns, classId,
-    imageHeight, rightClick, mapHeight, infinite, infiniteBuffer, busy, canInfiniteScroll } = useMeowGalleryContext();
+    imageHeight, rightClick, mapHeight, infinite, loading, infiniteBuffer, busy, canInfiniteScroll } = useMeowGalleryContext();
   const { loadImages } = useMeowGalleryContext();
   const isVertical = isVerticalLayout(layout);
 
@@ -78,7 +78,7 @@ export const MeowGallery = () => {
       window.addEventListener('scroll', onScroll);
       return () => window.removeEventListener('scroll', onScroll);
     }
-  }, [infinite, isVertical, infiniteBuffer, busy, loadImages, canInfiniteScroll]);
+  }, [infinite, isVertical, infiniteBuffer, busy, loadImages, canInfiniteScroll, loading]);
 
   return (
     <MeowGalleryContainer
@@ -93,7 +93,7 @@ export const MeowGallery = () => {
       onContextMenu={onContextMenu}>
       {galleryContent}
       {canInfiniteScroll && isVertical && 
-      <div className="mgl-infinite-scroll"><div className="mgl-skeleton"></div></div>}
+      <div className={`mgl-infinite-scroll ${ (loading != 'undefined' && loading != 'none') ? loading : '' }`}><div className="mgl-loading"></div></div>}
     </MeowGalleryContainer>
   );
 };
