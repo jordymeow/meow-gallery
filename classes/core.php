@@ -133,6 +133,11 @@ class Meow_MGL_Core {
 			$atts['captions'] = 'none';	
 		}
 
+		// apply filter 'mgl_sort_ahead' to sort the images before anything else
+		if ( !empty( $image_ids ) ){
+			$image_ids = implode( ',', apply_filters( 'mgl_sort_ahead', explode( ',', $image_ids ), $layout, $atts ) );
+		}
+
 		//DEBUG: Display $atts
 		//error_log( print_r( $atts, 1 ) );
 

@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.6
 
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -7,13 +7,17 @@ import useMeowGalleryContext, { tilesRowClasses, tilesReferences } from "../cont
 
 export const MeowTiles = () => {
   const ref = useRef(null);
-  const { classId, className, inlineStyle, images, density } = useMeowGalleryContext();
+  const { classId, className, inlineStyle, images, density, tilesStylishStyle } = useMeowGalleryContext();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [rendered, setRendered] = useState(false);
 
+  const stylishStyle = useMemo(() => {
+    return tilesStylishStyle ? 'mgl-tiles-stylish' : '';
+  }, [tilesStylishStyle]);
+
   const currentDevice = useMemo(() => {
     const windowWidth = window.innerWidth;
-    if (windowWidth <= 460) {
+    if (windowWidth < 460) {
       return 'mobile';
     }
     if (windowWidth <= 768) {
@@ -26,7 +30,7 @@ export const MeowTiles = () => {
 
   const getHeightByWidth = (width, orientation) => {
     const ratio = "three-two";
-    if (orientation == 'landscape') {
+    if (orientation === 'landscape') {
       switch (ratio) {
       case 'three-two':
         return (2 * width) / 3;
@@ -36,11 +40,12 @@ export const MeowTiles = () => {
     } else {
       switch (ratio) {
       case 'three-two':
-        return (3 * width) / 2;
+        return Math.floor((3 * width) / 2);
       case 'five-four':
-        return (5 * width) / 4;
+        return Math.floor((5 * width) / 4);
       }
     }
+    return 0;
   };
 
   const setRowLayout = (rows) => {
@@ -100,13 +105,13 @@ export const MeowTiles = () => {
     return setRowLayout(newRows);
   }, [images, rowClasses]);
 
-
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      document.body.dispatchEvent(new Event('post-load'));
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => {}; // forgot to remove event listener
   }, []);
 
   useEffect(() => {
@@ -114,8 +119,8 @@ export const MeowTiles = () => {
       ref.current.querySelectorAll('.mgl-row').forEach((row) => {
         const layout = row.getAttribute('data-row-layout');
         const rowReference = tilesReferences[layout];
-        const mglBox = row.querySelector(`.mgl-box.${rowReference.box}`);
-        const height = getHeightByWidth(mglBox.offsetWidth, rowReference.orientation);
+        const mglBox = row.querySelector(`.mgl-box.${rowReference ? rowReference.box : ''}`);
+        const height = getHeightByWidth(mglBox ? mglBox.offsetWidth : 0, rowReference ? rowReference.orientation : 'landscape');
         if (height === 0) {
           setTimeout(() => {
             row.style.height = height + 'px';
@@ -125,11 +130,11 @@ export const MeowTiles = () => {
         }
       });
     }
-  }, [rendered, rows.length]);
+  }, [rendered, rows]); // trigger on rows object, not rows.length
 
   useEffect(() => {
-    setTimeout(() => setRendered(true), 100);
-  }, []);
+    if (!rendered) setRendered(true);
+  }, [rows]);
 
   const freshInlineStyle = rendered ? { ...inlineStyle } : { ...inlineStyle, visibility: 'hidden', display: 'none' };
 
@@ -137,14 +142,14 @@ export const MeowTiles = () => {
     <div ref={ref} id={classId} className={className} style={freshInlineStyle}>
       {rows.map((row, i) => {
         const { content, rowLayout } = row;
-        const startIndex = i === 0 ? 0 : rows.slice(0, i).reduce((a, b) => a + b.content.length, 0);
-        const rowItems = images.slice(startIndex, startIndex + content.length + 1);
+        const startIndex = i === 0 ? 0 : rows.slice(0, i).reduce((a, b) => a + b.content.length, 1);
+        const rowItems = images.slice(startIndex, startIndex + content.length);
         return (
           <div key={i} className={`mgl-row mgl-layout-${content.length}-${rowLayout}`} data-row-layout={rowLayout}>
             {rowItems.map((rowItem, j) => {
               return (
-                <div key={rowItem.id || j} className={`mgl-box ${String.fromCharCode(97 + j)}`}>
-                  <MeowGalleryItem image={rowItem} />
+                <div key={rowItem.id || `${i}-${j}`} className={`mgl-box ${String.fromCharCode(97 + j)}`}>
+                  <MeowGalleryItem image={{...rowItem, classNames: [stylishStyle] }} />
                 </div>
               );
             })}

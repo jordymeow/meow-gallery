@@ -2,9 +2,9 @@
 Contributors: TigrouMeow
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
-Tested up to: 6.3.1
+Tested up to: 6.3.2
 Requires PHP: 7.4
-Stable tag: 5.0.5
+Stable tag: 5.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,12 +50,25 @@ Languages: English.
 
 == Changelog ==
 
+= 5.0.6 (2023/10/23) =
+* Add: Initial implementation of Thumbnail Navigation for Carousel.
+* Add: "Scroll Warning" feature for Horizontal layout.
+* Add: "Stylish Style" for the "Tiles" layout.
+* Add: Introduced 'mgl_sort_ahead' filter for more flexible infinite loading.
+* Update: Improved Carousel behavior with fixes to clone loop handling and clone images in lightbox.
+* Update: Enhanced navigation features including dot navigation for large galleries and centering thumbnails.
+* Update: Moved Carousel caption above dot navigation for improved visibility.
+* Update: Code refinements in Carousel component and corrected overwritten code from previous commit.
+* Fix: Addressed issues with "Keep Aspect Ratio" on both mobile and carousel affecting other layouts.
+* Fix: Resolved issues with Gallery interfering with other Leaflet maps and improved map centering.
+* Fix: Adjusted captions for Horizontal layout and ensured Autoplay functions correctly without arrow navigation.
+* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
+
 = 5.0.5 (2023/10/10) =
 * Add: Carousel autoplay and better captions.
 * Add: Option to keep the images's aspect ratio with Carousel.
 * Update: Infinite Scroll now has its own section and loading styles.
 * Fix: Display an error message instead of crashing for backtrack limit exhaustion. 
-* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 
 = 5.0.4 (2023/10/28) =
 * Fix: Previously generated gallery previews were not showing at all, now handled properly.

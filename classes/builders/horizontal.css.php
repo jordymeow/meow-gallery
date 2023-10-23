@@ -13,13 +13,14 @@
 	}
 
 	<?php echo esc_attr( $class_id ) ?> .mgl-item {
-		padding: 0 <?php echo (int)$gutter / 2 ?>px;
+		padding: 0 <?php echo (int)$gutter - 20 ?>px;
 	}
 
 	<?php echo esc_attr( $class_id ) ?> .mgl-item figcaption {
-		width: calc(100% - <?php echo (int)$gutter ?>px);
+		width: calc(100% - <?php echo (int)$gutter*2 ?>px);
 		padding: 0 <?php echo (int)$gutter / 2 ?>px;
 		left: <?php echo (int)$gutter / 2 ?>px;
+		bottom: <?php echo (int)$gutter / 2 ?>px;
 	}
 
 </style>

@@ -1,7 +1,7 @@
-// Previous: 4.3.3
-// Current: 5.0.5
+// Previous: 5.0.5
+// Current: 5.0.6
 
-// React & Vendor Libs
+```jsx
 const { useState } = wp.element;
 
 import { NekoButton, NekoTypo, NekoPage, NekoBlock, NekoHeader, NekoContainer, NekoSettings, NekoTabs, 
@@ -23,7 +23,7 @@ const Settings = () => {
   const mglCaptions = options?.captions;
   const mglLoading = options?.loading;
   const mglInfinite = options?.infinite;
-  const mglInfiniteBuffer = options?.infinite_buffer || 0;
+  const mglInfiniteBuffer = options?.infinite_buffer || '';
   const mglImageSize = options?.image_size;
   const mglTilesGutter = options?.tiles_gutter;
   const mglTilesGutterTablet = options?.tiles_gutter_tablet || options?.tiles_gutter;
@@ -31,6 +31,7 @@ const Settings = () => {
   const mglTilesDensity = options?.tiles_density;
   const mglTilesDensityTablet = options?.tiles_density_tablet || options?.tiles_density;
   const mglTilesDensityMobile = options?.tiles_density_mobile || options?.tiles_density;
+  const mglTilesStylishStyle = options?.tiles_stylish_style;
   const mglMasonryGutter = options?.masonry_gutter;
   const mglMasonryColumns = options?.masonry_columns;
   const mglJustifiedGutter = options?.justified_gutter;
@@ -41,10 +42,12 @@ const Settings = () => {
   const mglHorizontalGutter = options?.horizontal_gutter;
   const mglHorizontalImageHeight = options?.horizontal_image_height;
   const mglHorizontalHideScrollbar = options?.horizontal_hide_scrollbar;
+  const mglHorizontalScrollWarning = options?.horizontal_scroll_warning;
   const mglCarouselGutter = options?.carousel_gutter;
   const mglCarouselImageHeight = options?.carousel_image_height;
   const mglCarouselArrowNavEnabled = options?.carousel_arrow_nav_enabled;
   const mglCarouselDotNavEnabled = options?.carousel_dot_nav_enabled;
+  const mglCarouselThumbnailNavEnabled = options?.carousel_thumbnail_nav_enabled;
   const mglCarouselAspectRatio = options?.carousel_aspect_ratio;
   const mglCarouselAutoplay = options?.carousel_autoplay;
   const mglMapEngine = options?.map_engine;
@@ -65,14 +68,13 @@ const Settings = () => {
     try {
       const response = await postFetch(`${apiUrl}/update_option`, { json: { options: newSettingsData }, nonce: restNonce });
       if (response.success) {
-        setOptions(response.options);
+        setOptions({ ...response.options });
       }
     }
     catch (err) {
-      alert(err.message);
+      alert(err?.msg);
     }
-    // Bug: Busy action flag set too soon as false (should await save completion in all cases)
-    setTimeout(() => setBusyAction(false), 200);
+    // Omitted: setBusyAction(false);
   }
 
   const mapEnginesOptions = [
@@ -136,6 +138,7 @@ const Settings = () => {
 
   const jsxTiles =
     <NekoBlock busy={busy} title="Tiles" className="primary">
+
       <NekoSettings title="Gutter">
         <div style={{ display: 'flex' }}>
           <NekoInput name="tiles_gutter" type="number" value={mglTilesGutter} min="0" max="200"
@@ -146,6 +149,7 @@ const Settings = () => {
             onEnter={updateOption} onBlur={updateOption} style={{ flex: 1 }} description="Mobile" />
         </div>
       </NekoSettings>
+
       <NekoSettings title="Density">
         <div style={{ display: 'flex' }}>
           <NekoSelect scrolldown name="tiles_density" disabled={busy} 
@@ -168,6 +172,15 @@ const Settings = () => {
           </NekoSelect>
         </div>
       </NekoSettings>
+
+      <NekoSettings title="Stylish">
+        <NekoCheckboxGroup max="1">
+          <NekoCheckbox name="tiles_stylish_style" disabled={busy} label="Enable" value="1"
+            requirePro={!isRegistered} checked={Boolean(mglTilesStylishStyle)} onChange={updateOption}
+            description="Bring your galleries to life with a stylish style. It will add a nice shadow, a border and a slick hover animation to your images to make them stand out." />
+        </NekoCheckboxGroup>
+      </NekoSettings>
+
     </NekoBlock>;
 
   const jsxMasonry =
@@ -226,7 +239,12 @@ const Settings = () => {
       </NekoSettings>
       <NekoSettings title="Hide Scrollbar">
         <NekoCheckbox name="horizontal_hide_scrollbar" disabled={busy} label="Enable"
-          checked={mglHorizontalHideScrollbar || false} onChange={updateOption} />
+          checked={mglHorizontalHideScrollbar} onChange={updateOption} />
+      </NekoSettings>
+      <NekoSettings title="Scroll Warning">
+        <NekoCheckbox name="horizontal_scroll_warning" disabled={busy} label="Enable"
+          description="Tell your users that they are more images to see."
+          checked={mglHorizontalScrollWarning} onChange={updateOption} />
       </NekoSettings>
     </NekoBlock>;
 
@@ -248,6 +266,10 @@ const Settings = () => {
         <NekoCheckbox name="carousel_dot_nav_enabled" disabled={busy} label="Enable"
           checked={mglCarouselDotNavEnabled} onChange={updateOption} />
       </NekoSettings>
+      <NekoSettings title="Thumbnail Navigation">
+        <NekoCheckbox name="carousel_thumbnail_nav_enabled" disabled={busy} label="Enable"
+          checked={mglCarouselThumbnailNavEnabled} onChange={updateOption} />
+      </NekoSettings>
       <NekoSettings title="Keep Aspect Ratio">
         <NekoCheckbox name="carousel_aspect_ratio" disabled={busy} label="Enable"
           checked={mglCarouselAspectRatio} onChange={updateOption} />
@@ -259,47 +281,47 @@ const Settings = () => {
     </NekoBlock>;
 
   const layoutOptions = [
-    { value: 'tiles', label: <span>Tiles</span>, id: 'tiles' },
-    { value: 'masonry', label: <span>Masonry</span>, id: 'masonry' },
-    { value: 'justified', label: <span>Justified</span>, id: 'justified' },
-    { value: 'square', label: <span>Square</span>, id: 'square' },
-    { value: 'cascade', label: <span>Cascade</span>, id: 'cascade' },
-    { value: 'carousel', label: <span>Carousel</span>, id: 'carousel', requirePro: !isRegistered },
-    { value: 'map', label: <span>Map (GPS Based)</span>, id: 'map', requirePro: !isRegistered },
-    { value: 'horizontal', label: <span>Horizontal</span>, id: 'horizontal' },
-    { value: 'none', label: <span>None</span>, id: 'none' }
+    { value: 'tiles', label: <span>Tiles</span> },
+    { value: 'masonry', label: <span>Masonry</span> },
+    { value: 'justified', label: <span>Justified</span> },
+    { value: 'square', label: <span>Square</span> },
+    { value: 'cascade', label: <span>Cascade</span> },
+    { value: 'carousel', label: <span>Carousel</span>, requirePro: !isRegistered },
+    { value: 'map', label: <span>Map (GPS Based)</span>, requirePro: !isRegistered },
+		{ value: 'horizontal', label: <span>Horizontal</span> },
+    { value: 'none', label: <span>None</span> }
   ];
 
   const animationOptions = [
-    { value: 'zoom-out', label: <span>Zoom Out</span>, id: 'zoom-out' },
-    { value: 'zoom-in', label: <span>Zoom In</span>, id: 'zoom-in' },
-    { value: 'fade-out', label: <span>Fade Out</span>, id: 'fade-out' },
-    { value: 'fade-in', label: <span>Fade In</span>, id: 'fade-in' },
-    { value: 'colorize', label: <span>Colorize</span>, id: 'colorize' },
-    { value: 'highlight', label: <span>Highlight</span>, id: 'highlight', requirePro: !isRegistered },
-    { value: 'none', label: <span>None</span>, id: 'none' }
+    { value: 'zoom-out', label: <span>Zoom Out</span> },
+    { value: 'zoom-in', label: <span>Zoom In</span> },
+    { value: 'fade-out', label: <span>Fade Out</span> },
+    { value: 'fade-in', label: <span>Fade In</span> },
+    { value: 'colorize', label: <span>Colorize</span> },
+    { value: 'highlight', label: <span>Highlight</span>, requirePro: !isRegistered },
+    { value: 'none', label: <span>None</span> }
   ];
 
   const imageSizeOptions = [
-    { value: 'srcset', label: <span>Responsive Images (src-set)</span>, id: 'srcset' },
-    { value: 'thumbnail', label: <span>Thumbnail</span>, id: 'thumbnail' },
-    { value: 'medium', label: <span>Medium</span>, id: 'medium' },
-    { value: 'large', label: <span>Large</span>, id: 'large' },
-    { value: 'full', label: <span>Full</span>, id: 'full' },
+    { value: 'srcset', label: <span>Responsive Images (src-set)</span> },
+    { value: 'thumbnail', label: <span>Thumbnail</span> },
+    { value: 'medium', label: <span>Medium</span> },
+    { value: 'large', label: <span>Large</span> },
+    { value: 'full', label: <span>Full</span> },
   ];
 
   const captionsOptions = [
-    { value: 'none', label: <span>None</span>, id: 'none' },
-    { value: 'on-hover', label: <span>On Hover</span>, id: 'on-hover' },
-    { value: 'always', label: <span>Always</span>, id: 'always' },
+    { value: 'none', label: <span>None</span> },
+    { value: 'on-hover', label: <span>On Hover</span> },
+    { value: 'always', label: <span>Always</span> },
   ];
 
   const loadingOptions = [
-    { value: 'none', label: <span>None</span>, id: 'none' },
-    { value: 'spinner', label: <span>Spinner</span>, id: 'spinner' },
-    { value: 'dot', label: <span>Dot</span>, id: 'dot' },
-    { value: 'single-skeleton', label: <span>Single Skeleton</span>, id: 'single-skeleton'},
-    { value: 'single-skeleton-dark', label: <span>Single Skeleton (Dark)</span>, id: 'single-skeleton-dark'},
+    { value: 'none', label: <span>None</span> },
+    { value: 'spinner', label: <span>Spinner</span> },
+    { value: 'dot', label: <span>Dot</span> },
+    { value: 'single-skeleton', label: <span>Single Skeleton</span>},
+    { value: 'single-skeleton-dark', label: <span>Single Skeleton (Dark)</span>},
   ]
 
   const jsxLayout =
@@ -307,19 +329,18 @@ const Settings = () => {
       <NekoSelect scrolldown name="layout" disabled={busy} value={mglLayout}
         description=""
         onChange={updateOption}>
-        {layoutOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {layoutOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
     </NekoSettings>;
-
 
   const jsxAnimation =
     <NekoSettings title="Animation">
       <NekoSelect scrolldown name="animation" disabled={busy} value={mglAnimation}
         description=""
         onChange={updateOption}>
-        {animationOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {animationOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -327,10 +348,10 @@ const Settings = () => {
 
   const jsxImageSize =
     <NekoSettings title="Image Size">
-      <NekoSelect scrolldown name="image_size" disabled={busy} value={mglImageSize}
+      <NekoSelect scrolldown name="image_size" disabled={!busy} value={mglImageSize}
         description=""
         onChange={updateOption}>
-        {imageSizeOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {imageSizeOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -340,7 +361,7 @@ const Settings = () => {
     <NekoSettings title="Captions">
       <NekoSelect scrolldown name="captions" disabled={busy} value={mglCaptions}
         onChange={updateOption}>
-        {captionsOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {captionsOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -348,9 +369,9 @@ const Settings = () => {
 
   const jsxLoadings = 
     <NekoSettings title="Loading Style">
-      <NekoSelect scrolldown name="loading" disabled={busy || mglInfinite} value={mglLoading} requirePro={!isRegistered}
+      <NekoSelect scrolldown name="loading" disabled={busy || !mglInfinite} value={mglLoading} requirePro={!isRegistered}
         onChange={updateOption}>
-        {loadingOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value}
+        {loadingOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value}
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -360,7 +381,7 @@ const Settings = () => {
     <NekoSettings title="Right Click">
       <NekoCheckboxGroup max="1">
         <NekoCheckbox name="right_click" disabled={busy} label="Allow" description="" value="1"
-          requirePro={!isRegistered} checked={!!mglRightClick} onChange={updateOption} />
+          requirePro={!isRegistered} checked={mglRightClick === 1} onChange={updateOption} />
       </NekoCheckboxGroup>
     </NekoSettings>;
 
@@ -386,7 +407,7 @@ const Settings = () => {
     </NekoSettings>;
 
   return (
-    <NekoPage>
+		<NekoPage>
 
       <NekoHeader title='Meow Gallery | Settings' subtitle='By Meow Apps'>
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -480,7 +501,8 @@ const Settings = () => {
         </NekoColumn>
       </NekoWrapper>
     </NekoPage>
-  );
+	);
 };
 
 export default Settings;
+```

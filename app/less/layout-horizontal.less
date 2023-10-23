@@ -2,6 +2,31 @@
 
 .mgl-horizontal {
 
+  .meow-horizontal-more-images {
+    text-align: center;
+    background: #00000091;
+    border-radius: 5px;
+    margin: 0 150px;
+    position: relative;
+    bottom: 100px;
+    color: white;
+    opacity: 1;
+
+    animation: slide 0.8s ease-in-out forwards;
+
+    @keyframes slide {
+      0% {
+        opacity: 0;
+        transform: translateY(15%);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+    }
+  }
+
 
   &.hide-scrollbar {
     .meow-horizontal-track {
@@ -44,7 +69,25 @@
 
       .mgl-caption {
         position: absolute;
-        width: 100%;
+        bottom: 0 !important;
+        left: 0 !important;
+        background: transparent !important;
+
+        p {
+          margin: 0;
+          padding: 0;
+
+          line-height: 1.5;
+          color: #fff;
+
+          text-align: left;
+
+          padding: 10px 20px;
+          background: rgba(0,0,0,0.5);
+          border-radius: 2px;
+
+          white-space: break-spaces;
+        }
       }
     }
   }

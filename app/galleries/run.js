@@ -1,5 +1,5 @@
-// Previous: 5.0.3
-// Current: 5.0.4
+// Previous: 5.0.4
+// Current: 5.0.6
 
 import { render } from 'preact';
 import { MeowGallery } from './MeowGallery.js';
@@ -25,7 +25,7 @@ const renderMeowGalleries = () => {
       // Associate each galleryImage (= data) with its corresponding image element (= DOM element)
       const imagesElements = imagesContainer ? Array.from(imagesContainer.querySelectorAll(':scope > img, :scope > a')) : [];
       if (imagesElements.length === 0 || imagesElements.length !== galleryImages.length) {
-        console.error('Meow Gallery: Mismatch between number of images in the DOM and their data. The elements will be created via JS.', { galleryElement, imagesElements, galleryImages, galleryOptions });
+        console.warn('Meow Gallery: Mismatch between number of images in the DOM and their data. The elements will be created via JS.', { galleryElement, imagesElements, galleryImages, galleryOptions });
       }
       else {
         galleryImages.forEach((galleryImage, index) => {

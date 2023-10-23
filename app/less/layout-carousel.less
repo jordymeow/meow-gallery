@@ -5,7 +5,7 @@
 	display: block !important;
 	width: 100%;
 	overflow-x: hidden;
-	overflow-y: visible;
+	overflow-y: hidden;
 
 	.meow-carousel-track {
 		position: relative;
@@ -50,16 +50,32 @@
 				height: 100% !important;
 				width: 600px !important;
 
-				overflow: hidden;
+				display: flex;
 
+				align-items: center;
+				justify-content: center;
+
+				overflow: hidden;
+				position: relative;
+			  
 				img {
-					object-fit: contain;
-					max-width: 100%;
-					max-height: 100%;
-					width: auto;
-					height: auto;
+				  max-width: 100%;
+				  max-height: 100%;
+
+				  object-fit: contain;
+
+				  width: auto;
+				  height: auto;
+				  aspect-ratio: attr(width) / attr(height);
+
+				  @media screen and (max-width: 600px) {
+					width: 100vw !important;
+					height: auto !important;
+					}
 				}
+				  
 			}
+				
 		}
 
 		figcaption {
@@ -72,8 +88,8 @@
 			bottom: 0;
 			padding: 5px;
 			box-sizing: border-box;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
+      		background: rgba(0, 0, 0, 0.8);
+     		color: white;
 
 			p {
 				margin: 0;
@@ -93,15 +109,16 @@
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
-		width: 40px;
+		width: 45px;
 		height: 60px;
 		background: rgba(255,255,255,.9);
-		border-radius: 8px;
+		border-radius: 999px;
 		line-height: 60px;
 		text-align: center;
-		opacity: 0.8;
+		opacity: 0.3;
 		cursor: pointer;
 		user-select: none;
+		transition: opacity 0.3s;
 
 		svg {
 			display: inline-block;
@@ -111,7 +128,7 @@
 		}
 
 		&:hover {
-			opacity: 1;
+			opacity: 0.8;
 		}
 	}
 
@@ -126,9 +143,10 @@
 		border-radius: 50%;
 		line-height: 40px;
 		text-align: center;
-		opacity: 0.4;
+		opacity: 0.3;
 		cursor: pointer;
 		user-select: none;
+		transition: opacity 0.3s;
 
 		svg {
 			display: inline-block;
@@ -138,7 +156,7 @@
 		}
 
 		&:hover {
-			opacity: 1;
+			opacity: 0.8;
 		}
 	}
 
@@ -151,6 +169,7 @@
 	}
 
 	.meow-carousel-caption-container {
+		margin-top: 5px;
 		bottom: 0;
 		left: 0;
 		width: 100%;
@@ -197,10 +216,58 @@
 		}
 	}
 
+	.meow-carousel-nav-thumbnails-container {
+		display: flex;
+		justify-content: center;
+
+		flex-wrap: wrap;
+		flex-direction: row;
+		align-items: center;
+
+		height: auto;
+		margin-top: 10px;
+
+		&.nowrap {
+			display: inline-block;
+			white-space: nowrap;
+			transition: transform 0.3s;
+		}
+		
+		overflow-x: hidden;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
+
+		.meow-carousel-nav-thumbnail {
+			display: inline-block;
+			cursor: pointer;
+			height: 100%;
+			width: auto;
+			margin: 0 5px;
+			opacity: 0.5;
+			transition: opacity 0.3s;
+
+			img {
+				width: 50px;
+				height: 50px;
+				object-fit: cover;
+				border-radius: 5px;
+			}
+
+			&.active, &:hover {
+				opacity: 1;
+			}
+		}
+	}
+
 	.meow-carousel-nav-dots-container {
 		width: 100%;
 		margin-top: 10px;
 		text-align: center;
+
+		&.nowrap {
+			text-wrap: nowrap;
+			transition: transform 0.3s;
+		}
 
 		.meow-carousel-nav-dot {
 			display: inline-block;

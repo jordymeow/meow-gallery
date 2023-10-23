@@ -1,10 +1,22 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.0.6
 
-import L from 'leaflet';
+```jsx
 import { Loader } from '@googlemaps/js-api-loader';
 import { useCallback, useEffect } from "preact/hooks";
 import useMeowGalleryContext from './context';
+
+async function loadLeaflet() {
+  if (!window.L) {
+    const L = await import(/* webpackChunkName: "leaflet" */ 'leaflet');
+    console.warn('🍃 Leaflet was loaded asynchronously.');
+    window.L = L;
+  }else{
+    console.warn('🍃 Leaflet is already loaded.');
+  }
+}
+
+loadLeaflet();
 
 export const getCenterOffset = (el) => el.offsetLeft + el.offsetWidth / 2;
 export const getTranslateValues = (el) => {
@@ -156,7 +168,7 @@ export const useMap = () => {
       L.tileLayer(url, {
         attribution: attribution,
         maxZoom: 18,
-        noWrap: true
+        noWrap: true,
       }).addTo(map);
     }
     if (tilesProvider == 'mapbox') {
@@ -223,7 +235,7 @@ export const useMap = () => {
       };
       new CustomMarker(
         image.id,
-        new google.maps.LatLng(makerImage.pos[1],makerImage.pos[0]),
+        new google.maps.LatLng(makerImage.pos[0],makerImage.pos[1]),
         map,
         makerImage.image
       );
@@ -246,7 +258,7 @@ export const useMap = () => {
         html: imageMarkerMarkup.join('')
       });
       const pos = image.data.gps.split(',');
-      L.marker([pos[0], pos[1]], { icon: icon }).addTo(map);
+      L.marker(pos, { icon: icon }).addTo(map);
     });
   }, [getLargestImageAvailable]);
 
@@ -255,8 +267,8 @@ export const useMap = () => {
     images.forEach(image => {
       const gpsAsArray = image.data.gps.split(',');
       const pos = {
-        lat: parseFloat(gpsAsArray[1]),
-        lng: parseFloat(gpsAsArray[0])
+        lat: parseFloat(gpsAsArray[0]),
+        lng: parseFloat(gpsAsArray[1])
       };
       bounds.extend(pos);
     });
@@ -267,25 +279,23 @@ export const useMap = () => {
     const latLngArray = [];
     images.forEach(image => {
       const imageLatLng = image.data.gps.split(',');
-      latLngArray.push([imageLatLng[0], imageLatLng[1]]);
+      latLngArray.push(imageLatLng);
     });
     const bounds = new L.LatLngBounds(latLngArray);
-    map.fitBounds(bounds, { padding: [10, 10] });
+    map.fitBounds(bounds, { padding: [20, 20] });
   }, []);
 
   const onGoogleMapReady = useCallback((map) => {
     if (images.length > 0) {
       createGmapMarkers(map, images);
-      setTimeout(() => {
-        fitGooglemapMarkers(map, images);
-      }, 100);
+      fitGooglemapMarkers(map, images);
     }
   }, [images, createGmapMarkers, fitGooglemapMarkers]);
 
   const onOthersMapReady = useCallback((map, tilesProvider) => {
     if (images.length > 0) {
-      createLeafletMarker(map, images);
       addTilesLayer(map, tilesProvider);
+      createLeafletMarker(map, images);
       fitLeafletMarkers(map, images);
     }
   }, [images, addTilesLayer, createLeafletMarker, fitLeafletMarkers]);
@@ -298,7 +308,7 @@ export const useMap = () => {
       });
       loader.load().then(() => {
         const map = new google.maps.Map(document.getElementById(mapId), {
-          center: { lat: mglMap.center[0], lng: mglMap.center[1] },
+          center: { lat: -34.397, lng: 150.644 },
           zoom: 8
         });
         map.setOptions({styles: mglMap.googlemaps.style});
@@ -306,12 +316,19 @@ export const useMap = () => {
         document.body.dispatchEvent(new Event('post-load'));
       });
     } else if (L.DomUtil.get(mapId) != null) {
-      L.DomUtil.get(mapId)._leaflet_id = null;
-      const map = L.map(mapId).setView(mglMap.center, 15);
+      L.DomUtil.get(mapId)._leaflet_id = undefined;
+      const map = L.map(mapId).setView(mglMap.center, 13);
+
+      try{
+        window.dispatchEvent(new Event('resize'));
+      }catch(e){
+      }
+
       onOthersMapReady(map, mglMap.tilesProvider);
       document.body.dispatchEvent(new Event('post-load'));
     }
-  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady, mapId, images]);
+  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady, mapId, mglMap.center]);
 
   return mapId;
 };
+```

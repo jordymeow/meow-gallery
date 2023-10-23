@@ -1,5 +1,5 @@
-// Previous: 5.0.4
-// Current: 5.0.5
+// Previous: 5.0.5
+// Current: 5.0.6
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
@@ -11,6 +11,11 @@ export const MeowGalleryItem = ({ image }) => {
 
   const className = ['mgl-item', ...classNames].join(' ');
   const imgContainerRef = useRef(null);
+
+  const aspectRatio = useMemo(() => {
+    return layout == 'carousel' && carouselAspectRatio ? '-aspect-ratio':''
+  }, [layout, carouselAspectRatio]);
+
 
   useEffect(() => {
     const container = imgContainerRef.current;
@@ -51,9 +56,9 @@ export const MeowGalleryItem = ({ image }) => {
   };
 
   return (
-    <figure className={className} style={itemStyle} {...attributes}>
+    <figure className={`${className}`} style={itemStyle} {...attributes}>
       <div className="mgl-icon">
-        <div className={`mgl-img-container${carouselAspectRatio ? '-aspect-ratio':''}`} ref={imgContainerRef}>
+        <div className={`mgl-img-container${ aspectRatio }`} ref={imgContainerRef}>
           {renderImageContent()}
         </div>
       </div>

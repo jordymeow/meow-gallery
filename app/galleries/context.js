@@ -1,5 +1,5 @@
-// Previous: 5.0.3
-// Current: 5.0.5
+// Previous: 5.0.5
+// Current: 5.0.6
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
@@ -50,6 +50,7 @@ const convertToOptions = (options) => {
     tilesDensity: options.tiles_density,
     tilesDensityTablet: options.tiles_density_tablet,
     tilesDensityMobile: options.tiles_density_mobile,
+    tilesStylishStyle: options.tiles_stylish_style,
     masonryGutter: options.masonry_gutter,
     masonryColumns: options.masonry_columns,
     justifiedGutter: options.justified_gutter,
@@ -60,10 +61,12 @@ const convertToOptions = (options) => {
     horizontalGutter: options.horizontal_gutter,
     horizontalImageHeight: options.horizontal_image_height,
     horizontalHideScrollbar: options.horizontal_hide_scrollbar,
+    horizontalScrollWarning: options.horizontal_scroll_warning, 
     carouselGutter: options.carousel_gutter,
     carouselImageHeight: options.carousel_image_height,
     carouselArrowNavEnabled: options.carousel_arrow_nav_enabled,
     carouselDotNavEnabled: options.carousel_dot_nav_enabled,
+    carouselThumbnailNavEnabled: options.carousel_thumbnail_nav_enabled,
     carouselAspectRatio: options.carousel_aspect_ratio,
     carouselAutoplay: options.carousel_autoplay,
     mapEngine: options.map_engine,
@@ -185,6 +188,7 @@ const initialState = {
   carouselImageHeight: 500,
   carouselArrowNavEnabled: true,
   carouselDotNavEnabled: true,
+  carouselThumbnailNavEnabled: false,
   mapEngine: '',
   mapHeight: 400,
   googlemapsToken: '',
@@ -248,133 +252,134 @@ const ERROR_UPDATED = 'ERROR_UPDATED';
 const globalStateReducer = (state, action) => {
   switch (action.type) {
 
-  case ERROR_UPDATED: {
-    const { apiErrors } = action;
-    return {...state, apiErrors };
-  }
-
-  case SET_IMAGES: {
-    const { images } = action;
-    return { ...state, images };
-  }
-
-  case PUSH_BUSY: {
-    const { status = '' } = action;
-    ++busyCounter;
-    return { ...state, busy: busyCounter > 0, status };
-  }
-
-  case POP_BUSY: {
-    const { status = '' } = action;
-    --busyCounter;
-    return { ...state, busy: busyCounter > 0, status };
-  }
-
-  case SET_CLASS_NAMES: {
-    const { layout, customClass, animation, captions } = action;
-    const classNameList = [];
-    classNameList.push('mgl-gallery');
-    classNameList.push('mgl-' + layout);
-    if (customClass) {
-      classNameList.push(customClass);
+    case ERROR_UPDATED: {
+      const { apiErrors } = action;
+      return { ...state, apiErrors };
     }
-    if (animation) {
-      classNameList.push('is-animated');
-      classNameList.push(animation);
+
+    case SET_IMAGES: {
+      const { images } = action;
+      return { ...state, images };
     }
-    if (captions) {
-      classNameList.push('captions-' + captions);
+
+    case PUSH_BUSY: {
+      const { status = '' } = action;
+      return { ...state, busy: ++busyCounter > 0, status };
     }
-    return { ...state, className: classNameList.join(' ') };
-  }
 
-  case SET_CONTAINER_CLASS_NAMES: {
-    const { layout } = action;
-    const classNameList = [];
-    classNameList.push('mgl-' + layout + '-container');
-    return { ...state, containerClassName: classNameList.join(' ') };
-  }
+    case POP_BUSY: {
+      const { status = '' } = action;
+      return { ...state, busy: --busyCounter > 0, status };
+    }
 
-  case SET_INLINE_STYLES: {
-    const { layout, justifiedRowHeight } = action;
-    const inlineStyle = isLayoutJustified(layout) ? {"--rh": `${justifiedRowHeight}px`} : state.inlineStyle;
-    return { ...state, inlineStyle };
-  }
+    case SET_CLASS_NAMES: {
+      const { layout, customClass, animation, captions } = action;
 
-  case SET_GUTTER: {
-    const { layout, tilesGutter, tilesGutterTablet, tilesGutterMobile, masonryGutter, justifiedGutter, squareGutter,
-      cascadeGutter, horizontalGutter, carouselGutter, mapGutter } = action;
+      const classNameList = [];
+      classNameList.push('mgl-gallery');
+      classNameList.push('mgl-' + layout);
 
-    const gutters = {
-      [galleryLayouts.tiles]: {
-        desktop: parseInt(tilesGutter, 10),
-        tablet: parseInt(tilesGutterTablet, 10),
-        mobile: parseInt(tilesGutterMobile, 10),
-      },
-      [galleryLayouts.masonry]: parseInt(masonryGutter, 10),
-      [galleryLayouts.justified]: parseInt(justifiedGutter, 10),
-      [galleryLayouts.square]: parseInt(squareGutter, 10),
-      [galleryLayouts.cascade]: parseInt(cascadeGutter, 10),
-      [galleryLayouts.horizontal]: parseInt(horizontalGutter, 10),
-      [galleryLayouts.carousel]: parseInt(carouselGutter, 10),
-      [galleryLayouts.map]: parseInt(mapGutter, 10),
-    };
+      if (customClass) {
+        classNameList.push(customClass);
+      }
+      if (animation) {
+        classNameList.push('is-animated');
+        classNameList.push(animation);
+      }
+      if (captions) {
+        classNameList.push('captions-' + captions);
+      }
 
-    return { ...state, gutter: gutters[layout] };
-  }
+      return { ...state, className: classNameList.join(' ') };
+    }
 
-  case SET_CULLUMNS: {
-    const { layout, masonryColumns, squareColumns } = action;
+    case SET_CONTAINER_CLASS_NAMES: {
+      const { layout } = action;
+      const classNameList = [];
+      classNameList.push('mgl-' + layout + '-container');
+      return { ...state, containerClassName: classNameList.join(' ') };
+    }
 
-    const columns = {
-      [galleryLayouts.masonry]: parseInt(masonryColumns, 10),
-      [galleryLayouts.square]: parseInt(squareColumns, 10),
-    };
+    case SET_INLINE_STYLES: {
+      const { layout, justifiedRowHeight } = action;
+      const inlineStyle = isLayoutJustified(layout) ? { "--rh": `${justifiedRowHeight}px` } : {};
+      return { ...state, inlineStyle };
+    }
 
-    return { ...state, columns: columns[layout] };
-  }
+    case SET_GUTTER: {
+      const { layout, tilesGutter, tilesGutterTablet, tilesGutterMobile, masonryGutter, justifiedGutter, squareGutter,
+        cascadeGutter, horizontalGutter, carouselGutter, mapGutter } = action;
 
-  case SET_DENSITY: {
-    const { tilesDensity, tilesDensityTablet, tilesDensityMobile } = action;
+      const gutters = {
+        [galleryLayouts.tiles]: {
+          desktop: parseInt(tilesGutter),
+          tablet: parseInt(tilesGutterTablet),
+          mobile: parseInt(tilesGutterMobile),
+        },
+        [galleryLayouts.masonry]: parseInt(masonryGutter),
+        [galleryLayouts.justified]: parseInt(justifiedGutter),
+        [galleryLayouts.square]: parseInt(squareGutter),
+        [galleryLayouts.cascade]: parseInt(cascadeGutter),
+        [galleryLayouts.horizontal]: parseInt(horizontalGutter),
+        [galleryLayouts.carousel]: parseInt(carouselGutter),
+        [galleryLayouts.map]: parseInt(mapGutter),
+      };
 
-    const density = {
-      desktop: tilesDensity,
-      tablet: tilesDensityTablet,
-      mobile: tilesDensityMobile,
-    };
+      return { ...state, gutter: gutters[layout] };
+    }
 
-    return { ...state, density };
-  }
+    case SET_CULLUMNS: {
+      const { layout, masonryColumns, squareColumns } = action;
 
-  case SET_IMAGE_HEIGHT: {
-    const { layout, horizontalImageHeight, carouselImageHeight } = action;
+      const columns = {
+        [galleryLayouts.masonry]: parseInt(masonryColumns),
+        [galleryLayouts.square]: parseInt(squareColumns),
+      };
 
-    const imageHeight = {
-      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight, 10),
-      [galleryLayouts.carousel]: parseInt(carouselImageHeight, 10),
-    };
+      return { ...state, columns: columns[layout] };
+    }
 
-    return { ...state, imageHeight: imageHeight };
-  }
+    case SET_DENSITY: {
+      const { tilesDensity, tilesDensityTablet, tilesDensityMobile } = action;
 
-  case SET_API_URL: {
-    const { apiUrl } = action;
-    return { ...state, apiUrl };
-  }
+      const density = {
+        desktop: tilesDensity,
+        tablet: tilesDensityTablet,
+        mobile: tilesDensityMobile,
+      };
 
-  case SET_REST_NONCE: {
-    const { restNonce } = action;
-    return { ...state, restNonce };
-  }
+      return { ...state, density };
+    }
 
-  case SET_CAN_INFINITE_SCROLL: {
-    const { infinite, images, imageIds } = action;
-    const canInfiniteScroll = infinite && images.length < imageIds.length;
-    return { ...state, canInfiniteScroll };
-  }
+    case SET_IMAGE_HEIGHT: {
+      const { layout, horizontalImageHeight, carouselImageHeight } = action;
 
-  default:
-    return state;
+      const imageHeight = {
+        [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
+        [galleryLayouts.carousel]: parseInt(carouselImageHeight),
+      };
+
+      return { ...state, imageHeight: imageHeight[layout] };
+    }
+
+    case SET_API_URL: {
+      const { apiUrl } = action;
+      return { ...state, apiUrl };
+    }
+
+    case SET_REST_NONCE: {
+      const { restNonce } = action;
+      return { ...state, restNonce };
+    }
+
+    case SET_CAN_INFINITE_SCROLL: {
+      const { infinite, images, imageIds } = action;
+      const canInfiniteScroll = infinite && images.length < imageIds.length;
+      return { ...state, canInfiniteScroll };
+    }
+
+    default:
+      return state;
   }
 };
 
@@ -386,7 +391,7 @@ const useMeowGalleryContext = () => {
 
   actions.loadImages = async () => {
     const loadedImageIds = state.images.map(image => image.id);
-    const imageIds = state.imageIds.filter(imageId => loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
+    const imageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
     if (imageIds.length) {
       actions.fetchImages(imageIds);
     }
@@ -396,7 +401,7 @@ const useMeowGalleryContext = () => {
     dispatch({ type: PUSH_BUSY });
 
     const url = buildUrlWithParams(`${state.apiUrl}/images/`, {
-      imageIds: JSON.stringify(imageIds || []),
+      imageIds: JSON.stringify(imageIds),
       atts: JSON.stringify(state.atts),
       layout: state.layout,
       size: state.size
@@ -418,29 +423,28 @@ const useMeowGalleryContext = () => {
     }
   };
 
-
   return { ...state, ...actions };
 };
 
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
-  const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
+  const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({ ...options, ...galleryOptions, images: galleryImages, atts }) });
 
   const { layout, customClass, animation, captions, justifiedRowHeight, tilesGutter, tilesGutterMobile, tilesGutterTablet,
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
-  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation]);
+  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
-  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight }); }, [layout]);
+  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
-    cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
-  , [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
-  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns]);
+    cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); },
+    [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
+  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns, squareColumns]);
   useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityMobile, tilesDensityTablet]);
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

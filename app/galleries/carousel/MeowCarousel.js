@@ -1,5 +1,5 @@
-// Previous: 5.0.3
-// Current: 5.0.5
+// Previous: 5.0.5
+// Current: 5.0.6
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -10,7 +10,7 @@ export const MeowCarousel = () => {
   const ref = useRef(null);
   const trackRef = useRef(null);
   const { classId, className, inlineStyle, images, carouselGutter, carouselArrowNavEnabled,
-    carouselDotNavEnabled, carouselAutoplay } = useMeowGalleryContext();
+    carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselAutoplay } = useMeowGalleryContext();
 
   const [trackClassNames, setTrackClassNames] = useState([]);
   const [trackTransform, setTrackTransform] = useState('');
@@ -29,11 +29,11 @@ export const MeowCarousel = () => {
     return numberOfImages === 0
       ? []
       : [
-        { ...images.at(-1), classNames: ['clone', 'last-item'] },
-        { ...images.at(numberOfImages > 1 ? -2 : -1), classNames: ['clone', 'before-last-item'] },
+        { ...images.at(-2), classNames: ['clone', 'before-last-item', 'no-lightbox'] },
+        { ...images.at(numberOfImages > 1 ? -1 : 0), classNames: ['clone', 'last-item', 'no-lightbox'] },
         ...images,
-        { ...images.at(0), classNames: ['clone', 'first-item'] },
-        { ...images.at(numberOfImages > 1 ? 1 : 0), classNames: ['clone', 'second-item'] },
+        { ...images.at(0), classNames: ['clone', 'first-item', 'no-lightbox'] },
+        { ...images.at(numberOfImages > 1 ? 1 : 0), classNames: ['clone', 'after-last-item' , 'no-lightbox'] },
       ].map((image, index) => (
         {
           ...image,
@@ -55,7 +55,8 @@ export const MeowCarousel = () => {
     }
     const newIndex = parseInt(destination);
     setTrackClassNames(noTransition ? ['no-transition'] : []);
-    const nextElement = mglItemElements.find(v => v.dataIndex === newIndex).element;
+    const nextElement = mglItemElements.find(v => v.dataIndex === newIndex)?.element;
+    if(!nextElement) return;
     const tx = (-1 * (getCenterOffset(nextElement) - ref.current.offsetWidth / 2));
     setTrackTransform(`translate3d(${tx}px, 0, 0)`);
 
@@ -69,12 +70,12 @@ export const MeowCarousel = () => {
 
   const slideCarouselToPrev = useCallback(() => {
     let baseIndex = currentIndex;
-    if (isCloneItem(currentIndex)) {
-      if (currentItem.classNames.includes('last-item')) {
-        slideCarouselTo(lastIndex, true);
-        baseIndex = lastIndex;
-      }
+
+    if(currentIndex === firstIndex) {
+      slideCarouselTo(lastIndex+1, true);
+      baseIndex = lastIndex+1;
     }
+
     setTimeout(() => {
       const prevIndex = baseIndex === 0 ? numberOfItems - 1 : baseIndex - 1;
       slideCarouselTo(prevIndex);
@@ -83,10 +84,10 @@ export const MeowCarousel = () => {
 
   const slideCarouselToNext = useCallback(() => {
     let baseIndex = currentIndex;
-    if (isCloneItem(currentIndex) && currentItem.classNames.includes('first-item')) {
-      const nextIndex = carouselItems.find(v => !v.classNames?.includes('clone')).dataIndex;
-      slideCarouselTo(nextIndex, true);
-      baseIndex = nextIndex;
+
+    if(currentIndex === lastIndex) {
+      slideCarouselTo(firstIndex-1, true);
+      baseIndex = firstIndex-1;
     }
     setTimeout(() => {
       const nextIndex = baseIndex === numberOfItems - 1 ? 0 : baseIndex + 1;
@@ -200,7 +201,7 @@ export const MeowCarousel = () => {
     setAutoPlay(!autoPlay);
   }, [autoPlay]);
 
-  const autoPlayButton = useMemo(() => {
+  const autoPlayButtonJsx = useMemo(() => {
     return (
       <div className="meow-carousel-autoplay-btn" onClick={autoPlayHandler}>
         { autoPlay &&
@@ -216,63 +217,9 @@ export const MeowCarousel = () => {
     );
   }, [autoPlayHandler, autoPlay]);
 
-  useEffect(() => {
-    function resizeHandler() {
-      slideCarouselTo(currentIndex, true);
-    }
-    window.addEventListener('resize', resizeHandler);
-    return () => window.removeEventListener('resize', resizeHandler);
-  }, [currentIndex, slideCarouselTo]);
-
-  useEffect(() => {
-    if (trackWidth === 0 && trackRef.current && carouselItems.length > 0) {
-      const mglItemElements = Array.from(trackRef.current?.children);
-      setTrackWidth(mglItemElements.reduce((a, b) => a + b.offsetWidth, 0));
-      setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
-    }
-  }, [trackRef.current?.children, carouselItems]);
-
-  useEffect(() => {
-    if (trackWidth > 0) {
-      setTimeout(() => {
-        slideCarouselTo(firstIndex, true);
-      }, 300);
-    }
-  }, [trackWidth]);
-
-  useEffect( () => {
-      if(!autoPlay) {
-        return;
-      }
-      let interval = setInterval(() => {
-        setTimeout(() => {
-          let next_btn = document.querySelector(`#${classId} .meow-carousel-next-btn`);
-          next_btn.click();
-        }, 10);
-      }, 4000);
-
-    return () => clearInterval(interval);
-  }, [autoPlay] );
-
-  return (
-    <div ref={ref} id={classId} className={className} style={inlineStyle}
-      data-mgl-gutter={carouselGutter}
-      data-mgl-arrow_nav={carouselArrowNavEnabled}
-      data-mgl-dot_nav={carouselDotNavEnabled}>
-      <div ref={trackRef} className={['meow-carousel-track', ...trackClassNames].join(' ')} style={{ width: `${trackWidth}px`, transform: trackTransform, opacity: currentIndex != null ? 1 : 0 }}
-        onMouseDown={mouseDownHandler}
-        onTouchStart={mouseDownHandler}
-        onMouseMove={mouseMoveHandler}
-        onTouchMove={mouseMoveHandler}
-        onMouseUp={mouseUpHandler}
-        onTouchEnd={mouseUpHandler}>
-        {carouselItems.map((image) => <MeowGalleryItem key={image.dataIndex} image={image} />)}
-      </div>
-
-      { (carouselAutoplay ?? false) && autoPlayButton }
-
-      {carouselArrowNavEnabled &&
-        <>
+  const arrowNavigationJsx = useMemo(() => {
+    return (
+      <>
           <div className="meow-carousel-prev-btn" onClick={slideCarouselToPrev}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z" />
@@ -284,10 +231,51 @@ export const MeowCarousel = () => {
             </svg>
           </div>
         </>
-      }
+    );
+  }, [slideCarouselToPrev, slideCarouselToNext]);
 
-      {carouselDotNavEnabled &&
-        <div className="meow-carousel-nav-dots-container">
+  const thumbnailNavigationJsx = useMemo(() => {
+
+    const hasTooManyThumbnails = (carouselItems.length-4) > 25 ? 'nowrap' : '';
+    const visibleOffset = currentIndex-firstIndex-5 < 0 ? 0 : currentIndex-firstIndex-5;
+    const thumbnailWrapOffset = Math.floor((visibleOffset) * 60) + 5; 
+
+    return (
+      <div
+      className={`meow-carousel-nav-thumbnails-container ${hasTooManyThumbnails}`}
+      style={{ transform: `translateX(-${hasTooManyThumbnails ? thumbnailWrapOffset : 0}px)` }}
+      >
+          {carouselItems.map((image) => {
+            if (Object.hasOwn(image, 'classNames') && image.classNames?.includes('clone')) {
+              return null;
+            }
+            const classNames = ['meow-carousel-nav-thumbnail'];
+            if (image.dataIndex === currentIndex) {
+              classNames.push('active');
+            } else if (image.dataIndex === firstIndex && lastIndex < currentIndex
+              || image.dataIndex === lastIndex && firstIndex > currentIndex
+            ) {
+              classNames.push('active');
+            }
+
+            return (
+              <div key={image.dataIndex} className={`${classNames.join(' ')} no-lightbox`} onClick={() => slideCarouselTo(image.dataIndex)}
+                dangerouslySetInnerHTML={{ __html: image.img_html }} />
+            );
+          }).filter((image) => image !== null)}
+      </div>
+    );
+  }, [carouselItems, currentIndex, slideCarouselTo]);
+
+  const dotNavigationJsx = useMemo(() => {
+    const hasTooManyDots = (carouselItems.length-4) > 25 ? 'nowrap' : '';
+    const visibleOffset = currentIndex-firstIndex-10 < 0 ? 0 : currentIndex-firstIndex-10;
+    const dotWrapOffset = Math.floor((visibleOffset) * 26) + 5;
+    return (
+      <div
+      className={`meow-carousel-nav-dots-container ${hasTooManyDots}`}
+      style={{ transform: `translateX(-${hasTooManyDots ? dotWrapOffset : 0}px)` }}
+      >
           {carouselItems.map((image) => {
             if (Object.hasOwn(image, 'classNames') && image.classNames?.includes('clone')) {
               return null;
@@ -307,10 +295,14 @@ export const MeowCarousel = () => {
             );
           }).filter((image) => image !== null)}
         </div>
-      }
+    );
+  }, [carouselItems, currentIndex, slideCarouselTo]);
 
+  const carouselCaptionsJsx = useMemo(() => {
+    return (
       <div className="meow-carousel-caption-container">{
         carouselItems.map((image) => {
+          if(image.caption === undefined || image.caption === '') { return null; }
           if (Object.hasOwn(image, 'classNames') && image.classNames?.includes('clone')) {
             return null;
           }
@@ -329,6 +321,70 @@ export const MeowCarousel = () => {
           );
         }).filter((image) => image !== null)
       }</div>
+    );
+  }, [carouselItems, currentIndex]);
+    
+  useEffect(() => {
+    function resizeHandler() {
+      slideCarouselTo(currentIndex, true);
+    }
+    window.addEventListener('resize', resizeHandler);
+    return () => window.removeEventListener('resize', resizeHandler);
+  }, [currentIndex, slideCarouselTo]);
+
+  useEffect(() => {
+    if (trackWidth === 0 && trackRef.current && carouselItems.length > 0) {
+      const mglItemElements = Array.from(trackRef.current?.children);
+      setTrackWidth(mglItemElements.reduce((a, b) => a + b.offsetWidth, 0));
+      setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
+    }
+  }, [carouselItems]);
+
+  useEffect(() => {
+    if (trackWidth > 0) {
+      setTimeout(() => {
+        slideCarouselTo(firstIndex, true);
+      }, 300);
+    }
+  }, [trackWidth, firstIndex, slideCarouselTo]);
+
+  useEffect( () => {
+      if(!autoPlay) {
+        return;
+      }
+      let interval = setInterval(() => {
+        setTimeout(() => {
+          slideCarouselToNext();
+        }, 10);
+      }, 4000);
+
+    return () => clearInterval(interval);
+  }, [autoPlay, slideCarouselToNext] );
+
+  return (
+    <div ref={ref} id={classId} className={className} style={inlineStyle}
+      data-mgl-gutter={carouselGutter}
+      data-mgl-arrow_nav={carouselArrowNavEnabled}
+      data-mgl-dot_nav={carouselDotNavEnabled}>
+      <div ref={trackRef} className={['meow-carousel-track', ...trackClassNames].join(' ')} style={{ width: `${trackWidth}px`, transform: trackTransform, opacity: currentIndex != null ? 1 : 0 }}
+        onMouseDown={mouseDownHandler}
+        onTouchStart={mouseDownHandler}
+        onMouseMove={mouseMoveHandler}
+        onTouchMove={mouseMoveHandler}
+        onMouseUp={mouseUpHandler}
+        onTouchEnd={mouseUpHandler}>
+        {carouselItems.map((image) => <MeowGalleryItem key={image.dataIndex} image={image} />)}
+      </div>
+
+      { carouselAutoplay && autoPlayButtonJsx }
+
+      { carouselArrowNavEnabled && arrowNavigationJsx }
+
+      { carouselCaptionsJsx } 
+
+      { carouselThumbnailNavEnabled && thumbnailNavigationJsx }
+
+      { carouselDotNavEnabled && dotNavigationJsx } 
     </div>
   );
 };
