@@ -175,8 +175,21 @@
 		width: 100%;
 		box-sizing: border-box;
 		background: transparent;
-		color: white;
+		color: #fff;
+        text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.7); 
 		z-index: 9;
+
+		.meow-immersive-caption {
+			
+            border-radius: 4px;
+            filter: brightness(.6) grayscale(.1);
+
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+		}
 
 		.meow-carousel-caption {
 			margin: 0;
@@ -188,13 +201,12 @@
 			text-align: center;
 
 			font-size: 16px;
-			background-color: rgba(0, 0, 0, 0.5);
 			animation: slide 0.8s ease-in-out forwards;
 
 			@keyframes slide {
 				0% {
 					opacity: 0;
-					transform: translateY(-10%);
+					transform: translateY(+10%);
 				}
 				100% {
 					opacity: 1;
@@ -204,8 +216,10 @@
 
 			p {
 				margin: 0;
-				padding: 5px;
+				padding: 15px;
 				box-sizing: border-box;
+				position: relative;
+				text-align: justify;
 			}
 
 			&.active {
@@ -225,13 +239,7 @@
 		align-items: center;
 
 		height: auto;
-		margin-top: 10px;
-
-		&.nowrap {
-			display: inline-block;
-			white-space: nowrap;
-			transition: transform 0.3s;
-		}
+		padding-top: 10px;
 		
 		overflow-x: hidden;
 		overflow-y: hidden;
@@ -259,15 +267,64 @@
 		}
 	}
 
+	.meow-nowrap {
+		display: inline-block;
+		width: max-content;
+		white-space: nowrap;
+		transition: transform 0.3s ease;
+	}
+
+	.meow-inside-top {
+		position: absolute;
+		width: 100%;
+		top: 0;
+
+		background: linear-gradient(rgba(0, 0, 0, 0.85), 50%, transparent);
+
+		&.meow-nowrap {
+			width: max-content;
+			padding-right: 1500px; //Cover the rest of the carousel at then end of the thumbnails
+			height: 100px;
+		}
+		
+		opacity: 0.3;
+		transition:
+			opacity 0.5s ease,
+			background 0.5s ease,
+			transform 0.3s ease;
+
+		&:hover {
+			opacity: 1;
+			background-position: 0% 100%;
+		}
+	}
+
+	.meow-inside-bottom-text {
+		position: absolute;
+		bottom: 0;
+
+		background: linear-gradient(transparent, 50%, rgba(0, 0, 0, 0.85));
+
+		margin-bottom: 0;
+		
+		opacity: 0.2;
+		transform: translateY(15%);
+		transition:
+			opacity 0.5s ease,
+			background 0.5s ease,
+			transform 0.3s ease;
+
+		&:hover {
+			opacity: 1;
+			background-position: 0% 100%;
+			transform: translateY(0);
+		}
+	}
+
 	.meow-carousel-nav-dots-container {
 		width: 100%;
-		margin-top: 10px;
+		padding-top: 10px;
 		text-align: center;
-
-		&.nowrap {
-			text-wrap: nowrap;
-			transition: transform 0.3s;
-		}
 
 		.meow-carousel-nav-dot {
 			display: inline-block;

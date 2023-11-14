@@ -9,7 +9,7 @@
     "dev-admin": "webpack --watch --config webpack.admin.config.js",
     "build": "yarn build-galleries && yarn build-admin",
     "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
-    "build-admin": "webpack --config webpack.admin.config.js",
+    "build-admin": "webpack --config webpack.admin.config.js --mode production",
     "analysis-galleries": "webpack --config webpack.galleries.config.js  --mode production --env analysis='true'",
     "analysis-admin": "webpack --config webpack.admin.config.js  --mode production --env analysis='true'",
     "zip": "zip -r ~/Desktop/meow-gallery-pro.zip . -x node_modules/\\* .git/\\* logs/\\*"

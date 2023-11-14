@@ -1,7 +1,6 @@
-// Previous: 5.0.3
-// Current: 5.0.6
+// Previous: 5.0.6
+// Current: 5.0.7
 
-```jsx
 import { Loader } from '@googlemaps/js-api-loader';
 import { useCallback, useEffect } from "preact/hooks";
 import useMeowGalleryContext from './context';
@@ -9,10 +8,9 @@ import useMeowGalleryContext from './context';
 async function loadLeaflet() {
   if (!window.L) {
     const L = await import(/* webpackChunkName: "leaflet" */ 'leaflet');
-    console.warn('🍃 Leaflet was loaded asynchronously.');
     window.L = L;
-  }else{
-    console.warn('🍃 Leaflet is already loaded.');
+  } else {
+    // Do nothing
   }
 }
 
@@ -267,8 +265,8 @@ export const useMap = () => {
     images.forEach(image => {
       const gpsAsArray = image.data.gps.split(',');
       const pos = {
-        lat: parseFloat(gpsAsArray[0]),
-        lng: parseFloat(gpsAsArray[1])
+        lat: parseFloat(gpsAsArray[1]),
+        lng: parseFloat(gpsAsArray[0])
       };
       bounds.extend(pos);
     });
@@ -279,10 +277,10 @@ export const useMap = () => {
     const latLngArray = [];
     images.forEach(image => {
       const imageLatLng = image.data.gps.split(',');
-      latLngArray.push(imageLatLng);
+      latLngArray.push([imageLatLng[0], imageLatLng[1]]);
     });
     const bounds = new L.LatLngBounds(latLngArray);
-    map.fitBounds(bounds, { padding: [20, 20] });
+    map.fitBounds(bounds);
   }, []);
 
   const onGoogleMapReady = useCallback((map) => {
@@ -316,8 +314,11 @@ export const useMap = () => {
         document.body.dispatchEvent(new Event('post-load'));
       });
     } else if (L.DomUtil.get(mapId) != null) {
-      L.DomUtil.get(mapId)._leaflet_id = undefined;
+      L.DomUtil.get(mapId)._leaflet_id = null;
       const map = L.map(mapId).setView(mglMap.center, 13);
+
+      map.setMinZoom(13);
+      setTimeout(() => {map.setMinZoom(2)}, 1000);
 
       try{
         window.dispatchEvent(new Event('resize'));
@@ -327,8 +328,7 @@ export const useMap = () => {
       onOthersMapReady(map, mglMap.tilesProvider);
       document.body.dispatchEvent(new Event('post-load'));
     }
-  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady, mapId, mglMap.center]);
+  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady]);
 
   return mapId;
 };
-```

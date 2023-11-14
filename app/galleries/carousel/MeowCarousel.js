@@ -1,6 +1,7 @@
-// Previous: 5.0.5
-// Current: 5.0.6
+// Previous: 5.0.6
+// Current: 5.0.7
 
+```jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
 import useMeowGalleryContext from "../context";
@@ -10,7 +11,7 @@ export const MeowCarousel = () => {
   const ref = useRef(null);
   const trackRef = useRef(null);
   const { classId, className, inlineStyle, images, carouselGutter, carouselArrowNavEnabled,
-    carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselAutoplay } = useMeowGalleryContext();
+    carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselCompact, carouselAutoplay, captions } = useMeowGalleryContext();
 
   const [trackClassNames, setTrackClassNames] = useState([]);
   const [trackTransform, setTrackTransform] = useState('');
@@ -23,6 +24,8 @@ export const MeowCarousel = () => {
   const [startTrackTranslation, setStartTrackTranslation] = useState(0);
   const [deltaMoveX, setDeltaMoveX] = useState(0);
   const [autoPlay, setAutoPlay] = useState(carouselAutoplay ?? false);
+
+  const [rendered, setRendered] = useState(false);
 
   const carouselItems = useMemo(() => {
     const numberOfImages = images.length;
@@ -43,7 +46,7 @@ export const MeowCarousel = () => {
         }
       ));
   }, [images, currentIndex]);
-  const isCloneItem = useCallback((index) => carouselItems.find(v => v.dataIndex === index).classNames.includes('clone'), [carouselItems]);
+  const isCloneItem = useCallback((index) => carouselItems.find(v => v.dataIndex === index)?.classNames.includes('clone'), [carouselItems]);
   const currentItem = useMemo(() => carouselItems.find(v => v.dataIndex === currentIndex), [carouselItems, currentIndex]);
   const numberOfItems = carouselItems.length;
   const firstIndex = 2;
@@ -56,7 +59,7 @@ export const MeowCarousel = () => {
     const newIndex = parseInt(destination);
     setTrackClassNames(noTransition ? ['no-transition'] : []);
     const nextElement = mglItemElements.find(v => v.dataIndex === newIndex)?.element;
-    if(!nextElement) return;
+    if (!nextElement) return;
     const tx = (-1 * (getCenterOffset(nextElement) - ref.current.offsetWidth / 2));
     setTrackTransform(`translate3d(${tx}px, 0, 0)`);
 
@@ -89,6 +92,7 @@ export const MeowCarousel = () => {
       slideCarouselTo(firstIndex-1, true);
       baseIndex = firstIndex-1;
     }
+    
     setTimeout(() => {
       const nextIndex = baseIndex === numberOfItems - 1 ? 0 : baseIndex + 1;
       slideCarouselTo(nextIndex);
@@ -192,6 +196,7 @@ export const MeowCarousel = () => {
       if (mostMagnetizedItem === currentIndex && deltaMoveX <= -80) {
         slideCarouselToPrev();
       }
+
       slideCarouselTo(mostMagnetizedItem);
       return false;
     }
@@ -222,7 +227,7 @@ export const MeowCarousel = () => {
       <>
           <div className="meow-carousel-prev-btn" onClick={slideCarouselToPrev}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z" />
+              <path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c-4.7 4.7-10.9 7-17 7s-12.3-2.3-17-7c-9.4-9.4-9.4-24.6 0-33.9L217.9 256z" />
             </svg>
           </div>
           <div className="meow-carousel-next-btn" onClick={slideCarouselToNext}>
@@ -235,14 +240,14 @@ export const MeowCarousel = () => {
   }, [slideCarouselToPrev, slideCarouselToNext]);
 
   const thumbnailNavigationJsx = useMemo(() => {
-
-    const hasTooManyThumbnails = (carouselItems.length-4) > 25 ? 'nowrap' : '';
+    const compact = carouselCompact ? 'meow-inside-top' : '';
+    const hasTooManyThumbnails = (carouselItems.length-4) > 25 ? 'meow-nowrap' : '';
     const visibleOffset = currentIndex-firstIndex-5 < 0 ? 0 : currentIndex-firstIndex-5;
     const thumbnailWrapOffset = Math.floor((visibleOffset) * 60) + 5; 
 
     return (
       <div
-      className={`meow-carousel-nav-thumbnails-container ${hasTooManyThumbnails}`}
+      className={`meow-carousel-nav-thumbnails-container ${hasTooManyThumbnails} ${compact}`}
       style={{ transform: `translateX(-${hasTooManyThumbnails ? thumbnailWrapOffset : 0}px)` }}
       >
           {carouselItems.map((image) => {
@@ -268,12 +273,13 @@ export const MeowCarousel = () => {
   }, [carouselItems, currentIndex, slideCarouselTo]);
 
   const dotNavigationJsx = useMemo(() => {
-    const hasTooManyDots = (carouselItems.length-4) > 25 ? 'nowrap' : '';
+    const compact = carouselCompact ? 'meow-inside-top' : '';
+    const hasTooManyDots = (carouselItems.length-4) > 25 ? 'meow-nowrap' : '';
     const visibleOffset = currentIndex-firstIndex-10 < 0 ? 0 : currentIndex-firstIndex-10;
     const dotWrapOffset = Math.floor((visibleOffset) * 26) + 5;
     return (
       <div
-      className={`meow-carousel-nav-dots-container ${hasTooManyDots}`}
+      className={`meow-carousel-nav-dots-container ${hasTooManyDots} ${compact}`}
       style={{ transform: `translateX(-${hasTooManyDots ? dotWrapOffset : 0}px)` }}
       >
           {carouselItems.map((image) => {
@@ -299,8 +305,10 @@ export const MeowCarousel = () => {
   }, [carouselItems, currentIndex, slideCarouselTo]);
 
   const carouselCaptionsJsx = useMemo(() => {
+    const compact = carouselCompact ? 'meow-inside-bottom-text' : '';
+    
     return (
-      <div className="meow-carousel-caption-container">{
+      <div className={`meow-carousel-caption-container ${compact}`}>{
         carouselItems.map((image) => {
           if(image.caption === undefined || image.caption === '') { return null; }
           if (Object.hasOwn(image, 'classNames') && image.classNames?.includes('clone')) {
@@ -314,10 +322,15 @@ export const MeowCarousel = () => {
           ) {
             classNames.push('active');
           }
+
           return (
-            <div key={image.dataIndex} className={classNames.join(' ')}>
+            <div key={image.dataIndex} className={`${classNames.join(' ')}`}>
+              <div className={"meow-immersive-caption"}
+              style={`background: url('${image.img_html.match(/src="([^"]*)/)[1]}') no-repeat center center; background-size: cover;`} />
+
               <p dangerouslySetInnerHTML={{ __html: image.caption }} />
             </div>
+
           );
         }).filter((image) => image !== null)
       }</div>
@@ -338,7 +351,7 @@ export const MeowCarousel = () => {
       setTrackWidth(mglItemElements.reduce((a, b) => a + b.offsetWidth, 0));
       setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
     }
-  }, [carouselItems]);
+  }, [trackRef.current, carouselItems]); // subtle bug: depend on trackRef.current, not trackRef.current?.children
 
   useEffect(() => {
     if (trackWidth > 0) {
@@ -346,7 +359,7 @@ export const MeowCarousel = () => {
         slideCarouselTo(firstIndex, true);
       }, 300);
     }
-  }, [trackWidth, firstIndex, slideCarouselTo]);
+  }, [trackWidth]);
 
   useEffect( () => {
       if(!autoPlay) {
@@ -359,10 +372,16 @@ export const MeowCarousel = () => {
       }, 4000);
 
     return () => clearInterval(interval);
-  }, [autoPlay, slideCarouselToNext] );
+  }, [autoPlay] ); // subtle bug: missing currentIndex dependency (carousel doesn't loop as expected)
+
+  useEffect(() => {
+    setRendered(true);
+  }, []);
+
+  const freshInlineStyle = rendered ? { ...inlineStyle } : { ...inlineStyle, visibility: 'hidden', display: 'none' };
 
   return (
-    <div ref={ref} id={classId} className={className} style={inlineStyle}
+    <div ref={ref} id={classId} className={className} style={freshInlineStyle}
       data-mgl-gutter={carouselGutter}
       data-mgl-arrow_nav={carouselArrowNavEnabled}
       data-mgl-dot_nav={carouselDotNavEnabled}>
@@ -380,7 +399,7 @@ export const MeowCarousel = () => {
 
       { carouselArrowNavEnabled && arrowNavigationJsx }
 
-      { carouselCaptionsJsx } 
+      { captions !== 'none' && carouselCaptionsJsx } 
 
       { carouselThumbnailNavEnabled && thumbnailNavigationJsx }
 
@@ -388,3 +407,4 @@ export const MeowCarousel = () => {
     </div>
   );
 };
+```
