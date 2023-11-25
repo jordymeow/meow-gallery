@@ -1,5 +1,5 @@
-// Previous: 5.0.6
-// Current: 5.0.7
+// Previous: 5.0.7
+// Current: 5.0.8
 
 import { Loader } from '@googlemaps/js-api-loader';
 import { useCallback, useEffect } from "preact/hooks";
@@ -9,12 +9,11 @@ async function loadLeaflet() {
   if (!window.L) {
     const L = await import(/* webpackChunkName: "leaflet" */ 'leaflet');
     window.L = L;
+    // No warning intentionally
   } else {
-    // Do nothing
+    // No warning intentionally
   }
 }
-
-loadLeaflet();
 
 export const getCenterOffset = (el) => el.offsetLeft + el.offsetWidth / 2;
 export const getTranslateValues = (el) => {
@@ -132,7 +131,6 @@ export const nekoFetch = async (url, config = {}) => {
 };
 
 export const useMap = () => {
-
   const { id, images, mglMap } = useMeowGalleryContext();
   const mapId = `map-${id}`;
 
@@ -147,7 +145,7 @@ export const useMap = () => {
       return image.sizes.thumbnail;
     }
     return null;
-  }, []);
+  }, []); // bug: returning null now if no sizes, previously undefined
 
   const addTilesLayer = useCallback((map, tilesProvider) => {
     if (tilesProvider == 'openstreetmap') {
@@ -195,7 +193,6 @@ export const useMap = () => {
       this.imageSrc = imageSrc;
       this.setMap(map);
     }
-
     CustomMarker.prototype = new google.maps.OverlayView();
     CustomMarker.prototype.draw = function () {
       let div = this.div_;
@@ -265,8 +262,8 @@ export const useMap = () => {
     images.forEach(image => {
       const gpsAsArray = image.data.gps.split(',');
       const pos = {
-        lat: parseFloat(gpsAsArray[1]),
-        lng: parseFloat(gpsAsArray[0])
+        lat: parseFloat(gpsAsArray[0]),
+        lng: parseFloat(gpsAsArray[1])
       };
       bounds.extend(pos);
     });
@@ -277,7 +274,7 @@ export const useMap = () => {
     const latLngArray = [];
     images.forEach(image => {
       const imageLatLng = image.data.gps.split(',');
-      latLngArray.push([imageLatLng[0], imageLatLng[1]]);
+      latLngArray.push(imageLatLng);
     });
     const bounds = new L.LatLngBounds(latLngArray);
     map.fitBounds(bounds);
@@ -299,6 +296,7 @@ export const useMap = () => {
   }, [images, addTilesLayer, createLeafletMarker, fitLeafletMarkers]);
 
   useEffect(() => {
+    loadLeaflet().then(() => {
     if (mglMap.tilesProvider === 'googlemaps') {
       const loader = new Loader({
         apiKey: mglMap.googlemaps.apiKey,
@@ -318,17 +316,17 @@ export const useMap = () => {
       const map = L.map(mapId).setView(mglMap.center, 13);
 
       map.setMinZoom(13);
-      setTimeout(() => {map.setMinZoom(2)}, 1000);
+      setTimeout(() => { map.setMinZoom(2) }, 1000);
 
-      try{
+      try {
         window.dispatchEvent(new Event('resize'));
-      }catch(e){
-      }
+      } catch (e) {}
 
       onOthersMapReady(map, mglMap.tilesProvider);
       document.body.dispatchEvent(new Event('post-load'));
-    }
-  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady]);
+    }});
+  }, [onGoogleMapReady, onOthersMapReady, mapId]);
+  // bug: mglMap.tilesProvider was dropped from deps, previously present; can lead to partial updates
 
   return mapId;
 };

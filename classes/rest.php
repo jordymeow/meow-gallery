@@ -35,6 +35,33 @@ class Meow_MGL_Rest
 			'callback' => array( $this, 'rest_all_settings' )
 		) );
 
+		// Gallery Manager
+		register_rest_route( $this->namespace, '/latest_photos', array(
+			'methods' => 'GET',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_latest_photos' ),
+			'args' => array(
+				'search' => array( 'required' => false ),
+				'offset' => array( 'required' => false, 'default' => 0 ),
+				'except' => array( 'required' => false ),
+			)
+		) );
+		register_rest_route( $this->namespace, '/save_shortcode', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_save_shortcode' ),
+		) );
+		register_rest_route( $this->namespace, '/fetch_shortcodes', array(
+			'methods' => 'GET',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_fetch_shortcodes' ),
+		) );
+		register_rest_route( $this->namespace, '/remove_shortcode', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_remove_shortcode' ),
+		) );
+
 		// Gutenberg Block
 		register_rest_route( $this->namespace, '/preview', array(
 			'methods' => 'POST',
@@ -67,6 +94,129 @@ class Meow_MGL_Rest
 
 	function rest_all_settings() {
 		return new WP_REST_Response( [ 'success' => true, 'data' => $this->core->get_all_options() ], 200 );
+	}
+
+	function rest_save_shortcode( $request ) {
+		try {
+			$params = $request->get_json_params();
+
+			$id = $params['id'];
+			$medias = $params['medias'];
+			$name = $params['name'];
+			$layout = $params['layout'];
+
+
+			if ( !$name ) {
+				throw new Exception( __( 'Please enter a name for your shortcode.', MGL_DOMAIN ) );
+			}
+
+			if ( !$medias || !count( $medias['thumbnail_ids'] ) ) {
+				throw new Exception( __( 'Please select at least one image.', MGL_DOMAIN ) );
+			}
+
+			if ( !$id || $id == '' ) {
+				$id = $this->core->uniqidReal(10);
+			}
+
+			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+
+			$shortcodes[$id] = [
+				'name' => $name,
+				'layout' => $layout,
+				'medias' => $medias
+			];
+
+			update_option( 'meow_gallery_shortcodes', $shortcodes );
+
+			return new WP_REST_Response([ 'success' => true, 'message' => 'Shortcode created.' ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function rest_fetch_shortcodes( $request ) {
+		$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+		return new WP_REST_Response( [ 'success' => true, 'data' => $shortcodes ], 200 );
+	}
+
+	function rest_remove_shortcode( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$id = $params['id'];
+			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+			unset( $shortcodes[$id] );
+			update_option( 'meow_gallery_shortcodes', $shortcodes );
+			return new WP_REST_Response([ 'success' => true, 'message' => 'Shortcode removed.' ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function rest_latest_photos( $request ) {
+		$search = trim( $request->get_param('search') );
+		$offset = trim( $request->get_param('offset') );
+		$except = json_decode( trim( $request->get_param('except') ), true);
+		$unusedImages = trim( $request->get_param('unusedImages') );
+
+		global $wpdb;
+		$searchPlaceholder = $search ? '%' . $search . '%' : '';
+		$where_search_clause = $search ? $wpdb->prepare(
+			"AND (p.post_title LIKE %s OR p.post_content LIKE %s OR p.post_name LIKE %s) ",
+			$searchPlaceholder,
+			$searchPlaceholder,
+			$searchPlaceholder
+		) : '';
+		$where_search_clause .= $except && count($except) ? $wpdb->prepare(
+			"AND p.ID NOT IN (" . implode(', ', array_fill(0, count($except), '%s')). ")", $except
+		) : '';
+		$join_clause = '';
+		if ( $unusedImages ) {
+			$join_clause = "LEFT JOIN $wpdb->postmeta pm ON p.ID = pm.post_id AND pm.meta_key = 'sclegn_posts' ";
+			$where_search_clause .= "AND pm.meta_id IS NULL";
+		}
+		$posts = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.ID, p.post_title, p.post_mime_type 
+				FROM $wpdb->posts p 
+				$join_clause
+				WHERE p.post_type='attachment' 
+				AND p.post_status='inherit' 
+				$where_search_clause 
+				ORDER BY p.post_modified DESC 
+				LIMIT %d, 23", $offset
+			), OBJECT
+		);
+		$posts_count = (int)$wpdb->get_var(
+			"SELECT COUNT(*)
+			FROM $wpdb->posts p 
+			$join_clause
+			WHERE p.post_type='attachment' 
+			AND p.post_status='inherit' 
+			$where_search_clause"
+		);
+
+		$data = [];
+		foreach ( $posts as $post ) {
+			$file_url = get_attached_file( $post->ID );
+			if ( file_exists( $file_url ) ) {
+				$data[] = [
+					'id' => $post->ID,
+					'thumbnail_url' => wp_get_attachment_image_url($post->ID, 'thumbnail'),
+					'zoom_url' => wp_get_attachment_image_url($post->ID, 'large'),
+					'title' => $post->post_title,
+					'filename' => basename( $file_url ),
+					'size' => size_format( filesize( $file_url ) ),
+					'mime' => $post->post_mime_type,
+				];
+			}
+		}
+		return new WP_REST_Response( [
+			'success' => true,
+			'data' => $data,
+			'total' => $posts_count
+		], 200 );
 	}
 
 	function rest_update_option( $request ) {

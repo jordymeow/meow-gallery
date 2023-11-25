@@ -1,5 +1,5 @@
-// Previous: 5.0.6
-// Current: 5.0.7
+// Previous: 5.0.7
+// Current: 5.0.8
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
@@ -61,8 +61,9 @@ const convertToOptions = (options) => {
     horizontalGutter: options.horizontal_gutter,
     horizontalImageHeight: options.horizontal_image_height,
     horizontalHideScrollbar: options.horizontal_hide_scrollbar,
-    horizontalScrollWarning: options.horizontal_scroll_warning,
+    horizontalScrollWarning: options.horizontal_scroll_warning, 
     carouselCompact: options.carousel_compact,
+    carouselImmersive: options.carousel_immersive,
     carouselGutter: options.carousel_gutter,
     carouselImageHeight: options.carousel_image_height,
     carouselArrowNavEnabled: options.carousel_arrow_nav_enabled,
@@ -150,12 +151,14 @@ export const tilesReferences = {
   'ooiii': { 'box': 'c', 'orientation': 'portrait' }
 };
 
+/****************************************
+  Initial state
+****************************************/
 let busyCounter = 0;
 
 const initialState = {
   apiUrl: null,
   restNonce: null,
-
   id: null,
   images: [],
   imageIds: [],
@@ -236,6 +239,10 @@ const initialState = {
   atts: {},
 };
 
+/****************************************
+  Action types
+****************************************/
+
 const SET_IMAGES = "SET_IMAGES";
 const SET_CLASS_NAMES = "SET_CLASS_NAMES";
 const SET_CONTAINER_CLASS_NAMES = "SET_CONTAINER_CLASS_NAMES";
@@ -250,6 +257,10 @@ const SET_CAN_INFINITE_SCROLL = "SET_CAN_INFINITE_SCROLL";
 const PUSH_BUSY = 'PUSH_BUSY';
 const POP_BUSY = 'POP_BUSY';
 const ERROR_UPDATED = 'ERROR_UPDATED';
+
+/****************************************
+  Global reducer
+****************************************/
 
 const globalStateReducer = (state, action) => {
   switch (action.type) {
@@ -385,6 +396,10 @@ const globalStateReducer = (state, action) => {
   }
 };
 
+/****************************************
+  Global state
+****************************************/
+
 const MeowGalleryContext = createContext();
 
 const useMeowGalleryContext = () => {
@@ -425,8 +440,14 @@ const useMeowGalleryContext = () => {
     }
   };
 
+
   return { ...state, ...actions };
 };
+
+
+/****************************************
+  Global state provider
+****************************************/
 
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
   const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
@@ -446,7 +467,7 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

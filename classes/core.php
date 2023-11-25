@@ -68,8 +68,30 @@ class Meow_MGL_Core {
 	function gallery( $atts, $isPreview = false ) {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 
-		// Get the IDs
 		$image_ids = array();
+		$layout = 'none';
+
+		// Get the IDs
+		if ( isset( $atts['id'] ) ) {
+			$shortcode_id = $atts['id'];
+
+			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+			if ( !isset( $shortcodes[$shortcode_id] ) ) {
+				return "<p class='meow-error'><b>Meow Gallery:</b> This ID wasn't found in the Gallery Manager.</p>";
+			}
+
+			if (!isset($shortcodes[$shortcode_id]['medias']) || !isset($shortcodes[$shortcode_id]['medias']['thumbnail_ids'])) {
+				return "<p class='meow-error'><b>Meow Gallery:</b> Thumbnail IDs not found.</p>";
+			}
+
+			$image_ids = $shortcodes[$shortcode_id]['medias']['thumbnail_ids'];
+
+			if (isset($shortcodes[$shortcode_id]['layout'])) {
+				$layout = $shortcodes[$shortcode_id]['layout'];
+			}
+			
+		}
+
 		if ( isset( $atts['ids'] ) ) {
 			$image_ids = $atts['ids'];
 		}
@@ -109,18 +131,14 @@ class Meow_MGL_Core {
 		}
 
 		// Layout
-		$layout = 'none';
+		
 		if ( isset( $atts['layout'] ) && $atts['layout'] != 'default' )
 			$layout = $atts['layout'];
 		else if ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' )
 			$layout = $atts['mgl-layout'];
-		else
+		else if ( $layout === 'none')
 			$layout = $this->get_option( 'layout', 'tiles' );
 
-		// Check the settings
-		if ( $layout === 'none' ){
-			return gallery_shortcode( $atts );
-		}
 		$layoutClass = 'Meow_MGL_Builders_' . ucfirst( $layout );
 		if ( !class_exists( $layoutClass ) ) {
 			error_log( "Meow Gallery: Class $layoutClass does not exist." );
@@ -659,6 +677,17 @@ class Meow_MGL_Core {
 
 	private function get_data_as_json( $data ) {
 		return htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' );
+	}
+
+	function uniqidReal($lenght = 13) {
+		if (function_exists("random_bytes")) {
+			$bytes = random_bytes(ceil($lenght / 2));
+		} elseif (function_exists("openssl_random_pseudo_bytes")) {
+			$bytes = openssl_random_pseudo_bytes(ceil($lenght / 2));
+		} else {
+			throw new Exception("no cryptographically secure random function available");
+		}
+		return substr(bin2hex($bytes), 0, $lenght);
 	}
 }
 
