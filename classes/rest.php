@@ -52,7 +52,7 @@ class Meow_MGL_Rest
 			'callback' => array( $this, 'rest_save_shortcode' ),
 		) );
 		register_rest_route( $this->namespace, '/fetch_shortcodes', array(
-			'methods' => 'GET',
+			'methods' => 'POST',
 			'permission_callback' => array( $this->core, 'can_access_features' ),
 			'callback' => array( $this, 'rest_fetch_shortcodes' ),
 		) );
@@ -115,18 +115,19 @@ class Meow_MGL_Rest
 			}
 
 			if ( !$id || $id == '' ) {
-				$id = $this->core->uniqidReal(10);
+				$id = $this->core->generate_uniqid(10);
 			}
 
-			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+			$shortcodes = get_option( 'mgl_shortcodes', array() );
 
 			$shortcodes[$id] = [
 				'name' => $name,
 				'layout' => $layout,
-				'medias' => $medias
+				'medias' => $medias,
+				'updated' =>  time(),
 			];
 
-			update_option( 'meow_gallery_shortcodes', $shortcodes );
+			update_option( 'mgl_shortcodes', $shortcodes );
 
 			return new WP_REST_Response([ 'success' => true, 'message' => 'Shortcode created.' ], 200 );
 		}
@@ -136,17 +137,43 @@ class Meow_MGL_Rest
 	}
 
 	function rest_fetch_shortcodes( $request ) {
-		$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
-		return new WP_REST_Response( [ 'success' => true, 'data' => $shortcodes ], 200 );
+		try {
+			$params = $request->get_json_params();
+
+			$offset = isset( $params['offset'] ) ? $params['offset'] : 0;
+			$limit = isset( $params['limit'] ) ? $params['limit'] : 10;
+			$sort_updated = $params['sort']['by']; // desc, asc
+
+			$shortcodes = get_option( 'mgl_shortcodes', array() );
+			$total = count( $shortcodes );
+
+			$shortcodes = array_slice( $shortcodes, $offset, $limit );
+			// Sort by updated
+			if ( $sort_updated == 'desc' ) {
+				uasort( $shortcodes, function( $a, $b ) {
+					return $b['updated'] - $a['updated'];
+				});
+			}
+			else {
+				uasort( $shortcodes, function( $a, $b ) {
+					return $a['updated'] - $b['updated'];
+				});
+			}
+
+			return new WP_REST_Response([ 'success' => true, 'data' => $shortcodes, 'total' => $total ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
 	}
 
 	function rest_remove_shortcode( $request ) {
 		try {
 			$params = $request->get_json_params();
 			$id = $params['id'];
-			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+			$shortcodes = get_option( 'mgl_shortcodes', array() );
 			unset( $shortcodes[$id] );
-			update_option( 'meow_gallery_shortcodes', $shortcodes );
+			update_option( 'mgl_shortcodes', $shortcodes );
 			return new WP_REST_Response([ 'success' => true, 'message' => 'Shortcode removed.' ], 200 );
 		}
 		catch ( Exception $e ) {
@@ -169,12 +196,32 @@ class Meow_MGL_Rest
 			$searchPlaceholder
 		) : '';
 		$where_search_clause .= $except && count($except) ? $wpdb->prepare(
-			"AND p.ID NOT IN (" . implode(', ', array_fill(0, count($except), '%s')). ")", $except
+			"AND p.ID NOT IN (" . implode(', ', array_fill(0, count($except), '%s')) . ")", $except
 		) : '';
 		$join_clause = '';
 		if ( $unusedImages ) {
-			$join_clause = "LEFT JOIN $wpdb->postmeta pm ON p.ID = pm.post_id AND pm.meta_key = 'sclegn_posts' ";
-			$where_search_clause .= "AND pm.meta_id IS NULL";
+			// Retrieve the serialized option from the database
+			$meow_gallery_shortcodes = get_option( 'mgl_shortcodes' );
+
+			// Deserialize the option to get the array
+			$shortcodes_array = maybe_unserialize( $meow_gallery_shortcodes );
+
+			// Extract all thumbnail IDs from the array
+			$used_thumbnail_ids = [];
+			foreach ( $shortcodes_array as $shortcode ) {
+				if ( isset($shortcode['medias']['thumbnail_ids'] ) && is_array( $shortcode['medias']['thumbnail_ids'] ) ) {
+					$used_thumbnail_ids = array_merge( $used_thumbnail_ids, $shortcode['medias']['thumbnail_ids'] );
+				}
+			}
+
+			// Make sure the IDs are integers
+			$used_thumbnail_ids = array_map( 'intval', $used_thumbnail_ids );
+
+			// Include the NOT IN clause to exclude used thumbnail IDs
+			if ( !empty( $used_thumbnail_ids ) ) {
+				$placeholders = implode( ',', array_fill( 0, count( $used_thumbnail_ids ), '%d' ) );
+				$where_search_clause .= $wpdb->prepare( " AND p.ID NOT IN ($placeholders) ", $used_thumbnail_ids );
+			}
 		}
 		$posts = $wpdb->get_results(
 			$wpdb->prepare(

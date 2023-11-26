@@ -22,6 +22,14 @@ class Meow_MGL_Core {
 		MeowCommon_Helpers::is_rest() && new Meow_MGL_Rest( $this );
 		is_admin() && new Meow_MGL_Admin( $this );
 
+		// TODO: Remove after December 20th
+		// Jordy decided to rename meow_gallery_shortcodes into mgl_shortcodes
+		$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+		if ( !empty( $shortcodes ) ) {
+			update_option( 'mgl_shortcodes', $shortcodes );
+			delete_option( 'meow_gallery_shortcodes' );
+		}
+
 		// The gallery build process should only be enabled if the request is non-asynchronous
 		if ( !MeowCommon_Helpers::is_asynchronous_request()  ) {
 			add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
@@ -69,13 +77,14 @@ class Meow_MGL_Core {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 
 		$image_ids = array();
-		$layout = 'none';
+		$layout = '';
 
 		// Get the IDs
-		if ( isset( $atts['id'] ) ) {
+
+		if ( isset( $atts['id'] ) && !isset( $atts['ids'] ) ) {
 			$shortcode_id = $atts['id'];
 
-			$shortcodes = get_option( 'meow_gallery_shortcodes', array() );
+			$shortcodes = get_option( 'mgl_shortcodes', array() );
 			if ( !isset( $shortcodes[$shortcode_id] ) ) {
 				return "<p class='meow-error'><b>Meow Gallery:</b> This ID wasn't found in the Gallery Manager.</p>";
 			}
@@ -90,6 +99,10 @@ class Meow_MGL_Core {
 				$layout = $shortcodes[$shortcode_id]['layout'];
 			}
 			
+		}
+
+		if ( isset( $atts['id'] ) && isset( $atts['ids'] ) ) {
+			error_log( "⚠️ Meow Gallery: in gallery $atts[id] both 'id' and 'ids' attributes are used in the same shortcode. 'id' will be ignored." );
 		}
 
 		if ( isset( $atts['ids'] ) ) {
@@ -136,8 +149,10 @@ class Meow_MGL_Core {
 			$layout = $atts['layout'];
 		else if ( isset( $atts['mgl-layout'] ) && $atts['mgl-layout'] != 'default' )
 			$layout = $atts['mgl-layout'];
-		else if ( $layout === 'none')
+		
+		if ( $layout === 'none' || $layout === '' ){
 			$layout = $this->get_option( 'layout', 'tiles' );
+		}
 
 		$layoutClass = 'Meow_MGL_Builders_' . ucfirst( $layout );
 		if ( !class_exists( $layoutClass ) ) {
@@ -679,15 +694,17 @@ class Meow_MGL_Core {
 		return htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' );
 	}
 
-	function uniqidReal($lenght = 13) {
-		if (function_exists("random_bytes")) {
-			$bytes = random_bytes(ceil($lenght / 2));
-		} elseif (function_exists("openssl_random_pseudo_bytes")) {
-			$bytes = openssl_random_pseudo_bytes(ceil($lenght / 2));
-		} else {
-			throw new Exception("no cryptographically secure random function available");
+	function generate_uniqid( $length = 13 ) {
+		if ( function_exists( "random_bytes" ) ) {
+			$bytes = random_bytes( ceil( $length / 2 ) );
 		}
-		return substr(bin2hex($bytes), 0, $lenght);
+		elseif ( function_exists( "openssl_random_pseudo_bytes" ) ) {
+			$bytes = openssl_random_pseudo_bytes( ceil( $length / 2 ) );
+		}
+		else {
+			throw new Exception( "No cryptographically secure random function available." );
+		}
+		return substr( bin2hex( $bytes ), 0, $length );
 	}
 }
 

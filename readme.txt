@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 5.0.8
+Stable tag: 5.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,11 +50,9 @@ Languages: English.
 
 == Changelog ==
 
-= 5.0.8 (2023/11/25) =
-* Update: Renamed "Shortcode Maker" to "Gallery Manager" and added a "Learn more" button.
-* Add: Introduced unique IDs for Shortcode Maker to enhance functionality.
-* Update: Moved ShortcodeMaker to its own dedicated component for better organization.
-* Add: Initial version of Shortcode Maker (Proof of Concept) added.
+= 5.0.9 (2023/11/26)
+* Add: Introduced unique IDs for Gallery Manager to enhance functionality
+* Add: Initial version of Gallery Manager (Proof of Concept) added.
 * Fix: Addressed the issue with missing Leaflet for maps by implementing async loading at mount.
 * Update: Changed "Immersive captions" from being the default setting to an optional feature.
 
