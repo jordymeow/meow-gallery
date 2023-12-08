@@ -1,31 +1,41 @@
-// Previous: 5.0.8
-// Current: 5.0.9
+// Previous: 5.0.9
+// Current: 5.1.0
 
 const { useState, useMemo, useEffect } = wp.element;
 
 import { MediaSelector } from './MediaSelector';
 
-import { NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoBlock, NekoInput, NekoTable, NekoModal, nekoFetch, NekoSelect, NekoOption, NekoSpacer } from '@neko-ui';
-import { apiUrl, restNonce } from '@app/settings';
+import { NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTable, NekoModal, nekoFetch, NekoSelect, NekoOption, NekoSpacer } from '@neko-ui';
+import { apiUrl, restNonce, isRegistered } from '@app/settings';
+import { tableDateTimeFormatter, tableInfoFormatter } from  "../admin-helpers";
 
 const columns = [
+    { accessor: 'id', title: 'ID', visible: false},
     { accessor: 'thumbnail', title: '' },
-    { accessor: 'updated', title: 'Updated on', sortable: true},
-    { accessor: 'id', title: 'ID' },
-    { accessor: 'name', title: 'Name' },
-    { accessor: 'shortcode', title: 'Shortcodes', style: { maxWidth: 400, minWidth: 400 } },
+    { accessor: 'updated', title: 'Updated on', sortable: true, style: { minWidth: 100 }},
+    { accessor: 'info', title: 'ID / Name / Description', style: { minWidth: 150 } },
+    { accessor: 'shortcode', title: 'Shortcodes', style: { maxWidth: 300 } },
     { accessor: 'actions', title: 'Actions'},
   ];
 
-const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
 
-    const [modals, setModals] = useState({ selectMedia: false, createShortcode: false, shortcodeInformation: false });
+const ShortcodeMaker = ({
+    layoutOptions,
+    busy, setBusyAction,
+    mglGalleryShortcodeOverrideDisabled,
+    setSelectedGalleriesItems,
+    modals, setModals
+}) => {
+
     const [galleryName, setGalleryName] = useState('');
+    const [galleryDescription, setGalleryDescription] = useState('');
     const [galleryId, setGalleryId] = useState('');
     const [galleryLayout, setGalleryLayout] = useState('');
     const [selectedMedias, setselectedMedias] = useState({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] });
     const [savedGalleries, setSavedGalleries] = useState([]);
     const [ shortcodesTotal, setShortcodesTotal ] = useState(0);
+
+    const [ selectedIds, setSelectedIds ] = useState([]);
 
     const [ filters, setFilters ] = useState(() => {
         return columns.filter(v => v.filters).map(v => {
@@ -35,7 +45,6 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
     const [ shortcodesQueryParams, setShortcodesQueryParams ] = useState({
         filters: filters, sort: { accessor: 'updated', by: 'desc' }, page: 1, limit: 10
       });
-
 
     const [copyMessage, setCopyMessage] = useState({});
     const [buttonOkText, setButtonOkText] = useState('Create');
@@ -48,20 +57,27 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
         fetchSavedGalleries();
     }, [shortcodesQueryParams]);
 
+    useEffect(() => {
+        if (selectedIds.length === 0) {
+            setSelectedGalleriesItems([]);
+            return;
+        }
+
+        const selectedGalleriesItems = selectedIds.map((id) => {
+            let gallery = savedGalleries[id];
+            gallery = { ...gallery, id: id };
+            return gallery;
+        });
+        setSelectedGalleriesItems(selectedGalleriesItems);
+    }, [selectedIds]);
+
+    const setSelectedIdsGalleryMaker = (ids) => {
+        setSelectedIds(ids);
+    };
+
     const galleryPreviewStyle = { display: 'flex', alignItems: 'center', border: '1px solid #e1e1e1', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', borderRadius: '8px', padding: '15px', marginTop: '10px', justifyContent: 'space-between' };
     const shortcodeStyle = {display: 'flex',alignItems: 'center',background: '#f8fcff',height: 26,color: '#779bb8',margin: 0,padding: '0px 10px',fontSize: 13,textAlign: 'center',border: '2px solid rgb(210 228 243)',borderRadius: 8,fontFamily: 'system-ui',cursor: 'pointer',whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flex: '1 1 auto'};
-    const cleanCancel = () => { setModals({ ...modals, createShortcode: false }); setselectedMedias({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] }), setGalleryName(''), setGalleryLayout(''), setGalleryId('') };
-
-    function tableDateTimeFormatter(value) {
-        const time = new Date(value * 1000);
-        const formattedDate = time.toLocaleDateString('ja-JP', {
-          year: 'numeric', month: '2-digit', day: '2-digit'
-        });
-        const formattedTime = time.toLocaleTimeString('ja-JP', {
-          hour: '2-digit', minute: '2-digit', second: '2-digit'
-        });
-        return <div style={{ textAlign: 'right' }}>{formattedDate}<br /><small>{formattedTime}</small></div>;
-    }
+    const cleanCancel = () => { setModals({ ...modals, createShortcode: false }); setselectedMedias({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] }); setGalleryName(''); setGalleryLayout(''); setGalleryId(''); setGalleryDescription(''); };
 
     const onCreateShortcode = async () => {
         setBusyAction(true);
@@ -71,6 +87,7 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
                     medias: selectedMedias,
                     name: galleryName,
                     layout: galleryLayout,
+                    description: galleryDescription,
                     id: galleryId
                 },
                 nonce: restNonce,
@@ -78,7 +95,7 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
             });
             if (response.success) {
                 cleanCancel();
-                fetchSavedGalleries();
+                await fetchSavedGalleries();
             }
         }
         catch (err) {
@@ -109,13 +126,14 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
         }
     };
 
-    const onEditShortcode = async (id) => {
+    const onEditShortcode = (id) => {
         const gallery = savedGalleries[id];
 
         setGalleryId(id);
-        setGalleryName(gallery.name);
-        setselectedMedias(gallery.medias);
-        setGalleryLayout(gallery.layout);
+        setGalleryName(gallery?.name ?? '');
+        setselectedMedias(gallery?.medias ?? { thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] });
+        setGalleryLayout(gallery?.layout ?? '');
+        setGalleryDescription(gallery?.description ?? '');
 
         setButtonOkText('Update');
         setModals({ ...modals, createShortcode: true });
@@ -123,16 +141,17 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
 
     const fetchSavedGalleries = async () => {
         setBusyAction(true);
-        shortcodesQueryParams.offset = (shortcodesQueryParams.page - 1) * shortcodesQueryParams.limit;
+        let params = {...shortcodesQueryParams};
+        params.offset = (params.page - 1) * params.limit;
         try {
             const response = await nekoFetch(`${apiUrl}/fetch_shortcodes`, {
                 nonce: restNonce,
                 method: 'POST',
-                json: shortcodesQueryParams,
+                json: params,
             });
             if (response.success) {
-                setSavedGalleries(response.data);
-                setShortcodesTotal(response.total);
+                setSavedGalleries(response.data || []);
+                setShortcodesTotal(response.total || 0);
             }
         }
         catch (err) {
@@ -146,7 +165,7 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
             alert("Clipboard is not enabled (only works with https).");
             return;
         }
-        await navigator.clipboard.writeText(shortcode);
+        navigator.clipboard.writeText(shortcode);
         setCopyMessage({ ...copyMessage, [id]: `Copied ${name} to clipboard !` });
         setTimeout(() => {
             setCopyMessage({});
@@ -154,51 +173,98 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
     };
 
     const rows = useMemo(() => {
-        return Object.entries(savedGalleries)?.map(([id, gallery]) => {
-            const shortcodeMediaIds = `[gallery layout="${gallery.layout}" ids="${gallery.medias.thumbnail_ids.join(',')}"]`;
-            const shortcodeUniqueId = `[gallery id="${id}"]`;
+        if (!Array.isArray(savedGalleries) && typeof savedGalleries === "object") {
+            return Object.entries(savedGalleries).map(([id, gallery]) => {
+                const shortcodePrefix = mglGalleryShortcodeOverrideDisabled ? 'meow-' : '';
+                const shortcodeMediaIds = `[${shortcodePrefix}gallery layout="${gallery.layout}" ids="${(gallery.medias?.thumbnail_ids || []).join(', ')}"]`;
+                const shortcodeUniqueId = `[${shortcodePrefix}gallery id="${id}"]`;
 
-            const jsxShortcodeMediaIds = <pre onClick={() => { onClickShortcode({ id, name: gallery.name, shortcode: shortcodeMediaIds }) }} style={shortcodeStyle}>
-                {!copyMessage[id] && shortcodeMediaIds}
-                {copyMessage[id] && copyMessage[id]}
-            </pre>;
+                const jsxShortcodeMediaIds = <pre onClick={() => { onClickShortcode({ id, name: gallery.name, shortcode: shortcodeMediaIds }) }} style={shortcodeStyle}>
+                    {!copyMessage[id] && shortcodeMediaIds}
+                    {copyMessage[id] && copyMessage[id]}
+                </pre>;
 
-            const jsxShortcodeUniqueId = <pre onClick={() => { onClickShortcode({ id: 'uid_'+id, name: gallery.name, shortcode: shortcodeUniqueId }) }} style={shortcodeStyle}>
-                {!copyMessage['uid_'+id] && shortcodeUniqueId}
-                {copyMessage['uid_'+id] && copyMessage['uid_'+id]}
-            </pre>;
+                const jsxShortcodeUniqueId = <pre onClick={() => { onClickShortcode({ id: 'uid_'+id, name: gallery.name, shortcode: shortcodeUniqueId }) }} style={shortcodeStyle}>
+                    {!copyMessage['uid_'+id] && shortcodeUniqueId}
+                    {copyMessage['uid_'+id] && copyMessage['uid_'+id]}
+                </pre>;
 
-            const date = gallery?.updated ? tableDateTimeFormatter(gallery.updated) : null;
+                const date = gallery?.updated ? tableDateTimeFormatter(gallery.updated) : null;
+                const info = tableInfoFormatter({ id, name: gallery.name, description: gallery.description });
 
-            return {
-                id: id,
-                updated: date,
-                thumbnail: <>
-                    <div style={{ width: 100, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 3 }}>
-                        {gallery.medias.thumbnail_urls.sort(() => 0.5 - Math.random()).slice(0, 4).map((thumbnail, index) => {
-                            return <div style={{ width: 50, minWidth: 0 }}><img key={index} src={thumbnail} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 3 }} /></div>
-                        })}
-                    </div>
-                </>,
-                name: gallery.name,
-                shortcode: <>
-                    {jsxShortcodeMediaIds}
-                    <NekoSpacer />
-                    {jsxShortcodeUniqueId}
-                </>,
-                actions: <>
-                    <NekoButton className="primary" onClick={() => onEditShortcode(id)}>Edit</NekoButton>
-                    <NekoButton className="danger" onClick={() => onRemoveShortcode({id, name: gallery.name})}>Remove</NekoButton>
-                </>
-            }
-        });
+                return {
+                    id: id,
+                    updated: date,
+                    thumbnail: <>
+                        <div style={{ width: 100, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 3 }}>
+                            {(gallery.medias?.thumbnail_urls || []).sort(() => 0.5 - Math.random()).slice(0, 4).map((thumbnail, index) => {
+                                return <div style={{ width: 50, minWidth: 0 }}><img key={index} src={thumbnail} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 3 }} /></div>
+                            })}
+                        </div>
+                    </>,
+                    info: info,
+                    shortcode: <>
+                        {jsxShortcodeMediaIds}
+                        <NekoSpacer />
+                        {jsxShortcodeUniqueId}
+                    </>,
+                    actions: <>
+                        <NekoButton className="primary" onClick={() => onEditShortcode(id)}>Edit</NekoButton>
+                        <NekoButton className="danger" onClick={() => onRemoveShortcode({id, name: gallery.name})}>Remove</NekoButton>
+                    </>
+                }
+            });
+        } else if (Array.isArray(savedGalleries)) {
+            return savedGalleries.map((gallery, idx) => {
+                const id = gallery.id || idx;
+                const shortcodePrefix = mglGalleryShortcodeOverrideDisabled ? 'meow-' : '';
+                const shortcodeMediaIds = `[${shortcodePrefix}gallery layout="${gallery.layout}" ids="${(gallery.medias?.thumbnail_ids || []).join(', ')}"]`;
+                const shortcodeUniqueId = `[${shortcodePrefix}gallery id="${id}"]`;
+
+                const jsxShortcodeMediaIds = <pre onClick={() => { onClickShortcode({ id, name: gallery.name, shortcode: shortcodeMediaIds }) }} style={shortcodeStyle}>
+                    {!copyMessage[id] && shortcodeMediaIds}
+                    {copyMessage[id] && copyMessage[id]}
+                </pre>;
+
+                const jsxShortcodeUniqueId = <pre onClick={() => { onClickShortcode({ id: 'uid_'+id, name: gallery.name, shortcode: shortcodeUniqueId }) }} style={shortcodeStyle}>
+                    {!copyMessage['uid_'+id] && shortcodeUniqueId}
+                    {copyMessage['uid_'+id] && copyMessage['uid_'+id]}
+                </pre>;
+
+                const date = gallery?.updated ? tableDateTimeFormatter(gallery.updated) : null;
+                const info = tableInfoFormatter({ id, name: gallery.name, description: gallery.description });
+
+                return {
+                    id: id,
+                    updated: date,
+                    thumbnail: <>
+                        <div style={{ width: 100, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 3 }}>
+                            {(gallery.medias?.thumbnail_urls || []).sort(() => 0.5 - Math.random()).slice(0, 4).map((thumbnail, index) => {
+                                return <div style={{ width: 50, minWidth: 0 }}><img key={index} src={thumbnail} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 3 }} /></div>
+                            })}
+                        </div>
+                    </>,
+                    info: info,
+                    shortcode: <>
+                        {jsxShortcodeMediaIds}
+                        <NekoSpacer />
+                        {jsxShortcodeUniqueId}
+                    </>,
+                    actions: <>
+                        <NekoButton className="primary" onClick={() => onEditShortcode(id)}>Edit</NekoButton>
+                        <NekoButton className="danger" onClick={() => onRemoveShortcode({id, name: gallery.name})}>Remove</NekoButton>
+                    </>
+                }
+            })
+        }
+        return [];
     }, [savedGalleries, copyMessage]);
 
     const jsxShortcodePaging = useMemo(() => {
         return (<div>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
             <NekoPaging currentPage={shortcodesQueryParams.page} limit={shortcodesQueryParams.limit}
-            total={shortcodesTotal} onClick={page => { 
+            total={shortcodesTotal} onClick={page => {
                 setShortcodesQueryParams({ ...shortcodesQueryParams, page });
             }}
             />
@@ -208,11 +274,15 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
 
     const jsxShortcodeMakerTable = <>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div>
+                <NekoButton className="primary" onClick={() => {setModals({ ...modals, createShortcode: true }); setButtonOkText('Create')}}>Create a Gallery</NekoButton>
+                <NekoButton className="secondary" onClick={() => setModals({ ...modals, shortcodeInformation: true })}><NekoIcon icon="info-outline" width={15} style={{paddingTop: 3, marginRight: 3}}  /> Learn more</NekoButton>
+                { selectedIds.length > 0 && !modals.createCollection && <NekoButton style={{marginLeft: 15}} className="secondary" onClick={() => {setModals({ ...modals, createCollection: true });}} requirePro={!isRegistered} >Create a Collection</NekoButton> }
+            </div>
             {jsxShortcodePaging}
         </div>
         <NekoTable
-            busy={false}
-
+            busy={busy}
             sort={shortcodesQueryParams.sort}
             onSortChange={(accessor, by) => {
               setShortcodesQueryParams({ ...shortcodesQueryParams, sort: { accessor, by } });
@@ -224,6 +294,7 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
                 { accessor, value }
               ];
               setFilters(freshFilters);
+
             }}
 
             data={rows}
@@ -232,19 +303,15 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
                 {busy ? 'Loading...' : 'It\'s empty here. You can create your first gallery shortcode by clicking on the button above.😸'}
             </>
             }
+
+            selectedItems={selectedIds}
+            onSelectRow={id => { setSelectedIds([id]) }}
+            onSelect={ids => { setSelectedIds([ ...selectedIds, ...ids ]) }}
+            onUnselect={ids => { setSelectedIds([ ...selectedIds.filter(x => !ids.includes(x)) ]) }}
         />
         </>;
 
-    const jsxShortcodeMaker =
-        <NekoBlock busy={busy} title="Galleries" className="primary" style={{width: '100%'}}
-            action={
-            <div>
-                <NekoButton className="secondary" onClick={() => setModals({ ...modals, shortcodeInformation: true })}><NekoIcon icon="info-outline" width={15} style={{paddingTop: 3, marginRight: 3}}  /> Learn more</NekoButton>
-                <NekoButton className="secondary" onClick={() => {setModals({ ...modals, createShortcode: true }); setButtonOkText('Create')}}>Create a Gallery</NekoButton>
-            </div>
-            }>
-            {jsxShortcodeMakerTable}
-        </NekoBlock>;
+    const jsxShortcodeMaker = jsxShortcodeMakerTable;
 
     const jsxSelectImagesModal = <MediaSelector
         isOpen={modals.selectMedia}
@@ -273,7 +340,9 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
             </>
         }
         okButton={{ label: 'Close', onClick: () => setModals({ ...modals, shortcodeInformation: false }) }}
+        onRequestClose={() => setModals({ ...modals, shortcodeInformation: false })}
     />;
+
 
     const jsxCreateShortcodeModal =
         <NekoModal
@@ -281,7 +350,7 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
             title={`${buttonOkText} a Gallery`}
             content={<>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <NekoInput name="gallery_name" type="text" value={galleryName} placeholder="Gallery Name..." onChange={(e) => setGalleryName(e)} style={{ flex: .9 }} />
+                    <NekoInput name="gallery_name" type="text" value={galleryName} placeholder="Gallery Name..." onChange={(e) => setGalleryName(e.target ? e.target.value : e)} style={{ flex: .9 }} />
                     <NekoSelect scrolldown name="gallery_layout" disabled={busy} value={galleryLayout}
                         style={{ minWidth: 100 }}
                         onChange={(value) => setGalleryLayout(value)}>
@@ -291,26 +360,31 @@ const ShortcodeMaker = ({ layoutOptions, busy, setBusyAction }) => {
                     </NekoSelect>
                     <NekoButton className="primary" onClick={() => setModals({ ...modals, selectMedia: true })}>Select Medias</NekoButton>
                 </div>
+                <NekoSpacer />
+                <NekoInput name="gallery_description" type="text" value={galleryDescription} placeholder="Gallery Description..." onChange={(e) => setGalleryDescription(e.target ? e.target.value : e)} />
 
                 {selectedMedias.thumbnails.length > 0 &&
                     <div style={galleryPreviewStyle}>
                         <NekoTypo style={{ margin: 0 }}>{selectedMedias.thumbnails.length} Selected: </NekoTypo>
+
                         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
                             {selectedMedias.thumbnails.map((thumbnail, index) => {
                                 if (!thumbnail.url) return null;
                                 if (index > 10) return null;
-                                return <img key={index} src={thumbnail.url} style={{ width: 25, height: 25, margin: 2, borderRadius: 3 }} />
+                                return <img key={thumbnail.url} src={thumbnail.url} style={{ width: 25, height: 25, margin: 2, borderRadius: 3 }} />
                             })}
                             {selectedMedias.thumbnails.length > 10 && <NekoTypo style={{ background: '#d3d3d3', padding: 5, borderRadius: 3 }}>+{selectedMedias.thumbnails.length - 10}</NekoTypo>}
                         </div>
                     </div>}
             </>}
 
-            okButton={{ label: buttonOkText, onClick: onCreateShortcode, disabled: (galleryName.length === 0 || selectedMedias.thumbnails.length === 0 || busy) }}
+            okButton={{ label: buttonOkText, onClick: onCreateShortcode, disabled: (galleryName.length === 0 || selectedMedias.thumbnails.length === 0) }}
             cancelButton={{ label: 'Cancel', onClick: cleanCancel, disabled: busy }}
+            onRequestClose={() => cleanCancel()}
         />;
 
-    return { jsxShortcodeMaker, jsxCreateShortcodeModal, jsxSelectImagesModal, jsxShortcodeInformationModal };
+    return { jsxShortcodeMaker, jsxCreateShortcodeModal, jsxSelectImagesModal, jsxShortcodeInformationModal, setSelectedIdsGalleryMaker, shortcodesTotal };
+
 };
 
 export  { ShortcodeMaker };

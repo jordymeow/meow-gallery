@@ -5,6 +5,7 @@ class Meow_MGL_Core {
 	private $gallery_process = false;
 	private $gallery_layout = 'tiles';
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
+	
 	private static $plugin_option_name = 'mgl_options';
 	private $option_name = 'mgl_options';
 	private $infinite_layouts = [
@@ -14,6 +15,8 @@ class Meow_MGL_Core {
 		'square',
 		'cascade',
 	];
+
+	private $rewrittenMwlData = [];
 
 	public function __construct() {
 		load_plugin_textdomain( MGL_DOMAIN, false, MGL_PATH . '/languages' );
@@ -39,7 +42,7 @@ class Meow_MGL_Core {
 		}
 
 		// Load the Pro version *after* loading the Run class due to the JS file was gatherd into one file.
-		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core();
+		class_exists( 'MeowPro_MGL_Core' ) && new MeowPro_MGL_Core( $this );
 	}
 
 	public function can_access_settings() {
@@ -71,6 +74,10 @@ class Meow_MGL_Core {
 		if ( !empty( $sizes ) )
 			$attr['sizes'] = $sizes;
 		return $attr;
+	}
+
+	function get_rewritten_mwl_data() {
+		return $this->rewrittenMwlData;
 	}
 
 	function gallery( $atts, $isPreview = false ) {
@@ -189,6 +196,7 @@ class Meow_MGL_Core {
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		//$result = apply_filters( 'post_gallery', $result, $atts, null );
 
+		$this->rewrittenMwlData = apply_filters('mgl_force_rewrite_mwl_data',  explode( ',', $image_ids ) );
 		do_action( 'mgl_gallery_created', $atts, explode( ',', $image_ids ), $layout );
 
 		$gallery_options = $this->get_gallery_options( $image_ids, $atts, $infinite, $isPreview, $layout );
@@ -433,7 +441,9 @@ class Meow_MGL_Core {
 			'mapbox_token' => '',
 			'mapbox_style' => '{"username":"", "style_id":""}',
 			'maptiler_token' => '',
-			'right_click' => false
+			'right_click' => false,
+			'gallery_shortcode_override_disabled' => false,
+
 		);
 	}
 
@@ -684,17 +694,16 @@ class Meow_MGL_Core {
 		return array_values( array_filter( $map_images ) );
 	}
 
-	private function get_mgl_root_class( $atts ) {
-		$classes = ['mgl-root'];
+	public function get_mgl_root_class( $atts, $classes = ['mgl-root'] ) {
 		$classes[] = isset( $atts['align'] ) ?  'align' . $atts['align'] : '';
 		return implode( ' ', $classes );
 	}
 
-	private function get_data_as_json( $data ) {
+	public function get_data_as_json( $data ) {
 		return htmlspecialchars( json_encode( $data ), ENT_QUOTES, 'UTF-8' );
 	}
 
-	function generate_uniqid( $length = 13 ) {
+	public function generate_uniqid( $length = 13 ) {
 		if ( function_exists( "random_bytes" ) ) {
 			$bytes = random_bytes( ceil( $length / 2 ) );
 		}

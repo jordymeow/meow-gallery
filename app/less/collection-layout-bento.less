@@ -1,0 +1,173 @@
+// out: false, compress: true, sourceMap: false, main: style.less
+
+.mgl-collection-root {
+
+    .mgl-collection-loading-container{
+        transition: filter .8s ease;
+        filter:  grayscale(0);
+        &.mgl-collection-loading {
+            filter:  grayscale(1);
+        }
+    }
+    
+    .mgl-collection-loading-spinner {
+        z-index: 1000;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        .mgl-collection-loading-spinner-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            animation: spin 2s linear infinite;
+        
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        }
+
+    }
+}
+
+.mgl-collection-bento {
+    display: grid;
+    cursor: pointer;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+
+    .mgl-collection-item-span-two {
+        grid-column: span 2;
+    }
+
+    .mgl-collection-item {
+        overflow: hidden;
+        border-radius: 8px;
+        position: relative;
+        margin: 0;
+
+        .mgl-collection-thumbnail {
+            transform: scale(1.1);
+            width: 100%;
+            height: 100%;
+            display: block;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .mgl-collection-img-container {
+            height: 100%;
+
+            &:hover {
+                .mgl-collection-thumbnail {
+                    transform: scale(1);
+                }
+
+                .mgl-collection-overlay {
+                    opacity: 1;
+                }
+
+                .mgl-collection-caption {
+                    opacity: 1;
+                    max-height: 50px;
+                }
+            }
+        }
+
+        .mgl-collection-overlay {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mgl-collection-info {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 16px;
+            color: white;
+            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 30%, rgba(0,0,0,0) 100%);
+        }   
+}
+
+.mgl-collection-img-container:hover .mgl-collection-overlay {
+    opacity: 1;
+        }
+
+.mgl-collection-img-container:hover .mgl-collection-overlay {
+    opacity: 1;
+    }
+
+    .mgl-collection-title {
+        margin: 0;
+        font-size: 1.7rem;
+    }
+
+    .mgl-collection-caption {
+        margin: 0;
+        font-size: 1rem;
+        max-height: 0px;
+        opacity: 0;
+        transition: max-height .5s ease, opacity .3s ease;
+        overflow: hidden;
+    }
+
+    .mgl-collection-image-content {
+        height: 100%;
+
+        img {
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}
+
+.mgl-gallery-collection-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: solid 1px #dddddd;
+
+    .mgl-gallery-collection-back {
+        border: none;
+        background: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+            transition: transform 0.2s ease;
+
+            &:hover {
+                transform: translateX(-2px);
+            }
+        }
+    }
+
+    .mgl-gallery-collection-name {
+        flex-grow: 1;
+        text-align: center;
+        font-size: 1.5em;
+        color: #333;
+        margin: 0;
+        padding-right: 24px;
+    }
+}

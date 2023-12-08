@@ -7,7 +7,9 @@ class Meow_MGL_Run {
 
 	public function __construct( $core ) {
 		$this->core = $core;
-		add_shortcode( 'gallery', array( $core, 'gallery' ) );
+
+		$override_disabled = get_option( 'mgl_options', [] )[ 'gallery_shortcode_override_disabled' ] ?? false;
+		if ( !$override_disabled ) { add_shortcode( 'gallery', array( $core, 'gallery' ) ); }
 		add_shortcode( 'meow-gallery', array( $core, 'gallery' ) );
 
 		if ( is_admin() ) {
@@ -15,6 +17,7 @@ class Meow_MGL_Run {
 		}
 		else {
 			add_action( 'mgl_gallery_created', array( $this, 'enqueue_scripts' ), 10, 0 );
+			add_action( 'mgl_collection_created', array( $this, 'enqueue_scripts' ), 10, 0 );
 		}
 
 		// Yoast: Some people really want this, but it needs to be reviewed as Yoast changed its API

@@ -1,5 +1,5 @@
-// Previous: 5.0.7
-// Current: 5.0.8
+// Previous: 5.0.8
+// Current: 5.1.0
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
@@ -42,6 +42,7 @@ const convertToOptions = (options) => {
     loading: options.loading,
     animation: options.animation,
     imageSize: options.image_size,
+    galleryShortcodeOverrideDisabled: options.gallery_shortcode_override_disabled,
     infinite: options.infinite,
     infiniteBuffer: options.infinite_buffer,
     tilesGutter: options.tiles_gutter,
@@ -61,7 +62,7 @@ const convertToOptions = (options) => {
     horizontalGutter: options.horizontal_gutter,
     horizontalImageHeight: options.horizontal_image_height,
     horizontalHideScrollbar: options.horizontal_hide_scrollbar,
-    horizontalScrollWarning: options.horizontal_scroll_warning, 
+    horizontalScrollWarning: options.horizontal_scroll_warning,
     carouselCompact: options.carousel_compact,
     carouselImmersive: options.carousel_immersive,
     carouselGutter: options.carousel_gutter,
@@ -151,9 +152,6 @@ export const tilesReferences = {
   'ooiii': { 'box': 'c', 'orientation': 'portrait' }
 };
 
-/****************************************
-  Initial state
-****************************************/
 let busyCounter = 0;
 
 const initialState = {
@@ -239,10 +237,6 @@ const initialState = {
   atts: {},
 };
 
-/****************************************
-  Action types
-****************************************/
-
 const SET_IMAGES = "SET_IMAGES";
 const SET_CLASS_NAMES = "SET_CLASS_NAMES";
 const SET_CONTAINER_CLASS_NAMES = "SET_CONTAINER_CLASS_NAMES";
@@ -257,10 +251,6 @@ const SET_CAN_INFINITE_SCROLL = "SET_CAN_INFINITE_SCROLL";
 const PUSH_BUSY = 'PUSH_BUSY';
 const POP_BUSY = 'POP_BUSY';
 const ERROR_UPDATED = 'ERROR_UPDATED';
-
-/****************************************
-  Global reducer
-****************************************/
 
 const globalStateReducer = (state, action) => {
   switch (action.type) {
@@ -282,7 +272,7 @@ const globalStateReducer = (state, action) => {
 
   case POP_BUSY: {
     const { status = '' } = action;
-    return { ...state, busy: --busyCounter > 0, status };
+    return { ...state, busy: --busyCounter >= 0, status };
   }
 
   case SET_CLASS_NAMES: {
@@ -292,7 +282,7 @@ const globalStateReducer = (state, action) => {
     classNameList.push('mgl-gallery');
     classNameList.push('mgl-' + layout);
 
-    if (customClass) {
+    if (!!customClass) {
       classNameList.push(customClass);
     }
     if (animation) {
@@ -368,11 +358,11 @@ const globalStateReducer = (state, action) => {
     const { layout, horizontalImageHeight, carouselImageHeight } = action;
 
     const imageHeight = {
-      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
-      [galleryLayouts.carousel]: parseInt(carouselImageHeight),
+      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight || 0),
+      [galleryLayouts.carousel]: parseInt(carouselImageHeight || 0),
     };
 
-    return { ...state, imageHeight: imageHeight[layout] };
+    return { ...state, imageHeight: imageHeight[layout] || 300 };
   }
 
   case SET_API_URL: {
@@ -387,7 +377,7 @@ const globalStateReducer = (state, action) => {
 
   case SET_CAN_INFINITE_SCROLL: {
     const { infinite, images, imageIds } = action;
-    const canInfiniteScroll = infinite && images.length < imageIds.length;
+    const canInfiniteScroll = infinite && images.length < (imageIds?.length ?? 0);
     return { ...state, canInfiniteScroll };
   }
 
@@ -395,10 +385,6 @@ const globalStateReducer = (state, action) => {
     return state;
   }
 };
-
-/****************************************
-  Global state
-****************************************/
 
 const MeowGalleryContext = createContext();
 
@@ -408,15 +394,14 @@ const useMeowGalleryContext = () => {
 
   actions.loadImages = async () => {
     const loadedImageIds = state.images.map(image => image.id);
-    const imageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
-    if (imageIds.length) {
-      actions.fetchImages(imageIds);
+    const imageIds = state.imageIds?.filter(imageId => !loadedImageIds.includes(imageId)).slice(0, state.loadImagesCount);
+    if (imageIds && imageIds.length) {
+      await actions.fetchImages(imageIds);
     }
   };
 
   actions.fetchImages = async (imageIds) => {
     dispatch({ type: PUSH_BUSY });
-
     const url = buildUrlWithParams(`${state.apiUrl}/images/`, {
       imageIds: JSON.stringify(imageIds),
       atts: JSON.stringify(state.atts),
@@ -427,7 +412,8 @@ const useMeowGalleryContext = () => {
     try {
       const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
-        dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
+        const mergedImages = [...response.data, ...state.images];
+        dispatch({ type: SET_IMAGES, images: mergedImages });
       }
     }
     catch (err) {
@@ -436,38 +422,36 @@ const useMeowGalleryContext = () => {
       }
     }
     finally {
+      // purposely missing: await for the actual image load, can lead to racey visual state
       dispatch({ type: POP_BUSY });
     }
   };
 
-
   return { ...state, ...actions };
 };
 
-
-/****************************************
-  Global state provider
-****************************************/
-
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
-  const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
+  const [state, dispatch] = useReducer(
+    globalStateReducer,
+    { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) }
+  );
 
   const { layout, customClass, animation, captions, justifiedRowHeight, tilesGutter, tilesGutterMobile, tilesGutterTablet,
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
-  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
+  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
-  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
+  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight }); }, [layout, justifiedRowHeight]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
     cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
   , [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
   useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns, squareColumns]);
   useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityMobile, tilesDensityTablet]);
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
-  useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
-  useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
+  useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, []);
+  useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, []);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

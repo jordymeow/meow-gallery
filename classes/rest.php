@@ -62,6 +62,28 @@ class Meow_MGL_Rest
 			'callback' => array( $this, 'rest_remove_shortcode' ),
 		) );
 
+		//Collection Manager
+		register_rest_route( $this->namespace, '/fetch_collections', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_fetch_collections' ),
+		) );
+		register_rest_route( $this->namespace, '/save_collection', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_save_collection' ),
+		) );
+		register_rest_route( $this->namespace, '/remove_collection', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_features' ),
+			'callback' => array( $this, 'rest_remove_collection' ),
+		) );
+		register_rest_route( $this->namespace, '/load_gallery_collection', array(
+			'methods' => 'POST',
+			'permission_callback' => '__return_true',
+			'callback' => array( $this, 'rest_load_gallery_collection' ),
+		) );
+
 		// Gutenberg Block
 		register_rest_route( $this->namespace, '/preview', array(
 			'methods' => 'POST',
@@ -92,6 +114,20 @@ class Meow_MGL_Rest
 		return new WP_REST_Response( [ 'success' => true, 'data' => $html ], 200 );
 	}
 
+	function rest_load_gallery_collection( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$gallery_id = $params['gallery_id'];
+
+			$html = $this->core->gallery( [ 'id' => $gallery_id ], false );
+			$mwlData = json_encode( $this->core->get_rewritten_mwl_data() );
+			return new WP_REST_Response( [ 'success' => true, 'data' => $html, 'mwl_data' => $mwlData ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response( [ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
 	function rest_all_settings() {
 		return new WP_REST_Response( [ 'success' => true, 'data' => $this->core->get_all_options() ], 200 );
 	}
@@ -104,6 +140,7 @@ class Meow_MGL_Rest
 			$medias = $params['medias'];
 			$name = $params['name'];
 			$layout = $params['layout'];
+			$description = $params['description'];
 
 
 			if ( !$name ) {
@@ -122,6 +159,7 @@ class Meow_MGL_Rest
 
 			$shortcodes[$id] = [
 				'name' => $name,
+				'description' => $description,
 				'layout' => $layout,
 				'medias' => $medias,
 				'updated' =>  time(),
@@ -130,6 +168,104 @@ class Meow_MGL_Rest
 			update_option( 'mgl_shortcodes', $shortcodes );
 
 			return new WP_REST_Response([ 'success' => true, 'message' => 'Shortcode created.' ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function rest_remove_collection( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$id = $params['id'];
+			$collections = get_option( 'mgl_collections', array() );
+			unset( $collections[$id] );
+			update_option( 'mgl_collections', $collections );
+			return new WP_REST_Response([ 'success' => true, 'message' => 'Collection removed.' ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+	function rest_save_collection( $request ) {
+		try {
+			$params = $request->get_json_params();
+
+			$id = $params['id'];
+			$name = $params['name'];
+			$layout = $params['layout'];
+			$galleries_ids = $params['galleries_ids'];
+			$description = $params['description'];
+			
+			if ( !$name ) {
+				throw new Exception( __( 'Please enter a name for your collection.', MGL_DOMAIN ) );
+			}
+
+			if ( !$galleries_ids || !count( $galleries_ids ) ) {
+				throw new Exception( __( 'Please select at least one gallery.', MGL_DOMAIN ) );
+			}
+
+			if ( !$id || $id == '' ) {
+				$id = $this->core->generate_uniqid(10);
+			}
+
+			$collections = get_option( 'mgl_collections', array() );
+
+			$collections[$id] = [
+				'name' => $name,
+				'description' => $description,
+				'layout' => $layout,
+				'galleries_ids' => $galleries_ids,
+				'updated' =>  time(),
+			];
+
+			update_option( 'mgl_collections', $collections );
+
+			return new WP_REST_Response([ 'success' => true, 'message' => 'Collection created.' ], 200 );
+		}
+		catch ( Exception $e ) {
+			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
+
+	function rest_fetch_collections( $request ) {
+		try {
+			$params = $request->get_json_params();
+
+			$offset = isset( $params['offset'] ) ? $params['offset'] : 0;
+			$limit = isset( $params['limit'] ) ? $params['limit'] : 10;
+			$sort_updated = $params['sort']['by']; // desc, asc
+
+			$collections = get_option( 'mgl_collections', array() );
+			$total = count( $collections );
+
+			$collections = array_slice( $collections, $offset, $limit );
+			// Sort by updated
+			if ( $sort_updated == 'desc' ) {
+				uasort( $collections, function( $a, $b ) {
+					return $b['updated'] - $a['updated'];
+				});
+			}
+			else {
+				uasort( $collections, function( $a, $b ) {
+					return $a['updated'] - $b['updated'];
+				});
+			}
+
+			$galleries_data = get_option( 'mgl_shortcodes', array() );
+			foreach ( $collections as $key => $collection ) {
+				$collection['galleries'] = array();
+				foreach ( $collection['galleries_ids'] as $gallery_id ) {
+					if ( array_key_exists( $gallery_id, $galleries_data ) ) {
+						$collection['galleries'][] = $galleries_data[$gallery_id];
+					}
+				}
+				$collections[$key] = $collection;
+			}
+
+			return new WP_REST_Response([ 'success' => true, 'data' => $collections, 'total' => $total ], 200 );
 		}
 		catch ( Exception $e ) {
 			return new WP_REST_Response([ 'success' => false, 'message' => $e->getMessage() ], 500 );
