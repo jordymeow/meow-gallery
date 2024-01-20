@@ -34,6 +34,12 @@ class Meow_MGL_Rest
 			'permission_callback' => array( $this->core, 'can_access_settings' ),
 			'callback' => array( $this, 'rest_all_settings' )
 		) );
+		register_rest_route( $this->namespace, '/reset_options', array(
+			'methods' => 'POST',
+			'permission_callback' => array( $this->core, 'can_access_settings' ),
+			'callback' => array( $this, 'rest_reset_options' )
+		) );
+
 
 		// Gallery Manager
 		register_rest_route( $this->namespace, '/latest_photos', array(
@@ -117,9 +123,15 @@ class Meow_MGL_Rest
 	function rest_load_gallery_collection( $request ) {
 		try {
 			$params = $request->get_json_params();
-			$gallery_id = $params['gallery_id'];
+			$gallery_id = $params['id'];
+			$search_slug = $params['search_slug'];
 
-			$html = $this->core->gallery( [ 'id' => $gallery_id ], false );
+			$key = [
+				'gallery_id' => 'id',
+				'wplr_collection_id' => 'wplr-collection',
+			];
+
+			$html = $this->core->gallery( [ $key[$search_slug] => $gallery_id ], false );
 			$mwlData = json_encode( $this->core->get_rewritten_mwl_data() );
 			return new WP_REST_Response( [ 'success' => true, 'data' => $html, 'mwl_data' => $mwlData ], 200 );
 		}
@@ -130,6 +142,11 @@ class Meow_MGL_Rest
 
 	function rest_all_settings() {
 		return new WP_REST_Response( [ 'success' => true, 'data' => $this->core->get_all_options() ], 200 );
+	}
+
+	function rest_reset_options() {
+		$this->core->reset_options();
+		return new WP_REST_Response( [ 'success' => true, 'options' => $this->core->get_all_options() ], 200 );
 	}
 
 	function rest_save_shortcode( $request ) {

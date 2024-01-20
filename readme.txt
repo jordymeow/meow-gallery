@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 5.1.0
+Stable tag: 5.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,10 +50,18 @@ Languages: English.
 
 == Changelog ==
 
+= 5.1.1 (2024/01/20) =
+* Add: New zoom setting for map layouts and maintenance features including export, import, and reset options.
+* Update: Enhanced map functionality with thumbnail selection fix for missing images and corrected src_set values.
+* Add: Density labels with image count and captions alignment feature.
+* Update: Integrated captions style with WordPress standards and reintroduced resize event for full pages.
+* Fix: Issues with collections in WP/LR folders and removed obsolete gallery and collection processes.
+* Add: 'mgl_custom_link_classes' filter and collection preview, with collection style moved to pro file.
+* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
+
 = 5.1.0 (2023/12/08) =
 * Add: Support for collections in the Pro! You can now create collections of galleries, and have them displayed nicely on your pages.
 * Add: New option to avoid overring the default WordPress gallery.
-* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 
 = 5.0.9 (2023/11/26)
 * Add: Introduced unique IDs for Gallery Manager to enhance functionality

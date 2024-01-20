@@ -12,7 +12,8 @@
     "build-admin": "webpack --config webpack.admin.config.js --mode production",
     "analysis-galleries": "webpack --config webpack.galleries.config.js  --mode production --env analysis='true'",
     "analysis-admin": "webpack --config webpack.admin.config.js  --mode production --env analysis='true'",
-    "zip": "zip -r ~/Desktop/meow-gallery-pro.zip . -x node_modules/\\* .git/\\* logs/\\*"
+    "zip": "zip -r ~/Desktop/meow-gallery-pro.zip . -x node_modules/\\* .git/\\* logs/\\*",
+    "7zip": "7z a -tzip ../zip/meow-gallery-pro.zip . -x!node_modules/ -x!.git/ -x!logs/*"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.2",

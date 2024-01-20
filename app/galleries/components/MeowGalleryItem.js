@@ -1,11 +1,11 @@
-// Previous: 5.0.6
-// Current: 5.0.7
+// Previous: 5.0.7
+// Current: 5.1.1
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
 
 export const MeowGalleryItem = ({ image }) => {
-  const { isPreview, captions, layout, carouselAspectRatio } = useMeowGalleryContext();
+  const { isPreview, captions, captionsAlignment, layout, carouselAspectRatio } = useMeowGalleryContext();
   const { img_html: imgHTML, domElement, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel } = image;
   const { meta, caption, attributes, classNames = [] } = image;
 
@@ -47,7 +47,7 @@ export const MeowGalleryItem = ({ image }) => {
   const renderCaption = () => {
     if (captions != 'none' && caption && layout !== 'carousel') {
       return (
-        <figcaption className="mgl-caption">
+        <figcaption className={`mgl-caption caption-${captionsAlignment}`}>
           <p dangerouslySetInnerHTML={{ __html: caption }} />
         </figcaption>
       );

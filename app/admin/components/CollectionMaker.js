@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.1.0
+// Previous: 5.1.0
+// Current: 5.1.1
 
 ```jsx
 const { useState, useMemo, useEffect } = wp.element;
@@ -8,7 +8,7 @@ import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTab
 import { apiUrl, restNonce, isRegistered } from '@app/settings';
 
 import { tableDateTimeFormatter, tableInfoFormatter } from  "../admin-helpers";
-
+import { CollectionThumnails } from './CollectionThumnails';
 
 const columns = [
     { accessor: 'thumbnail', title: '' },
@@ -19,7 +19,7 @@ const columns = [
   ];
 
 const layoutOptions = [
-{ value: 'bento', id: 'bento', label: <span>Bento</span> },
+{ value: 'bento', label: <span>Bento</span> },
 ];
 
 const shortcodeStyle = {display: 'flex',alignItems: 'center',background: '#f8fcff',height: 26,color: '#779bb8',margin: 0,padding: '0px 10px',fontSize: 13,textAlign: 'center',border: '2px solid rgb(210 228 243)',borderRadius: 8,fontFamily: 'system-ui',cursor: 'pointer',whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flex: '1 1 auto'};
@@ -47,8 +47,7 @@ const CollectionMaker = ({
     const [ collectionsQueryParams, setCollectionsQueryParams ] = useState({
         filters: filters, sort: { accessor: 'updated', by: 'desc' }, page: 1, limit: 10
       });
-    
-    
+
     useEffect(() => {
         fetchCollections();
     }, []);
@@ -98,7 +97,7 @@ const CollectionMaker = ({
             });
             if (response.success) {
                 cleanCancel();
-                // fetchCollections();
+                fetchCollections();
             }
         }
         catch (err) {
@@ -137,7 +136,7 @@ const CollectionMaker = ({
         await navigator.clipboard.writeText(shortcode);
         setCopyMessage({ ...copyMessage, [id]: `Copied ${name} to clipboard !` });
         setTimeout(() => {
-            setCopyMessage({ ...copyMessage, [id]: null });
+            setCopyMessage({});
         }, 1000);
     };
 
@@ -160,7 +159,7 @@ const CollectionMaker = ({
     const rows = useMemo(() => {
         return Object.entries(collections)?.map(([id, collection]) => {
 
-            const shortcodeGalleriesIds = `[meow-collection layout="${collection.layout}" ids="${(collection.galleries_ids||[]).join(', ')}"]`;
+            const shortcodeGalleriesIds = `[meow-collection layout="${collection.layout}" ids="${(collection.galleries_ids || []).join(', ')}"]`;
             const shortcodeUniqueId = `[meow-collection id="${id}"]`;
 
             const jsxShortcodeGalleriesIds = <pre onClick={() => { onClickShortcode({ id, name: collection.name, shortcode: shortcodeGalleriesIds }) }} style={shortcodeStyle}>
@@ -175,12 +174,10 @@ const CollectionMaker = ({
 
             const date = collection?.updated ? tableDateTimeFormatter(collection.updated) : null;
             const info = tableInfoFormatter({ id, name: collection.name, description: collection.description });
-            
+
             return {
                 updated: date,
-                thumbnail: <>
-                    Coming soon...
-                </>,
+                thumbnail: <CollectionThumnails galleries={collection.galleries ? collection.galleries.filter(x => x.medias) : []} />,
                 info: info,
                 shortcode: <>
                     {jsxShortcodeGalleriesIds}
@@ -217,7 +214,7 @@ const CollectionMaker = ({
         {jsxCollectionPaging}
     </div>
     <NekoTable
-        busy={busy}
+        busy={false}
 
         sort={collectionsQueryParams.sort}
         onSortChange={(accessor, by) => {
@@ -244,6 +241,7 @@ const CollectionMaker = ({
 
     const jsxCollectionMaker = jsxCollectionMakerTable;
 
+
     const jsxModalCreateCollection =
         <NekoModal
             isOpen={modals.createCollection}
@@ -254,7 +252,7 @@ const CollectionMaker = ({
                     <NekoSelect scrolldown name="collection_layout" disabled={busy} value={currentCollection.layout}
                         style={{ minWidth: 100 }}
                         onChange={(value) => setCurrentCollection({ ...currentCollection, layout: value })}>
-                        {layoutOptions?.map(option => <NekoOption key={option.value} id={option.value} value={option.value}
+                        {layoutOptions?.map(option => <NekoOption key={option.id} id={option.id} value={option.value}
                             label={option.label} requirePro={option.requirePro} />)
                         }
                     </NekoSelect>
@@ -267,17 +265,18 @@ const CollectionMaker = ({
                 {currentCollection.galleries && currentCollection.galleries.length > 0 &&
                     <div style={collectionPreviewStyle}>
                         <NekoTypo style={{ margin: 0 }}>{currentCollection.galleries.length} Selected: </NekoTypo>
+
                         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
                             {currentCollection.galleries.map((gallery, index) => {
                                 if ( !gallery.id ) { return null;}
                                 if ( !gallery.medias ){
-                                    return <div key={gallery.id} style={{background: '#ba4300', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3, height: 60}}>
+                                    return <div style={{background: '#ba4300', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3, height: 60}}>
                                     <span  style={{ borderRadius: 5, margin: 5, fontSize: '1.5rem' }}>☠️</span>
                                     <span style={{ marginRight: '5px', color: 'white' }}>{gallery.id}</span>
                                 </div>
                                 }
                                 if (index > 10) return null;
-                                return <div key={gallery.id} style={{background: '#007cba', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3}}>
+                                return <div style={{background: '#007cba', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3}}>
                                     <img src={gallery.medias.thumbnail_urls[0]} style={{ width: 50, height: 50, borderRadius: 5, margin: 5 }} />
                                     <span style={{ marginRight: '5px', color: 'white' }}>{gallery.name}</span>
                                 </div>
@@ -287,7 +286,7 @@ const CollectionMaker = ({
                     </div>}
             </>}
 
-            okButton={{ label: buttonOkText, onClick: onCreateCollection, disabled: (currentCollection.name.length === 0 || !currentCollection.galleries || busy) }}
+            okButton={{ label: buttonOkText, onClick: onCreateCollection, disabled: (currentCollection.name.length === 0 || currentCollection.galleries.length === 0 || busy) }}
             cancelButton={{ label: 'Cancel', onClick: cleanCancel, disabled: busy }}
             onRequestClose={() => cleanCancel()}
         />;

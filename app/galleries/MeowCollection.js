@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.1.0
+// Previous: 5.1.0
+// Current: 5.1.1
 
 import { useState, useMemo, useEffect } from "preact/hooks";
 import { MeowCollectionBento } from './collections/bento/MeowCollectionBento';
@@ -21,60 +21,67 @@ export const MeowCollection = ( {
 
     useEffect(() => {
         const url = new URL(window.location.href);
-        const gallery_id = url.searchParams.get('gallery_id');
-        if (gallery_id) {
-            startLoadingGallery(gallery_id);
-        }else{
+        let id, search_slug;
+
+        if (url.searchParams.has('gallery_id')) {
+            id = url.searchParams.get('gallery_id');
+            search_slug = 'gallery_id';
+        } else if (url.searchParams.has('wplr_collection_id')) {
+            id = url.searchParams.get('wplr_collection_id');
+            search_slug = 'wplr_collection_id';
+        }
+
+        if (id) {
+            startLoadingGallery(id, search_slug);
+        } else {
             setIsReadyToDisplay(true);
         }
-    }, [collectionOptions]); // (changed dependency)
+    }, []);
 
-    const startLoadingGallery = async (gallery_id) => {
+    const startLoadingGallery = async (id, search_slug) => {
         setIsLoading(true);
 
-        const selectedGallery = collectionThumbnails.find((collectionThumbnail) => collectionThumbnail.gallery_id == gallery_id); // (loose equality)
+        const selectedGallery = collectionThumbnails.find((collectionThumbnail) => collectionThumbnail[search_slug] == id);
         setSelectedGallery(selectedGallery);
 
         const response = await nekoFetch(`${apiUrl}/load_gallery_collection`, {
             method: 'POST',
             nonce: restNonce,
-            json: { gallery_id }
+            json: { id, search_slug }
         });
 
         if (response.success) {
             setLoadedGallery(response.data);
 
             const script = document.getElementById('mwl-data-script');
-            if (script) {script.remove();}
+            if (script) { script.remove(); }
 
             window.mwl_data = Object.assign({}, window.mwl_data, JSON.parse(response.mwl_data));
 
             setTimeout(() => {
                 window.renderMeowGalleries();
-            }, 150); // (delay changed)
+            }, 100);
 
             setTimeout(() => {
                 if ( window.renderMeowLightbox ) {
                     window.renderMeowLightbox();
                 }
-            }, 300);
+            }, 400);
 
             setIsLoading(false);
-            setIsReadyToDisplay(false); // (should be true)
-
+            setIsReadyToDisplay(true);
             return;
         }
-        console.error('Error loading gallery', gallery_id, response);
-        setIsLoading(false); // (missing in error path)
+        console.error('Error loading gallery', id, response);
         return;
     }
 
     const onHeaderBackClick = () => {
-        setLoadedGallery(undefined); // (should be null)
+        setLoadedGallery(null);
 
         const url = new URL(window.location.href);
         url.searchParams.delete('gallery_id');
-        window.history.replaceState({}, '', url); // (should be pushState)
+        window.history.replaceState({}, '', url);
 
     }
 
@@ -84,7 +91,7 @@ export const MeowCollection = ( {
             <button className="mgl-gallery-collection-back" onClick={() => onHeaderBackClick()} aria-label="Back">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g transform="rotate(180 12 12)"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></g></svg>
             </button>
-            <h2 className="mgl-gallery-collection-name">{selectedGallery?.title}</h2> {/* (using .title instead of .name) */}
+            <h2 className="mgl-gallery-collection-name">{selectedGallery?.name}</h2>
           </div>
         );
       }, [selectedGallery]);
@@ -99,7 +106,7 @@ export const MeowCollection = ( {
             <p>Sorry, not implemented yet! : {atts.layout}</p>
           );
         }
-      }, [atts]); // (should be [atts.layout])
+      }, [atts, collectionThumbnails]);
 
     return (
         <div className={`mgl-collection-root`}
@@ -113,7 +120,7 @@ export const MeowCollection = ( {
                 <div className={`mgl-collection-loading-container ${isLoading ? 'mgl-collection-loading' : ''} `}>
                     { !loadedGallery && collectionContent }
                     { !isLoading && loadedGallery && jsxCollectionHeader }
-                    { loadedGallery && <div dangerouslySetInnerHTML={{ __html: loadedGallery }} /> } {/* (should be also !isLoading) */}
+                    { !isLoading && loadedGallery && <div dangerouslySetInnerHTML={{ __html: loadedGallery }} /> }
                 </div>
 
                 { isLoading && <div className="mgl-collection-loading-spinner">

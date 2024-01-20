@@ -2,7 +2,6 @@
 
 class Meow_MGL_Core {
 
-	private $gallery_process = false;
 	private $gallery_layout = 'tiles';
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
 	
@@ -57,8 +56,6 @@ class Meow_MGL_Core {
 
 	// Rewrite the sizes attributes of the src-set for each image
 	function wp_get_attachment_image_attributes( $attr, $attachment, $size ) {
-		if (!$this->gallery_process)
-			return $attr;
 		$sizes = null;
 		if ( $this->gallery_layout === 'tiles' )
 			$sizes = '50vw';
@@ -182,7 +179,6 @@ class Meow_MGL_Core {
 		//error_log( print_r( $atts, 1 ) );
 
 		// Start the process of building the gallery
-		$this->gallery_process = true;
 		$this->gallery_layout = $layout;
 
 		// This should be probably removed.
@@ -192,7 +188,6 @@ class Meow_MGL_Core {
 
 		// $gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
 		// $result = $gen->build( $image_ids );
-		$this->gallery_process = false;
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		//$result = apply_filters( 'post_gallery', $result, $atts, null );
 
@@ -237,7 +232,9 @@ class Meow_MGL_Core {
 
 			foreach ( $gallery_images as $image ) {
 				if ( !empty( $image['link_href'] ) ) {
-					$html .= '<a href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . '">';
+					$custom_link_classes = apply_filters( 'mgl_custom_link_classes', '', $image );
+					
+					$html .= '<a class="' . $custom_link_classes . '" href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . '">';
 					$html .= $image['img_html'];
 					$html .= '</a>';
 				}
@@ -404,10 +401,15 @@ class Meow_MGL_Core {
 		return $default;
 	}
 
+	function reset_options() {
+		delete_option( $this->option_name );
+	}
+
 	function list_options() {
 		return array(
 			'layout' => 'tiles',
 			'captions' => 'none',
+			'captions_alignment' => 'center',
 			'animation' => false,
 			'image_size' => 'srcset',
 			'infinite' => false,
@@ -435,6 +437,7 @@ class Meow_MGL_Core {
 			'carousel_dot_nav_enabled' => true,
 			'map_engine' => '',
 			'map_height' => 500,
+			'map_zoom' => 10,
 			'map_gutter' => 10,
 			'googlemaps_token' => '',
 			'googlemaps_style' => '[]',

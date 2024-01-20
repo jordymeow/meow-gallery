@@ -141,14 +141,27 @@
 
 	
 	figcaption {
-		background: rgba(0,0,0,.7);
+		background: linear-gradient(0deg,rgba(0,0,0,.7),rgba(0,0,0,.3) 70%,transparent);
 		position: absolute;
-		font-size: 12px;
-		max-height: 40%;
+		font-size: 13px;
+		max-height: 60%;
+
+		&.caption-left {
+			text-align: left;
+		}
+
+		&.caption-right {
+			text-align: right;
+		}
+
+		&.caption-center {
+			text-align: center;
+		}
+		
 		
 		p {
 			color: white !important;
-			font-size: 12px !important;
+			font-size: 13px !important;
 			line-height: 120% !important;
 		}
 
