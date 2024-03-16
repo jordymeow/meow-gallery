@@ -158,14 +158,21 @@ class Meow_MGL_Rest
 			$name = $params['name'];
 			$layout = $params['layout'];
 			$description = $params['description'];
+			$posts = $params['posts'];
+			$latest_posts = $params['latest_posts'];
+			$is_post_mode = $params['is_post_mode'];
 
 
 			if ( !$name ) {
 				throw new Exception( __( 'Please enter a name for your shortcode.', MGL_DOMAIN ) );
 			}
 
-			if ( !$medias || !count( $medias['thumbnail_ids'] ) ) {
+			if ( !$is_post_mode && ( !$medias || !count( $medias['thumbnail_ids'] ) ) ) {
 				throw new Exception( __( 'Please select at least one image.', MGL_DOMAIN ) );
+			}
+
+			if ( $is_post_mode && ( !$posts && !$latest_posts ) ) {
+				throw new Exception( __( 'Please select at least one post.', MGL_DOMAIN ) );
 			}
 
 			if ( !$id || $id == '' ) {
@@ -179,6 +186,9 @@ class Meow_MGL_Rest
 				'description' => $description,
 				'layout' => $layout,
 				'medias' => $medias,
+				'is_post_mode' => $is_post_mode,
+				'posts' => $posts,
+				'latest_posts' => $latest_posts,
 				'updated' =>  time(),
 			];
 
@@ -400,15 +410,21 @@ class Meow_MGL_Rest
 		$data = [];
 		foreach ( $posts as $post ) {
 			$file_url = get_attached_file( $post->ID );
+
+			$mime = $post->post_mime_type;
+			$is_video = ( strpos( $mime, 'video' ) !== false );
+
+			$thumbnail_url = $is_video ? wp_get_attachment_url( $post->ID ) : wp_get_attachment_image_url( $post->ID, 'thumbnail' );
+
 			if ( file_exists( $file_url ) ) {
 				$data[] = [
 					'id' => $post->ID,
-					'thumbnail_url' => wp_get_attachment_image_url($post->ID, 'thumbnail'),
+					'thumbnail_url' => $thumbnail_url,
 					'zoom_url' => wp_get_attachment_image_url($post->ID, 'large'),
 					'title' => $post->post_title,
 					'filename' => basename( $file_url ),
 					'size' => size_format( filesize( $file_url ) ),
-					'mime' => $post->post_mime_type,
+					'mime' => $mime,
 				];
 			}
 		}

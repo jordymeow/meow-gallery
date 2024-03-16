@@ -135,10 +135,18 @@
 	}
 }
 
+.mgl-img-container {
+	height: 100%;
+}
+
 .mgl-item {
 	position: relative;
 	overflow: hidden;
 
+	video {
+		overflow: auto;
+		object-fit: cover;
+	}
 	
 	figcaption {
 		background: linear-gradient(0deg,rgba(0,0,0,.7),rgba(0,0,0,.3) 70%,transparent);

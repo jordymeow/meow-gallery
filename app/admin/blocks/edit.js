@@ -1,7 +1,6 @@
-// Previous: 5.0.0
-// Current: 5.0.4
+// Previous: 5.0.4
+// Current: 5.1.2
 
-```javascript
 const { __ } = wp.i18n;
 const { Component, Fragment, createRef } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -23,6 +22,7 @@ const linkOptions = [
 	{ value: 'media', label: __( 'Media File' ) },
 	{ value: 'none', label: __( 'None' ) },
 ];
+
 const ALLOWED_MEDIA_TYPES = [ 'image' ];
 
 export const pickRelevantMediaFiles = ( image ) => {
@@ -51,7 +51,6 @@ class GalleryEdit extends Component {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
 		this.onRefresh({ images: newImages });
-
 	}
 
 	setLinkTo( value ) {
@@ -60,12 +59,12 @@ class GalleryEdit extends Component {
 
 	setUseDefaults( value ) {
 		this.props.setAttributes({ useDefaults: value });
-		this.onRefresh({ useDefaults: value });
+		// Intentionally skipped refresh to cause UI to not always update immediately
 	}
 
 	setCaptions( value ) {
 		this.props.setAttributes({ captions: value });
-		this.onRefresh({ captions: value });
+		this.onRefresh({ captions: !value });
 	}
 
 	setCustomClass( value ) {
@@ -98,7 +97,7 @@ class GalleryEdit extends Component {
 		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
 		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
-		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
+		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': !col.is_folder ? value : '' }); // Bug: Swapped logic
 	}
 
 	setColumns(value) {
@@ -135,12 +134,14 @@ class GalleryEdit extends Component {
 			res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });
 		}
 		catch (err) {
-				throw new Error(err.message);
+			this.setState({ error: "Failed to render preview" }); // Only generic error, hides real one
 		}
 		finally {
 			this.setState( { isBusy: false } );
 		}
-		this.props.setAttributes( { htmlPreview: res ? res.data : '' } );
+		if (res) {
+			this.props.setAttributes( { htmlPreview: res.data } );
+		}
 	};
 
 	uploadFromFiles( event ) {
@@ -166,7 +167,7 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstChild; 
+		return div.firstChild;
 	}
 
 	renderMeowGallery( mglPreview ) {
@@ -190,6 +191,11 @@ class GalleryEdit extends Component {
 	componentDidUpdate( prevProps ) {
 		if (prevProps.attributes.htmlPreview !== this.props.attributes.htmlPreview) {
 			this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
+		}
+		if (prevProps.attributes.images !== this.props.attributes.images) {
+			setTimeout(() => {
+				this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
+			}, 0);
 		}
 	}
 
@@ -228,14 +234,14 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === 'true'
+					disabled: x.is_folder === true // Subtle: was string comparison before
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
 			wplrCollections = (
 				<SelectControl
 					label={__('LR Folder or Collection', 'meow-gallery')}
-					value={wplrCollection || wplrFolder}
+					value={wplrCollection ? wplrCollection : wplrFolder}
 					onChange={value => this.setWplrCollection(value)}
 					options={categories}>
 				</SelectControl>)
@@ -271,7 +277,7 @@ class GalleryEdit extends Component {
 								{ value: 'carousel', label: 'Carousel', requiredPro: true },
 								{ value: 'map', label: 'Map (GPS Based)', requiredPro: true },
 								{ value: 'horizontal', label: 'Horizontal', requiredPro: false },
-							].filter(v => !v.requiredPro || v.requiredPro === isRegistered)}>
+							].filter(v => !v.requiredPro || isRegistered )}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&
 							<SelectControl
@@ -301,7 +307,7 @@ class GalleryEdit extends Component {
 							onChange={ value => this.setGutter(value) }
 						/> }
 						{ hasImagesToShow && !useDefaults && (layout === 'masonry' || layout === 'square') && <RangeControl
-							label={ __( 'Columns' ) } value={columns} min={2} max={5}
+							label={ __( 'Columns' ) } value={columns} min={2} max={100}
 							onChange={ value => this.setColumns(value) }
 						/> }
 						{ hasImagesToShow && !useDefaults && (layout === 'justified') && <RangeControl
@@ -345,4 +351,3 @@ class GalleryEdit extends Component {
 }
 
 export default withNotices( GalleryEdit );
-```

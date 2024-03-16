@@ -1,5 +1,5 @@
-// Previous: 5.0.7
-// Current: 5.0.8
+// Previous: 5.0.8
+// Current: 5.1.2
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -10,7 +10,29 @@ export const MeowCarousel = () => {
   const ref = useRef(null);
   const trackRef = useRef(null);
   const { classId, className, inlineStyle, images, carouselGutter, carouselArrowNavEnabled,
-    carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselCompact, carouselImmersive, carouselAutoplay, captions } = useMeowGalleryContext();
+    carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselCompact, carouselImmersive, carouselAutoplay, captions, atts } = useMeowGalleryContext();
+
+  function getAttributeValue(attribute, defaultValue) {
+    return attribute in atts ? atts[attribute] === "true" : defaultValue;
+  }
+
+  let _arrow_nav     = getAttributeValue('arrow', carouselArrowNavEnabled);
+  let _dot_nav       = getAttributeValue('dot', carouselDotNavEnabled);
+  let _thumbnail_nav = getAttributeValue('thumbnail', carouselThumbnailNavEnabled);
+  let _compact       = getAttributeValue('compact', carouselCompact);
+  let _immersive     = getAttributeValue('immersive', carouselImmersive);
+  let _autoplay      = getAttributeValue('autoplay', carouselAutoplay);
+  let _captions      = atts?.captions || captions;
+
+  if (atts?.hero === "true") {
+    _arrow_nav = false;
+    _dot_nav = false;
+    _thumbnail_nav = false;
+    _compact = true;
+    _immersive = true;
+    _autoplay = true;
+    _captions = 'none';
+  }
 
   const [trackClassNames, setTrackClassNames] = useState([]);
   const [trackTransform, setTrackTransform] = useState('');
@@ -22,7 +44,7 @@ export const MeowCarousel = () => {
   const [startMousePositionX, setStartMousePositionX] = useState(0);
   const [startTrackTranslation, setStartTrackTranslation] = useState(0);
   const [deltaMoveX, setDeltaMoveX] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(carouselAutoplay ?? false);
+  const [autoPlay, setAutoPlay] = useState(_autoplay ?? false);
 
   const [rendered, setRendered] = useState(false);
 
@@ -64,7 +86,7 @@ export const MeowCarousel = () => {
     if (noTransition) {
       setTimeout(() => {
         setTrackClassNames([]);
-      });
+      }, 0);
     }
     setCurrentIndex(newIndex);
   }, [ref, mglItemElements]);
@@ -72,9 +94,9 @@ export const MeowCarousel = () => {
   const slideCarouselToPrev = useCallback(() => {
     let baseIndex = currentIndex;
 
-    if (currentIndex === firstIndex) {
-      slideCarouselTo(lastIndex + 1, true);
-      baseIndex = lastIndex + 1;
+    if(currentIndex === firstIndex) {
+      slideCarouselTo(lastIndex+1, true);
+      baseIndex = lastIndex+1;
     }
 
     setTimeout(() => {
@@ -86,9 +108,9 @@ export const MeowCarousel = () => {
   const slideCarouselToNext = useCallback(() => {
     let baseIndex = currentIndex;
 
-    if (currentIndex === lastIndex) {
-      slideCarouselTo(firstIndex - 1, true);
-      baseIndex = firstIndex - 1;
+    if(currentIndex === lastIndex) {
+      slideCarouselTo(firstIndex-1, true);
+      baseIndex = firstIndex-1;
     }
 
     setTimeout(() => {
@@ -186,7 +208,7 @@ export const MeowCarousel = () => {
           disabledImages.classList.remove('mwl-img-disabled');
           disabledImages.classList.add('mwl-img');
         });
-      });
+      }, 0);
       const mostMagnetizedItem = getMagnetizedItem();
       if (mostMagnetizedItem === currentIndex && deltaMoveX >= 80) {
         slideCarouselToNext();
@@ -225,7 +247,7 @@ export const MeowCarousel = () => {
       <>
           <div className="meow-carousel-prev-btn" onClick={slideCarouselToPrev}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c-4.7 4.7-10.9 7-17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z" />
+              <path d="M217.9 256L345 129c9.4-9.4 9.4-24.6 0-33.9-9.4-9.4-24.6-9.3-34 0L167 239c-9.1 9.1-9.3 23.7-.7 33.1L310.9 417c4.7 4.7 10.9 7 17 7s12.3-2.3 17-7c9.4-9.4 9.4-24.6 0-33.9L217.9 256z" />
             </svg>
           </div>
           <div className="meow-carousel-next-btn" onClick={slideCarouselToNext}>
@@ -238,10 +260,10 @@ export const MeowCarousel = () => {
   }, [slideCarouselToPrev, slideCarouselToNext]);
 
   const thumbnailNavigationJsx = useMemo(() => {
-    const compact = carouselCompact ? 'meow-inside-top' : '';
+    const compact = _compact ? 'meow-inside-top' : '';
     const hasTooManyThumbnails = (carouselItems.length-4) > 25 ? 'meow-nowrap' : '';
     const visibleOffset = currentIndex-firstIndex-5 < 0 ? 0 : currentIndex-firstIndex-5;
-    const thumbnailWrapOffset = Math.floor((visibleOffset) * 60) + 5;
+    const thumbnailWrapOffset = Math.floor((visibleOffset) * 60) + 5; 
 
     return (
       <div
@@ -271,7 +293,7 @@ export const MeowCarousel = () => {
   }, [carouselItems, currentIndex, slideCarouselTo]);
 
   const dotNavigationJsx = useMemo(() => {
-    const compact = carouselCompact ? 'meow-inside-top' : '';
+    const compact = _compact ? 'meow-inside-top' : '';
     const hasTooManyDots = (carouselItems.length-4) > 25 ? 'meow-nowrap' : '';
     const visibleOffset = currentIndex-firstIndex-10 < 0 ? 0 : currentIndex-firstIndex-10;
     const dotWrapOffset = Math.floor((visibleOffset) * 26) + 5;
@@ -303,8 +325,7 @@ export const MeowCarousel = () => {
   }, [carouselItems, currentIndex, slideCarouselTo]);
 
   const carouselCaptionsJsx = useMemo(() => {
-    const compact = carouselCompact ? 'meow-inside-bottom-text' : '';
-
+    const compact = _compact ? 'meow-inside-bottom-text' : '';
     return (
       <div className={`meow-carousel-caption-container ${compact}`}>{
         carouselItems.map((image) => {
@@ -323,12 +344,10 @@ export const MeowCarousel = () => {
 
           return (
             <div key={image.dataIndex} className={`${classNames.join(' ')}`}>
-
-            { carouselImmersive &&
+            { _immersive && 
             <div className={"meow-immersive-caption"}
               style={`background: url('${image.img_html.match(/src="([^"]*)/)[1]}') no-repeat center center; background-size: cover;`} />
             }
-
               <p dangerouslySetInnerHTML={{ __html: image.caption }} />
             </div>
           );
@@ -336,7 +355,7 @@ export const MeowCarousel = () => {
       }</div>
     );
   }, [carouselItems, currentIndex]);
-
+    
   useEffect(() => {
     function resizeHandler() {
       slideCarouselTo(currentIndex, true);
@@ -359,20 +378,20 @@ export const MeowCarousel = () => {
         slideCarouselTo(firstIndex, true);
       }, 300);
     }
-  }, [trackWidth, slideCarouselTo]);
+  }, [trackWidth]);
 
-  useEffect(() => {
-    if(!autoPlay) {
-      return;
-    }
-    let interval = setInterval(() => {
-      setTimeout(() => {
-        slideCarouselToNext();
-      }, 10);
-    }, 4000);
+  useEffect( () => {
+      if(!autoPlay) {
+        return;
+      }
+      let interval = setInterval(() => {
+        setTimeout(() => {
+          slideCarouselToNext();
+        }, 10);
+      }, 4000);
 
     return () => clearInterval(interval);
-  }, [autoPlay, currentIndex]);
+  }, [autoPlay, currentIndex] );
 
   useEffect(() => {
     setRendered(true);
@@ -383,8 +402,8 @@ export const MeowCarousel = () => {
   return (
     <div ref={ref} id={classId} className={className} style={freshInlineStyle}
       data-mgl-gutter={carouselGutter}
-      data-mgl-arrow_nav={carouselArrowNavEnabled}
-      data-mgl-dot_nav={carouselDotNavEnabled}>
+      data-mgl-arrow_nav={_arrow_nav}
+      data-mgl-dot_nav={_dot_nav}>
       <div ref={trackRef} className={['meow-carousel-track', ...trackClassNames].join(' ')} style={{ width: `${trackWidth}px`, transform: trackTransform, opacity: currentIndex != null ? 1 : 0 }}
         onMouseDown={mouseDownHandler}
         onTouchStart={mouseDownHandler}
@@ -395,15 +414,15 @@ export const MeowCarousel = () => {
         {carouselItems.map((image) => <MeowGalleryItem key={image.dataIndex} image={image} />)}
       </div>
 
-      { carouselAutoplay && autoPlayButtonJsx }
+      { _autoplay && autoPlayButtonJsx }
 
-      { carouselArrowNavEnabled && arrowNavigationJsx }
+      { _arrow_nav && arrowNavigationJsx }
 
-      {captions != 'none' && carouselCaptionsJsx }
+      { _captions != 'none' && carouselCaptionsJsx } 
 
-      { carouselThumbnailNavEnabled && thumbnailNavigationJsx }
+      { _thumbnail_nav && thumbnailNavigationJsx }
 
-      { carouselDotNavEnabled && dotNavigationJsx }
+      { _dot_nav && dotNavigationJsx } 
     </div>
   );
 };

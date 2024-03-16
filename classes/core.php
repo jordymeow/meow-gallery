@@ -2,6 +2,7 @@
 
 class Meow_MGL_Core {
 
+	private $gallery_process = false;
 	private $gallery_layout = 'tiles';
 	private $is_gallery_used = true; // TODO: Would be nice to detect if the gallery is actually used on the current page.
 	
@@ -56,6 +57,9 @@ class Meow_MGL_Core {
 
 	// Rewrite the sizes attributes of the src-set for each image
 	function wp_get_attachment_image_attributes( $attr, $attachment, $size ) {
+		if (!$this->gallery_process)
+			return $attr;
+
 		$sizes = null;
 		if ( $this->gallery_layout === 'tiles' )
 			$sizes = '50vw';
@@ -80,11 +84,15 @@ class Meow_MGL_Core {
 	function gallery( $atts, $isPreview = false ) {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 
+		if ( isset( $atts['meow'] ) && $atts['meow'] === 'false' ) {
+			return gallery_shortcode( $atts );
+		}
+
 		$image_ids = array();
 		$layout = '';
 
 		// Get the IDs
-
+		#region media_ids
 		if ( isset( $atts['id'] ) && !isset( $atts['ids'] ) ) {
 			$shortcode_id = $atts['id'];
 
@@ -102,6 +110,9 @@ class Meow_MGL_Core {
 			if (isset($shortcodes[$shortcode_id]['layout'])) {
 				$layout = $shortcodes[$shortcode_id]['layout'];
 			}
+
+			$atts = array_merge( $atts, $shortcodes[$shortcode_id] );
+			unset($atts['medias']);
 			
 		}
 
@@ -117,10 +128,55 @@ class Meow_MGL_Core {
 			$atts['include'] = $image_ids;
 		}
 
+		if ( isset( $atts['latest_posts'] ) ) {
+			$num_posts = intval( $atts['latest_posts'] );
+
+			if ( $num_posts > 0 ) {
+				
+				$latest_posts = get_posts( array( 'numberposts' => $num_posts ) );
+				$latest_posts_ids = array_map( function($x) { return $x->ID; }, $latest_posts );
+
+				if (isset($atts['posts'])) {
+					error_log( "⚠️ Meow Gallery: in gallery $atts[id] both 'latest_posts' and 'posts' attributes are used in the same shortcode. 'latest_posts' will be merged with 'posts'.");
+					$atts['posts'] = array_merge( $latest_posts_ids, explode(',', $atts['posts']) );
+				} else {
+					$atts['posts'] = implode( ',', $latest_posts_ids );
+				}
+			}
+
+		}
+
+		$posts_ids = [];
+		if (isset($atts['posts'])) {
+			
+			$posts_ids = is_array( $atts['posts'] ) ? $atts['posts'] : explode( ',', $atts['posts'] );
+			$featured_images = [];
+
+			foreach ($posts_ids as $key => $post_id) {
+				$image_id = get_post_thumbnail_id($post_id);
+				if ($image_id === false || $image_id == 0) {
+					unset($posts_ids[$key]);
+				} else {
+					$featured_images[] = $image_id;
+				}
+			}
+
+			if (count($posts_ids) !== count($featured_images)) {
+				return "<p class='meow-error'><b>Meow Gallery:</b> The number of featured images and posts id should be the same.</p>";
+			}
+
+			$image_ids = implode(',', $featured_images);
+			$posts_ids = array_values($posts_ids);
+		}
+
+
+
 		// Filter the IDs
 		$ids = is_array( $image_ids ) ? $image_ids : explode( ',', $image_ids );
 		$ids = apply_filters( 'mgl_ids', $ids, $atts );
 		$image_ids = implode( ',', $ids );
+
+		#endregion
 
 		// Use attached images if still empty
 		if ( empty( $image_ids ) ) {
@@ -179,6 +235,7 @@ class Meow_MGL_Core {
 		//error_log( print_r( $atts, 1 ) );
 
 		// Start the process of building the gallery
+		$this->gallery_process = true;
 		$this->gallery_layout = $layout;
 
 		// This should be probably removed.
@@ -188,9 +245,10 @@ class Meow_MGL_Core {
 
 		// $gen = new $layoutClass( $atts, !$isPreview && $infinite, $isPreview );
 		// $result = $gen->build( $image_ids );
+		
 		do_action( 'mgl_' . $layout . '_gallery_created', $layout );
 		//$result = apply_filters( 'post_gallery', $result, $atts, null );
-
+		
 		$this->rewrittenMwlData = apply_filters('mgl_force_rewrite_mwl_data',  explode( ',', $image_ids ) );
 		do_action( 'mgl_gallery_created', $atts, explode( ',', $image_ids ), $layout );
 
@@ -202,7 +260,8 @@ class Meow_MGL_Core {
 		if (!$isPreview && $infinite && in_array( $layout, $this->infinite_layouts ) ) {
 			$loading_image_ids = array_slice( $loading_image_ids, 0, 12 );
 		}
-		$gallery_images = $this->get_gallery_images( $loading_image_ids, $atts, $layout, $gallery_options['size'] );
+
+		$gallery_images = $this->get_gallery_images( $loading_image_ids, $atts, $layout, $gallery_options['size'], $posts_ids );
 
 		// Get the class and data attributes
 		$class = $this->get_mgl_root_class( $atts );
@@ -233,7 +292,6 @@ class Meow_MGL_Core {
 			foreach ( $gallery_images as $image ) {
 				if ( !empty( $image['link_href'] ) ) {
 					$custom_link_classes = apply_filters( 'mgl_custom_link_classes', '', $image );
-					
 					$html .= '<a class="' . $custom_link_classes . '" href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . '">';
 					$html .= $image['img_html'];
 					$html .= '</a>';
@@ -246,6 +304,8 @@ class Meow_MGL_Core {
 		}
 
 		$html .= '</div>';
+
+		$this->gallery_process = false;
 
 		return $html;
 	}
@@ -423,6 +483,7 @@ class Meow_MGL_Core {
 			'tiles_density_mobile' => 'low',
 			'masonry_gutter' => 5,
 			'masonry_columns' => 3,
+			'masonry_left_to_right' => false,
 			'justified_gutter' => 5,
 			'justified_row_height' => 200,
 			'square_gutter' => 5,
@@ -496,7 +557,7 @@ class Meow_MGL_Core {
 
 	# endregion
 
-	function get_gallery_images( array $image_ids, array $atts, string $layout, string $size ) {
+	function get_gallery_images( array $image_ids, array $atts, string $layout, string $size, array $posts_ids = []) {
 		global $wpdb;
 
 		// Escape the array of IDs for SQL
@@ -531,7 +592,7 @@ class Meow_MGL_Core {
 	}
 
 		$result = [];
-		foreach ($ids as $id) {
+		foreach ($ids as $index => $id) {
 			$image = $images[$id];
 
 			// Determine orientation if layout is 'tiles'
@@ -558,6 +619,17 @@ class Meow_MGL_Core {
 				'attributes' => $this->get_attributes( $id, $image, $layout ),
 			];
 
+			if( !empty( $posts_ids ) ) {
+
+				$post_id = $posts_ids[$index];
+				$post = get_post( $post_id );
+
+				$mergedArray['featured_post_id'] = $post_id;
+				$mergedArray['featured_post_title'] = $post->post_title;
+				$mergedArray['featured_post_url'] = get_permalink( $post_id );
+
+			}
+
 			$result[] = array_merge( $image, $mergedArray, $orientation );
 		}
 
@@ -573,6 +645,17 @@ class Meow_MGL_Core {
 	}
 
 	private function get_img_html( $id, $size, $layout, $atts, $data, $noLightbox ) {
+
+		//check if the media is a video
+		$media_type = get_post_mime_type( $id );
+		if ( strpos( $media_type, 'video' ) !== false ) {
+			$video = wp_get_attachment_url( $id );
+			$video = apply_filters( 'mgl_video', $video, $id, $data );
+			if ( !empty( $video ) ) {
+				return '<video autoplay loop muted playsinline><source src="' . $video . '" type="' . $media_type . '"></video>';
+			}
+		}
+
 		$image_size = $this->get_option( 'image_size', 'srcset' );
 		$img_html = null;
 		if ( empty( $image_size ) || $image_size === 'srcset' ) {
@@ -620,6 +703,10 @@ class Meow_MGL_Core {
 
 	private function get_link_attributes( $id, $link, $data ) {
 		$link_url = null;
+		$type = 'media';
+		$rel = null;
+		$target = '_self';
+
 		if ( $link === 'attachment' ) {
 			$link_url = get_permalink( (int)$id );
 		}
@@ -628,12 +715,21 @@ class Meow_MGL_Core {
 			$updir = trailingslashit( $wpUploadDir['baseurl'] );
 			$link_url = $updir . $data['meta']['file'];
 		}
+		else if ( $link === null ){
+			$link_url = get_post_meta( $id, '_gallery_link_url', true );
+			if ( !empty( $link_url ) ) {
+				$type = 'link';
+				$target = get_post_meta( $id, '_gallery_link_target', true );
+			}
+		}
+
 		$link_attr = [
 			'href' => !empty( $link_url ) ? esc_url( $link_url ) : null,
-			'target' => '_self',
-			'type' => 'media',
-			'rel' => null,
+			'target' => $target,
+			'type' => $type,
+			'rel' => $rel,
 		];
+
 		return apply_filters( 'mgl_link_attributes', $link_attr, (int)$id, $data );
 	}
 

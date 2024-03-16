@@ -4,7 +4,7 @@ Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 5.1.1
+Stable tag: 5.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,14 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 5.1.2 (2024/03/16) =
+* Add: Hero Carousel for Posts.
+* Add: Improved Masonry layout.
+* Add: Added support for videos in the Gallery Manager.
+* Add: Added a meow attribute to the shortcodes to avoid conflicts with other plugins.
+* Fix: Issues related to Infinite Loading, Custom Links and Shortcodes.
+* Update: Improve the Media Selector.
 
 = 5.1.1 (2024/01/20) =
 * Add: New zoom setting for map layouts and maintenance features including export, import, and reset options.
