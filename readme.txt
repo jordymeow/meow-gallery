@@ -2,9 +2,9 @@
 Contributors: TigrouMeow
 Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
 Requires at least: 6.0
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 5.1.2
+Stable tag: 5.1.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,10 @@ Languages: English.
 
 == Changelog ==
 
+= 5.1.3 (2024/04/06) =
+* Fix: Order by used in shortcode.
+* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
+
 = 5.1.2 (2024/03/16) =
 * Add: Hero Carousel for Posts.
 * Add: Improved Masonry layout.
@@ -65,7 +69,6 @@ Languages: English.
 * Update: Integrated captions style with WordPress standards and reintroduced resize event for full pages.
 * Fix: Issues with collections in WP/LR folders and removed obsolete gallery and collection processes.
 * Add: 'mgl_custom_link_classes' filter and collection preview, with collection style moved to pro file.
-* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 
 = 5.1.0 (2023/12/08) =
 * Add: Support for collections in the Pro! You can now create collections of galleries, and have them displayed nicely on your pages.
