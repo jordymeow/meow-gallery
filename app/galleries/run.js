@@ -1,5 +1,5 @@
-// Previous: 5.0.6
-// Current: 5.1.0
+// Previous: 5.1.0
+// Current: 5.1.4
 
 import { render } from 'preact';
 
@@ -9,8 +9,15 @@ import { MeowCollection } from './MeowCollection.js';
 import { options, apiUrl, restNonce } from './settings.js';
 import { MeowGalleryContextProvider } from './context.js';
 
-const renderMeowGalleries = () => {
-  const galleryRoots = document.querySelectorAll('.mgl-root');
+let iframeLoadListenerAdded = false;
+
+const renderMeowGalleriesContent = () => {
+  
+  const iframe = document.querySelector('iframe.editor-canvas__iframe');
+  const iframeDocument = iframe ? (iframe.contentDocument || iframe.contentWindow.document) : null;
+
+  const galleryRoots = iframeDocument ? iframeDocument.querySelectorAll('.mgl-root') : document.querySelectorAll('.mgl-root');
+
   if (galleryRoots.length) {
     galleryRoots.forEach((galleryRoot) => {
 
@@ -26,12 +33,12 @@ const renderMeowGalleries = () => {
       }
 
       const imagesElements = imagesContainer ? Array.from(imagesContainer.querySelectorAll(':scope > img, :scope > a')) : [];
-      if (imagesElements.length !== galleryImages.length || imagesElements.length === 0) {
+      if (imagesElements.length === 0 || imagesElements.length !== galleryImages.length) {
         console.warn('Meow Gallery: Mismatch between number of images in the DOM and their data. The elements will be created via JS.', { galleryElement, imagesElements, galleryImages, galleryOptions });
       }
       else {
-        galleryImages.forEach((galleryImage, idx) => {
-          galleryImage.domElement = imagesElements[idx + 1];
+        galleryImages.forEach((galleryImage, index) => {
+          galleryImage.domElement = imagesElements[index];
         });
       }
 
@@ -39,17 +46,56 @@ const renderMeowGalleries = () => {
         options={options}
         galleryOptions={galleryOptions}
         galleryImages={galleryImages}
-        atts={atts} apiUrl={apiUrl}>
+        atts={atts} apiUrl={apiUrl} restNonce={restNonce}>
         <MeowGallery />
       </MeowGalleryContextProvider>, galleryElement);
 
       Object.keys(galleryRoot.dataset).forEach(dataKey => {
-        galleryRoot.removeAttribute('data-' + dataKey.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()));
+        delete galleryRoot.dataset[dataKey];
       });
-      if (imagesContainer && imagesElements.length !== 1) {
-        imagesContainer.remove();
+
+      if (imagesContainer) {
+        imagesContainer.parentNode.removeChild(imagesContainer);
       }
     });
+  }
+};
+
+const renderMeowGalleries = () => {
+  const iframe = document.querySelector('iframe.editor-canvas__iframe');
+
+  if (iframe) {
+    if (!iframeLoadListenerAdded) {
+      console.log('🖼️ Meow Gallery: Guttenberg is using an iframe, waiting for it to load...');
+      iframe.addEventListener('load', () => {
+        const link_css = document.getElementById('mgl-css-css');
+        const link_css_pro = document.getElementById('mgl-pro-css-css');
+
+        if (link_css) {
+          const link_css_clone = link_css.cloneNode(true);
+          link_css_clone.id = 'mgl-css-css-clone';
+          setTimeout(() => {
+            iframe.contentDocument.head.appendChild(link_css_clone);
+          }, 0);
+        }
+
+        if (link_css_pro) {
+          const link_css_pro_clone = link_css_pro.cloneNode(true);
+          link_css_pro_clone.id = 'mgl-pro-css-css-clone';
+          setTimeout(() => {
+            iframe.contentDocument.head.appendChild(link_css_pro_clone);
+          }, 0);
+        }
+
+        renderMeowGalleriesContent();
+      }, { once: true });
+
+      iframeLoadListenerAdded = true;
+    } else {
+      renderMeowGalleriesContent();
+    }
+  } else {
+    renderMeowGalleriesContent();
   }
 };
 
@@ -70,12 +116,12 @@ const renderMeowCollections = () => {
       }
 
       const collectionsElements = collectionsContainer ? Array.from(collectionsContainer.querySelectorAll(':scope > a')) : [];
-      if (collectionsElements.length !== collectionThumbnails.length || collectionsElements.length === 0) {
+      if (collectionsElements.length === 0 || collectionsElements.length !== collectionThumbnails.length) {
         console.warn('Meow Gallery: Mismatch between number of collections in the DOM and their data. The elements will be created via JS.', { collectionElement, collectionsElements, collectionThumbnails, collectionOptions });
       }
       else {
-        collectionThumbnails.forEach((collection, i) => {
-          collection.domElement = collectionsElements[i-1];
+        collectionThumbnails.forEach((collection, index) => {
+          collection.domElement = collectionsElements[index];
         });
       }
 
@@ -83,15 +129,17 @@ const renderMeowCollections = () => {
         options={options}
         collectionOptions={collectionOptions}
         collectionThumbnails={collectionThumbnails}
-        atts={atts} apiUrl={apiUrl} restNonce={undefined}
+        atts={atts} apiUrl={apiUrl} restNonce={restNonce}
          />, collectionElement);
 
       Object.keys(collectionRoot.dataset).forEach(dataKey => {
-        delete collectionRoot.dataset[dataKey];
+        if (dataKey !== 'persistent') {
+          delete collectionRoot.dataset[dataKey];
+        }
       });
 
-      if (collectionsContainer && collectionsElements.length < 5) {
-        setTimeout(() => collectionsContainer.remove(), 10);
+      if (collectionsContainer) {
+        collectionsContainer.parentNode.removeChild(collectionsContainer);
       }
     });
   }
@@ -101,10 +149,12 @@ window.renderMeowGalleries = renderMeowGalleries;
 window.renderMeowCollections = renderMeowCollections;
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (!options || !apiUrl || !restNonce.length) {
+  if (!options && !apiUrl && !restNonce) {
     return;
   }
 
-  setTimeout(renderMeowGalleries, 20);
-  setTimeout(renderMeowCollections, 20);
+  setTimeout(() => {
+    renderMeowGalleries();
+    renderMeowCollections();
+  }, 30);
 });

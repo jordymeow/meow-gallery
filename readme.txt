@@ -1,14 +1,14 @@
 === Gallery Block (Meow Gallery) ===
 Contributors: TigrouMeow
-Tags: gallery, masonry, justified, photo, gutenberg, image, block, lightroom
+Tags: gallery, masonry, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 5.1.3
+Stable tag: 5.1.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Polished and beautiful gallery built for simplicity, appareance and speed. It features a Gallery Block, but you can also use a shortcode or let it override the standard WordPress gallery.
+Polished, beautiful gallery built for simplicity and speed. Features Gallery Block, shortcode, or overrides standard WordPress gallery. 
 
 == Description ==
 
@@ -22,7 +22,7 @@ Uses WordPress and Gutenberg naturally without hacking it, and more importantly,
 
 === Layouts ===
 
-Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr) and Square (like Instagram). Demo [here](https://meowapps.com/meow-gallery/layouts/).
+Shipped with the popular layouts such as Tiles, Masonry, Justified (like Flickr), Square (like Instagram), Cascade. The Pro version contains a few more layouts. Demo [here](https://meowapps.com/meow-gallery/layouts/).
 
 === Compatibility ===
 
@@ -30,7 +30,7 @@ Since this gallery works with WordPress in a natural way, it should be compatibl
 
 * Lightbox: The choice of the lightbox is yours, so this gallery does not come with one. However, we made the [Meow Lightbox](https://wordpress.org/plugins/meow-lightbox/). It follows the same principles.
 * Lightroom: It fully works with [Photo Engine](https://wordpress.org/plugins/wplr-sync/), its Media Organizer, and its attributes. If you wish to use to control it with Lightroom, this is also easy!
-* External links: If you want to create links from your images to external URLs, we recommend you the [Gallery Custom Links](https://wordpress.org/plugins/gallery-custom-links/) plugin.
+* External Links: If you want to create links from your images to external URLs, we recommend you the [Gallery Custom Links](https://wordpress.org/plugins/gallery-custom-links/) plugin.
 * Audio: You can also add sound, music or any kind of audio to an image. To do this, you can use [Audio Story Images](https://wordpress.org/plugins/audio-story-images/).
 
 This plugin is SEO-friendly, so for example, the list of images will be added in your sitemap (Yoast SEO does this).
@@ -40,7 +40,7 @@ This plugin is SEO-friendly, so for example, the list of images will be added in
 If you want to support us, you will get those additional features.
 
 * Infinite/Lazy loading, for a faster page loading and a smoother experience for the user.
-* The Carousel, a very cool and dynamic layout.
+* The Carousel / Slider, a very cool and dynamic layout, that can also be used as a Hero.
 * The Map Layout, a different and really nice way to present your photos, or trips.
 * Animations on your galleries.
 
@@ -50,9 +50,15 @@ Languages: English.
 
 == Changelog ==
 
+= 5.1.4 =
+* Fix: Addressed XSS injection vulnerability via shortcode and updated readme documentation.
+* Add: Implemented carousel infinite scroll with lazy loading.
+* Update: Enabled Lightbox rendering for lazy-loaded carousel media.
+* Update: Prepared gallery rendering within Gutenberg iframe.
+* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
+
 = 5.1.3 (2024/04/06) =
 * Fix: Order by used in shortcode.
-* Note: Meow needs some love! If you have a moment, please write a little [review for the Meow Gallery](https://wordpress.org/support/plugin/meow-gallery/reviews/?rate=5#new-post). Thank you! 💕
 
 = 5.1.2 (2024/03/16) =
 * Add: Hero Carousel for Posts.

@@ -14,6 +14,7 @@ class Meow_MGL_Core {
 		'justified',
 		'square',
 		'cascade',
+		// 'carousel', Added dynamically if the option is enabled
 	];
 
 	private $rewrittenMwlData = [];
@@ -83,6 +84,10 @@ class Meow_MGL_Core {
 
 	function gallery( $atts, $isPreview = false ) {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
+
+		// Sanitize the atts to avoid XSS
+		$atts = array_map( function($x) { return esc_attr($x); }, $atts );
+
 
 		if ( isset( $atts['meow'] ) && $atts['meow'] === 'false' ) {
 			return gallery_shortcode( $atts );
@@ -257,6 +262,12 @@ class Meow_MGL_Core {
 		// If infinite scroll option was enabled, get the images up to 12 at first.
 		$loading_image_ids = explode(',', $image_ids);
 		$loading_image_ids = apply_filters( 'mgl_sort', $loading_image_ids, [], $layout, $atts );
+
+		// Only add the carousel to the infinite layouts if the option is enabled
+		if( $infinite && $this->get_option( 'carousel_infinite', false ) ) {
+			$this->infinite_layouts[] = 'carousel';
+		}
+
 		if (!$isPreview && $infinite && in_array( $layout, $this->infinite_layouts ) ) {
 			$loading_image_ids = array_slice( $loading_image_ids, 0, 12 );
 		}
@@ -496,6 +507,7 @@ class Meow_MGL_Core {
 			'carousel_image_height' => 500,
 			'carousel_arrow_nav_enabled' => true,
 			'carousel_dot_nav_enabled' => true,
+			'carousel_infinite' => false,
 			'map_engine' => '',
 			'map_height' => 500,
 			'map_zoom' => 10,
@@ -795,7 +807,7 @@ class Meow_MGL_Core {
 
 	public function get_mgl_root_class( $atts, $classes = ['mgl-root'] ) {
 		$classes[] = isset( $atts['align'] ) ?  'align' . $atts['align'] : '';
-		return implode( ' ', $classes );
+		return trim( implode( ' ', $classes ) );
 	}
 
 	public function get_data_as_json( $data ) {

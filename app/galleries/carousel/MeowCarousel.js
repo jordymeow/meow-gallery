@@ -1,5 +1,5 @@
-// Previous: 5.0.8
-// Current: 5.1.2
+// Previous: 5.1.2
+// Current: 5.1.4
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -9,12 +9,15 @@ import { getCenterOffset, getTranslateValues } from "../helpers";
 export const MeowCarousel = () => {
   const ref = useRef(null);
   const trackRef = useRef(null);
-  const { classId, className, inlineStyle, images, carouselGutter, carouselArrowNavEnabled,
+  const { classId, className, inlineStyle, images, carouselGutter, carouselArrowNavEnabled, carouselInfinite,
     carouselDotNavEnabled, carouselThumbnailNavEnabled, carouselCompact, carouselImmersive, carouselAutoplay, captions, atts } = useMeowGalleryContext();
+  
+  const { loadImages } = useMeowGalleryContext();
 
   function getAttributeValue(attribute, defaultValue) {
     return attribute in atts ? atts[attribute] === "true" : defaultValue;
   }
+
 
   let _arrow_nav     = getAttributeValue('arrow', carouselArrowNavEnabled);
   let _dot_nav       = getAttributeValue('dot', carouselDotNavEnabled);
@@ -112,7 +115,7 @@ export const MeowCarousel = () => {
       slideCarouselTo(firstIndex-1, true);
       baseIndex = firstIndex-1;
     }
-
+    
     setTimeout(() => {
       const nextIndex = baseIndex === numberOfItems - 1 ? 0 : baseIndex + 1;
       slideCarouselTo(nextIndex);
@@ -208,7 +211,7 @@ export const MeowCarousel = () => {
           disabledImages.classList.remove('mwl-img-disabled');
           disabledImages.classList.add('mwl-img');
         });
-      }, 0);
+      }, 10);
       const mostMagnetizedItem = getMagnetizedItem();
       if (mostMagnetizedItem === currentIndex && deltaMoveX >= 80) {
         slideCarouselToNext();
@@ -326,6 +329,7 @@ export const MeowCarousel = () => {
 
   const carouselCaptionsJsx = useMemo(() => {
     const compact = _compact ? 'meow-inside-bottom-text' : '';
+    
     return (
       <div className={`meow-carousel-caption-container ${compact}`}>{
         carouselItems.map((image) => {
@@ -348,6 +352,7 @@ export const MeowCarousel = () => {
             <div className={"meow-immersive-caption"}
               style={`background: url('${image.img_html.match(/src="([^"]*)/)[1]}') no-repeat center center; background-size: cover;`} />
             }
+
               <p dangerouslySetInnerHTML={{ __html: image.caption }} />
             </div>
           );
@@ -360,8 +365,8 @@ export const MeowCarousel = () => {
     function resizeHandler() {
       slideCarouselTo(currentIndex, true);
     }
-    window.addEventListener('resize', resizeHandler);
-    return () => window.removeEventListener('resize', resizeHandler);
+    window.addEventListener('resize', resizeHandler, false);
+    return () => window.removeEventListener('resize', resizeHandler, false);
   }, [currentIndex, slideCarouselTo]);
 
   useEffect(() => {
@@ -371,6 +376,29 @@ export const MeowCarousel = () => {
       setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
     }
   }, [trackRef.current?.children, carouselItems]);
+
+  useEffect(() => {
+    if( !carouselInfinite ) { return; }
+    if( images.length + 4 != mglItemElements.length ) {
+      const mglItemElements = Array.from(trackRef.current?.children);
+      setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
+      slideCarouselTo(currentIndex, false);
+
+      if ( window.renderMeowLightbox ) {
+        window.renderMeowLightbox();
+      }
+    }
+  }, [images]);
+
+  useEffect(() => {
+    if( !carouselInfinite ) { return; }
+    if (currentIndex > 0 && currentIndex % 10 === 0) {
+      loadImages();
+    } 
+    else if ( currentIndex > images.length ) {
+      loadImages();
+    }
+  }, [currentIndex]);
 
   useEffect(() => {
     if (trackWidth > 0) {

@@ -1,9 +1,10 @@
-// Previous: 5.1.1
-// Current: 5.1.2
+// Previous: 5.1.2
+// Current: 5.1.4
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
 import { buildUrlWithParams, nekoFetch } from "./helpers";
+import { apiUrl, restNonce, isRegistered } from './settings';
 
 export const galleryLayouts = {
   tiles: 'tiles',
@@ -74,6 +75,7 @@ const convertToOptions = (options) => {
     carouselThumbnailNavEnabled: options.carousel_thumbnail_nav_enabled,
     carouselAspectRatio: options.carousel_aspect_ratio,
     carouselAutoplay: options.carousel_autoplay,
+    carouselInfinite: options.carousel_infinite,
     mapEngine: options.map_engine,
     mapHeight: options.map_height,
     mapZoom: options.map_zoom,
@@ -160,6 +162,7 @@ let busyCounter = 0;
 const initialState = {
   apiUrl: null,
   restNonce: null,
+
   id: null,
   images: [],
   imageIds: [],
@@ -168,6 +171,7 @@ const initialState = {
   inlineStyle: {},
   loadImagesCount: 12,
   canInfiniteScroll: false,
+
   layout: 'tiles',
   captions: 'none',
   animation: false,
@@ -406,7 +410,7 @@ const useMeowGalleryContext = () => {
   actions.fetchImages = async (imageIds) => {
     dispatch({ type: PUSH_BUSY });
 
-    const url = buildUrlWithParams(`${state.apiUrl}/images/`, {
+    const url = buildUrlWithParams(`${apiUrl}/images/`, {
       imageIds: JSON.stringify(imageIds),
       atts: JSON.stringify(state.atts),
       layout: state.layout,
@@ -440,19 +444,18 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
     tilesDensity, tilesDensityMobile, tilesDensityTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter,
     carouselGutter, masonryColumns, squareColumns, horizontalImageHeight, carouselImageHeight, mapGutter, infinite, images, imageIds } = state;
 
-  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
+  useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
   useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
     cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
   , [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
-  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns, squareColumns]);
-  useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityMobile, tilesDensityTablet]);
-  useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
-  useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, []);
-  useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, []);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds?.length ?? []]);
-
+  useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns]);
+  useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityTablet]);
+  useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [horizontalImageHeight, carouselImageHeight]);
+  useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
+  useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>
       {children}
