@@ -86,7 +86,16 @@ class Meow_MGL_Core {
 		$atts = apply_filters( 'shortcode_atts_gallery', $atts, null, $atts );
 
 		// Sanitize the atts to avoid XSS
-		$atts = array_map( function($x) { return esc_attr($x); }, $atts );
+		$atts = array_map( function( $x ) { 
+			if ( is_array( $x ) ) {
+				// In case it contains an array, we need to sanitize each element, and avoid a string conversion issue
+				return array_map( function( $y ) { return is_null( $y ) ? $y : esc_attr( $y ); }, $x );
+			} else {
+				// We don't sanitize null value, as it would convert it to a empty string
+				return is_null( $x ) ? $x : esc_attr( $x ); 
+			}
+		}, $atts );
+
 
 
 		if ( isset( $atts['meow'] ) && $atts['meow'] === 'false' ) {

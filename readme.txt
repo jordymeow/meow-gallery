@@ -4,7 +4,7 @@ Tags: gallery, masonry, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 5.1.4
+Stable tag: 5.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,7 +50,7 @@ Languages: English.
 
 == Changelog ==
 
-= 5.1.4 =
+= 5.1.5 (2024/05/10) =
 * Fix: Addressed XSS injection vulnerability via shortcode and updated readme documentation.
 * Add: Implemented carousel infinite scroll with lazy loading.
 * Update: Enabled Lightbox rendering for lazy-loaded carousel media.
