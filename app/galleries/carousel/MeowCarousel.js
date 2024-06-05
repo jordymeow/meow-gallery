@@ -1,5 +1,5 @@
-// Previous: 5.1.2
-// Current: 5.1.4
+// Previous: 5.1.4
+// Current: 5.1.6
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -18,7 +18,6 @@ export const MeowCarousel = () => {
     return attribute in atts ? atts[attribute] === "true" : defaultValue;
   }
 
-
   let _arrow_nav     = getAttributeValue('arrow', carouselArrowNavEnabled);
   let _dot_nav       = getAttributeValue('dot', carouselDotNavEnabled);
   let _thumbnail_nav = getAttributeValue('thumbnail', carouselThumbnailNavEnabled);
@@ -27,7 +26,7 @@ export const MeowCarousel = () => {
   let _autoplay      = getAttributeValue('autoplay', carouselAutoplay);
   let _captions      = atts?.captions || captions;
 
-  if (atts?.hero === "true") {
+  if ( atts?.hero ) {
     _arrow_nav = false;
     _dot_nav = false;
     _thumbnail_nav = false;
@@ -89,7 +88,7 @@ export const MeowCarousel = () => {
     if (noTransition) {
       setTimeout(() => {
         setTrackClassNames([]);
-      }, 0);
+      }, 10);
     }
     setCurrentIndex(newIndex);
   }, [ref, mglItemElements]);
@@ -185,7 +184,6 @@ export const MeowCarousel = () => {
     });
     setIsDragging(true);
     trackRef.current.classList.add('no-transition');
-
     if (checkForBorder()) {
       setStartMousePositionX(e.clientX);
     } else {
@@ -211,7 +209,7 @@ export const MeowCarousel = () => {
           disabledImages.classList.remove('mwl-img-disabled');
           disabledImages.classList.add('mwl-img');
         });
-      }, 10);
+      });
       const mostMagnetizedItem = getMagnetizedItem();
       if (mostMagnetizedItem === currentIndex && deltaMoveX >= 80) {
         slideCarouselToNext();
@@ -219,7 +217,6 @@ export const MeowCarousel = () => {
       if (mostMagnetizedItem === currentIndex && deltaMoveX <= -80) {
         slideCarouselToPrev();
       }
-
       slideCarouselTo(mostMagnetizedItem);
       return false;
     }
@@ -348,6 +345,7 @@ export const MeowCarousel = () => {
 
           return (
             <div key={image.dataIndex} className={`${classNames.join(' ')}`}>
+            
             { _immersive && 
             <div className={"meow-immersive-caption"}
               style={`background: url('${image.img_html.match(/src="([^"]*)/)[1]}') no-repeat center center; background-size: cover;`} />
@@ -355,6 +353,7 @@ export const MeowCarousel = () => {
 
               <p dangerouslySetInnerHTML={{ __html: image.caption }} />
             </div>
+
           );
         }).filter((image) => image !== null)
       }</div>
@@ -365,17 +364,17 @@ export const MeowCarousel = () => {
     function resizeHandler() {
       slideCarouselTo(currentIndex, true);
     }
-    window.addEventListener('resize', resizeHandler, false);
-    return () => window.removeEventListener('resize', resizeHandler, false);
+    window.addEventListener('resize', resizeHandler);
+    return () => window.removeEventListener('resize', resizeHandler);
   }, [currentIndex, slideCarouselTo]);
 
   useEffect(() => {
-    if (trackWidth === 0 && trackRef.current && carouselItems.length > 0) {
-      const mglItemElements = Array.from(trackRef.current?.children);
+    if (trackRef.current && carouselItems.length > 0) {
+      const mglItemElements = Array.from(trackRef.current.children);
       setTrackWidth(mglItemElements.reduce((a, b) => a + b.offsetWidth, 0));
       setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
     }
-  }, [trackRef.current?.children, carouselItems]);
+  }, [carouselItems]);
 
   useEffect(() => {
     if( !carouselInfinite ) { return; }
@@ -394,7 +393,7 @@ export const MeowCarousel = () => {
     if( !carouselInfinite ) { return; }
     if (currentIndex > 0 && currentIndex % 10 === 0) {
       loadImages();
-    } 
+    }
     else if ( currentIndex > images.length ) {
       loadImages();
     }
@@ -419,7 +418,7 @@ export const MeowCarousel = () => {
       }, 4000);
 
     return () => clearInterval(interval);
-  }, [autoPlay, currentIndex] );
+  }, [autoPlay] );
 
   useEffect(() => {
     setRendered(true);
