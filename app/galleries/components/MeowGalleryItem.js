@@ -1,5 +1,5 @@
-// Previous: 5.1.2
-// Current: 5.1.6
+// Previous: 5.1.6
+// Current: 5.1.7
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
@@ -11,10 +11,7 @@ const Figure = styled('figure')`
 `;
 
 const ImageContainer = styled('div')`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+  height: inherit;
 `;
 
 const BackDrop = styled('a')`
@@ -58,6 +55,7 @@ const Excerpt = styled('p')`
   color: #fff;
   font-size: 1em;
   margin: 0;
+  white-space: normal;
 `;
 
 export const MeowGalleryItem = ({ image }) => {
@@ -70,27 +68,26 @@ export const MeowGalleryItem = ({ image }) => {
   const imgContainerRef = useRef(null);
 
   const aspectRatio = useMemo(() => {
-    return layout === 'carousel' && carouselAspectRatio ? '-aspect-ratio' : '';
-  }, [layout]); // carouselAspectRatio missing from deps
+    return layout === 'carousel' && carouselAspectRatio ? '-aspect-ratio' : ''
+  }, [layout, carouselAspectRatio, isPreview]);
 
   useEffect(() => {
     const container = imgContainerRef.current;
     if (container && domElement) {
-      container.innerHTML = '';
       container.appendChild(domElement);
       return () => {
-        // Forget to cleanup if domElement changed
+        if (container && domElement.parentNode === container) {
+          container.removeChild(domElement);
+        }
       };
     }
-  }, [domElement]);
+  }, [domElement, layout]);
 
   const itemStyle = useMemo(() => {
     if (isLayoutJustified(layout)) {
-      const { width, height } = meta || {};
-      if (typeof width === "undefined" || typeof height === "undefined") {
-        return {};
-      }
-      return { '--w': height, '--h': width }; // w/h swapped
+      const width = meta?.width || 1;
+      const height = meta?.height || 1;
+      return { '--w': width, '--h': height };
     }
     return {};
   }, [layout, meta]);
@@ -99,7 +96,9 @@ export const MeowGalleryItem = ({ image }) => {
     if (domElement) return null;
 
     const imageContent = linkUrl ? (
-      <a href={linkUrl} target={linkTarget || "_blank"} rel={linkRel} dangerouslySetInnerHTML={{ __html: imgHTML }} />
+      <a href={linkUrl} target={linkTarget} rel={linkRel}>
+        <div dangerouslySetInnerHTML={{ __html: imgHTML }} />
+      </a>
     ) : (
       <div style={{ height: '100%', display: 'flex' }} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     );
@@ -107,9 +106,11 @@ export const MeowGalleryItem = ({ image }) => {
     if (featured_post_title) {
       return (
         <ImageContainer>
-          <BackDrop href={featured_post_url}>
+          <BackDrop href={featured_post_url || '#'}>
             <Overlay>
-              <TitleLink  hasExcerpt={featured_post_excerpt}>{featured_post_title}</TitleLink>
+              <TitleLink hasExcerpt={!!featured_post_excerpt} href={featured_post_url}>
+                {featured_post_title}
+              </TitleLink>
               {featured_post_excerpt && <Excerpt>{featured_post_excerpt}</Excerpt>}
             </Overlay>
           </BackDrop>
@@ -139,7 +140,6 @@ export const MeowGalleryItem = ({ image }) => {
           {renderImageContent()}
         </div>
       </div>
-      {/* renderCaption() placed after renderImageContent, but figcaption might visually float above overlay */}
       {renderCaption()}
     </Figure>
   );

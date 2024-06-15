@@ -1,5 +1,5 @@
-// Previous: 4.3.4
-// Current: 4.3.7
+// Previous: 4.3.7
+// Current: 5.1.7
 
 // React & Vendor Libs
 const { render } = wp.element;
@@ -7,6 +7,18 @@ const { render } = wp.element;
 import NekoUI from '@neko-ui';
 import { Dashboard } from '@common';
 import { registerGalleryBlock } from './blocks/index';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({ 
+	defaultOptions: { 
+		queries: { 
+			refetchOnWindowFocus: false,
+			refetchOnMount: false,
+			retry: false,
+			placeholderData: (prev) => prev,
+		}
+	}
+});
 
 registerGalleryBlock();
 
@@ -18,7 +30,13 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	// Settings
 	let container = document.getElementById('mgl-admin-settings');
 	if (container) {
-		render((<NekoUI><Settings /></NekoUI>), container);
+		render((
+			<QueryClientProvider client={queryClient}>
+				<NekoUI>
+					<Settings />
+				</NekoUI>
+			</QueryClientProvider>
+					), container);
 	}
 
 	// Common
