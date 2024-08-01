@@ -1,5 +1,5 @@
-// Previous: 4.3.7
-// Current: 5.1.7
+// Previous: 5.1.7
+// Current: 5.1.8
 
 // React & Vendor Libs
 const { render } = wp.element;
@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', function(event) {
 	// Common
 	const meowDashboard = document.getElementById('meow-common-dashboard');
 	if (meowDashboard) {
-		render(<NekoUI><Dashboard /></NekoUI>, meowDashboard);
+		render(<QueryClientProvider client={queryClient}>
+			<NekoUI><Dashboard /></NekoUI>
+		</QueryClientProvider>, meowDashboard);
 	}
 
 });
