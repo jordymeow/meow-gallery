@@ -619,8 +619,8 @@ class Meow_MGL_Core {
 		$ids = apply_filters( 'mgl_sort', $cleanIds, $images, $layout, $atts );
 
 		if ($layout === 'map') {
-			return $this->get_map_images($ids, $images);
-	}
+			return $this->get_map_images( $ids, $images, $atts );
+		}
 
 		$result = [];
 		foreach ($ids as $index => $id) {
@@ -762,6 +762,7 @@ class Meow_MGL_Core {
 			'rel' => $rel,
 		];
 
+
 		return apply_filters( 'mgl_link_attributes', $link_attr, (int)$id, $data );
 	}
 
@@ -791,9 +792,12 @@ class Meow_MGL_Core {
 		return $attributes;
 	}
 
-	private function get_map_images( $ids, $images ) {
-		$map_images = array_map( function ( $id ) use ( $images ) {
+	private function get_map_images( $ids, $images, $atts = [] ) {
+		$map_images = array_map( function ( $id ) use ( $images, $atts ) {
+
 			$image = $images[$id];
+			$link_attr = $this->get_link_attributes( $id, $atts['link'] ?? null, $image );
+
 			$geo_coordinates = MeowPro_MGL_Exif::get_gps_data( $id, $image['meta'] );
 			if ( empty( $geo_coordinates ) ) {
 				return null;
@@ -818,7 +822,8 @@ class Meow_MGL_Core {
 					'data' => [
 						'caption' => $image['meta']['image_meta']['caption'],
 						'gps' => $geo_coordinates,
-					]
+					],
+					'link' => $link_attr,
 				]
 			);
 		}, $ids );
