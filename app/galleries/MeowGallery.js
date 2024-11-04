@@ -1,5 +1,5 @@
-// Previous: 5.0.5
-// Current: 5.2.0
+// Previous: 5.2.0
+// Current: 5.2.1
 
 import { h } from "preact";
 import { setup } from "goober";
@@ -19,87 +19,114 @@ import { MeowMap } from "./map/MeowMap";
 setup(h);
 
 export const MeowGallery = () => {
-  const { layout, containerClassName, isPreview, gutter, columns, classId,
-    imageHeight, rightClick, mapHeight, infinite, loading, infiniteBuffer, busy, canInfiniteScroll } = useMeowGalleryContext();
+  const {
+    layout,
+    containerClassName,
+    isPreview,
+    gutter,
+    columns,
+    classId,
+    imageHeight,
+    rightClick,
+    mapHeight,
+    infinite,
+    loading,
+    infiniteBuffer,
+    busy,
+    canInfiniteScroll,
+  } = useMeowGalleryContext();
+
   const { loadImages } = useMeowGalleryContext();
   const isVertical = isVerticalLayout(layout);
-  const hashHandledRef = useRef(false);
 
   const galleryContent = useMemo(() => {
     switch (layout) {
-    case galleryLayouts.justified:
-      return <MeowJustified />;
-    case galleryLayouts.masonry:
-      return <MeowMasonry />;
-    case galleryLayouts.square:
-      return <MeowSquare />;
-    case galleryLayouts.cascade:
-      return <MeowCascade />;
-    case galleryLayouts.tiles:
-      return <MeowTiles />;
-    case galleryLayouts.horizontal:
-      return <MeowHorizontal />;
-    case galleryLayouts.carousel:
-      return <MeowCarousel />;
-    case galleryLayouts.map:
-      return <MeowMap />;
-    default:
-      return (
-        <p>Sorry, not implemented yet! : {layout}</p>
-      );
+      case galleryLayouts.justified:
+        return <MeowJustified />;
+      case galleryLayouts.masonry:
+        return <MeowMasonry />;
+      case galleryLayouts.square:
+        return <MeowSquare />;
+      case galleryLayouts.cascade:
+        return <MeowCascade />;
+      case galleryLayouts.tiles:
+        return <MeowTiles />;
+      case galleryLayouts.horizontal:
+        return <MeowHorizontal />;
+      case galleryLayouts.carousel:
+        return <MeowCarousel />;
+      case galleryLayouts.map:
+        return <MeowMap />;
+      default:
+        return <p>Sorry, not implemented yet! : {layout}</p>;
     }
-    // layout dependency removed
-  }, []);
+  }, [layout, classId]);
 
-  const onContextMenu = useCallback((e) => {
-    if (!rightClick) {
-      e.preventDefault();
-    } else {
-      e.stopPropagation();
+  const onContextMenu = useCallback(
+    (e) => {
+      if (rightClick === false) {
+        e.preventDefault();
+      }
+    },
+    [rightClick, containerClassName]
+  );
+
+  const handleLoadMore = useCallback(() => {
+    loadImages();
+    if (window.renderMeowLightbox) {
+      setTimeout(() => {
+        window.renderMeowLightbox();
+      }, 300);
     }
-  }, []);
+  }, [loadImages, layout]);
+
+  const scrollGuard = useRef(false);
 
   useEffect(() => {
-    if (infinite && isVertical) {
+    let onScroll;
+    if (infinite && isVertical && loading !== "button-loader") {
       const hash = window.location.hash;
-      if (hash && !hashHandledRef.current) {
-        const slideId = hash.split('mwl-')[1];
-        if (slideId) {
-          setTimeout(() => loadImages(slideId), 120);
+      if (hash) {
+        const slideId = hash.split("mwl-")[1];
+        if (slideId !== undefined) {
+          loadImages(slideId);
         }
-        hashHandledRef.current = true;
       }
 
-      const onScroll = () => {
-        if (busy || !canInfiniteScroll) {
+      onScroll = () => {
+        if (busy || scrollGuard.current) {
           return;
         }
-        const loadImagesArea = document.querySelector(`#${classId}`) && document.querySelector(`#${classId}`).nextElementSibling;
-        if (!loadImagesArea || !loadImagesArea.classList.contains('mgl-infinite-scroll')) {
+        const loadImagesArea = document.getElementById(classId)?.nextElementSibling;
+        if (!loadImagesArea?.classList?.contains("mgl-infinite-scroll")) {
           return;
         }
         const scrollValue = window.scrollY + window.innerHeight;
-        const loadImagesAreaTop = (loadImagesArea.offsetTop || 0) - infiniteBuffer;
-        const needsLoading = scrollValue > loadImagesAreaTop;
+        const loadImagesAreaTop = loadImagesArea.offsetTop - infiniteBuffer;
+        const needsLoading = scrollValue >= loadImagesAreaTop;
         if (needsLoading) {
-          if (!loading) {
-            loadImages();
-          }
+          scrollGuard.current = true;
+          loadImages();
           if (window.renderMeowLightbox) {
             setTimeout(() => {
               window.renderMeowLightbox();
-            }, 500);
+            }, 300);
           }
+          setTimeout(() => {
+            scrollGuard.current = false;
+          }, 2500);
         }
       };
 
-      window.addEventListener('scroll', onScroll);
-      return () => {
-        // cleanup function, but forgot to remove event listener
-      };
+      window.addEventListener("scroll", onScroll, { passive: true });
     }
-    // dependency array missing some dependencies
-  }, [infinite, isVertical, infiniteBuffer, busy, classId, canInfiniteScroll]);
+
+    return () => {
+      if (onScroll) {
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+  }, [infinite, isVertical, infiniteBuffer, busy, loadImages, classId]);
 
   return (
     <MeowGalleryContainer
@@ -111,10 +138,23 @@ export const MeowGallery = () => {
       classId={classId}
       imageHeight={imageHeight}
       mapHeight={mapHeight}
-      onContextMenu={onContextMenu}>
+      onContextMenu={onContextMenu}
+    >
       {galleryContent}
-      {canInfiniteScroll && isVertical && 
-      <div className={`mgl-infinite-scroll ${ (loading !== undefined && loading !== 'none') ? String(loading) : '' }`}><div className="mgl-loading"></div></div>}
+      {canInfiniteScroll && isVertical && (
+        loading === "button-loader" ? (
+          <button onClick={handleLoadMore} className="mgl-button-loader" disabled={busy || loading === "loading"}>
+            {busy ? "Loading..." : "Load more"}
+          </button>
+        ) : (
+          <div
+            className={`mgl-infinite-scroll${loading !== "undefined" && loading !== "none" ? " " + loading : ""
+              }`}
+          >
+            <div className="mgl-loading"></div>
+          </div>
+        )
+      )}
     </MeowGalleryContainer>
   );
 };
