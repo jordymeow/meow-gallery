@@ -149,10 +149,17 @@
 	}
 	
 	figcaption {
-		background: linear-gradient(0deg,rgba(0,0,0,.7),rgba(0,0,0,.3) 70%,transparent);
+
 		position: absolute;
 		font-size: 13px;
 		max-height: 60%;
+
+		p {
+			color: white !important;
+			font-size: 13px !important;
+			line-height: 120% !important;
+		}
+
 
 		&.caption-left {
 			text-align: left;
@@ -165,13 +172,49 @@
 		&.caption-center {
 			text-align: center;
 		}
-		
-		
-		p {
-			color: white !important;
-			font-size: 13px !important;
-			line-height: 120% !important;
+
+		&.caption-bg-none {
+			background: none;
 		}
+
+		&.caption-bg-fade-black {
+			background: linear-gradient(0deg,rgba(0,0,0,.7),rgba(0,0,0,.3) 70%,transparent);
+		}
+
+		&.caption-bg-black {
+			background: rgba(0,0,0,.3);
+		}
+
+		&.caption-bg-blur {
+			backdrop-filter: blur(5px);
+			p {
+				text-shadow: 0 0 8px black;
+			}
+		}
+
+		&.caption-bg-fade-white {
+
+			p {
+				color: black !important;
+				text-shadow: 0 0 8px white;
+			}
+
+			background: linear-gradient(0deg,rgba(255,255,255,.7),rgba(255,255,255,.3) 70%,transparent);
+		}
+
+		&.caption-bg-white {
+
+			p {
+				color: black !important;
+				text-shadow: 0 0 8px white;
+			}
+
+			background: rgba(255,255,255,.3);
+		}
+
+		
+		
+		
 
 		p:first-letter {
 			float: unset !important;

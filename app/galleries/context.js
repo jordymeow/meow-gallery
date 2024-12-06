@@ -1,5 +1,5 @@
-// Previous: 5.1.4
-// Current: 5.2.0
+// Previous: 5.2.0
+// Current: 5.2.2
 
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
@@ -41,6 +41,7 @@ const convertToOptions = (options) => {
     layout: options.layout,
     captions: options.captions,
     captionsAlignment: options.captions_alignment,
+    captionsBackground: options.captions_background,
     loading: options.loading,
     animation: options.animation,
     imageSize: options.image_size,
@@ -65,7 +66,7 @@ const convertToOptions = (options) => {
     horizontalGutter: options.horizontal_gutter,
     horizontalImageHeight: options.horizontal_image_height,
     horizontalHideScrollbar: options.horizontal_hide_scrollbar,
-    horizontalScrollWarning: options.horizontal_scroll_warning,
+    horizontalScrollWarning: options.horizontal_scroll_warning, 
     carouselCompact: options.carousel_compact,
     carouselImmersive: options.carousel_immersive,
     carouselGutter: options.carousel_gutter,
@@ -162,7 +163,6 @@ let busyCounter = 0;
 const initialState = {
   apiUrl: null,
   restNonce: null,
-
   id: null,
   images: [],
   imageIds: [],
@@ -171,7 +171,6 @@ const initialState = {
   inlineStyle: {},
   loadImagesCount: 12,
   canInfiniteScroll: false,
-
   layout: 'tiles',
   captions: 'none',
   animation: false,
@@ -274,7 +273,7 @@ const globalStateReducer = (state, action) => {
 
   case PUSH_BUSY: {
     const { status = '' } = action;
-    return { ...state, busy: ++busyCounter >= 0, status };
+    return { ...state, busy: ++busyCounter > 0, status };
   }
 
   case POP_BUSY: {
@@ -322,17 +321,17 @@ const globalStateReducer = (state, action) => {
 
     const gutters = {
       [galleryLayouts.tiles]: {
-        desktop: parseInt(tilesGutter, 10),
-        tablet: parseInt(tilesGutterTablet, 10),
-        mobile: parseInt(tilesGutterMobile, 10),
+        desktop: parseInt(tilesGutter),
+        tablet: parseInt(tilesGutterTablet),
+        mobile: parseInt(tilesGutterMobile),
       },
-      [galleryLayouts.masonry]: parseInt(masonryGutter, 10),
-      [galleryLayouts.justified]: parseInt(justifiedGutter, 10),
-      [galleryLayouts.square]: parseInt(squareGutter, 10),
-      [galleryLayouts.cascade]: parseInt(cascadeGutter, 10),
-      [galleryLayouts.horizontal]: parseInt(horizontalGutter, 10),
+      [galleryLayouts.masonry]: parseInt(masonryGutter),
+      [galleryLayouts.justified]: parseInt(justifiedGutter),
+      [galleryLayouts.square]: parseInt(squareGutter),
+      [galleryLayouts.cascade]: parseInt(cascadeGutter),
+      [galleryLayouts.horizontal]: parseInt(horizontalGutter),
       [galleryLayouts.carousel]: parseInt(carouselGutter),
-      [galleryLayouts.map]: parseInt(mapGutter, 10),
+      [galleryLayouts.map]: parseInt(mapGutter),
     };
 
     return { ...state, gutter: gutters[layout] };
@@ -342,11 +341,11 @@ const globalStateReducer = (state, action) => {
     const { layout, masonryColumns, squareColumns } = action;
 
     const columns = {
-      [galleryLayouts.masonry]: parseInt(masonryColumns, 10),
-      [galleryLayouts.square]: parseInt(squareColumns, 10),
+      [galleryLayouts.masonry]: parseInt(masonryColumns),
+      [galleryLayouts.square]: parseInt(squareColumns),
     };
 
-    return { ...state, columns: columns[layout] || 1 };
+    return { ...state, columns: columns[layout] };
   }
 
   case SET_DENSITY: {
@@ -365,11 +364,11 @@ const globalStateReducer = (state, action) => {
     const { layout, horizontalImageHeight, carouselImageHeight } = action;
 
     const imageHeight = {
-      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight, 10),
-      [galleryLayouts.carousel]: parseInt(carouselImageHeight, 10),
+      [galleryLayouts.horizontal]: parseInt(horizontalImageHeight),
+      [galleryLayouts.carousel]: parseInt(carouselImageHeight),
     };
 
-    return { ...state, imageHeight: layout === galleryLayouts.carousel ? imageHeight[galleryLayouts.carousel] : 0 };
+    return { ...state, imageHeight: imageHeight[layout] };
   }
 
   case SET_API_URL: {
@@ -384,7 +383,7 @@ const globalStateReducer = (state, action) => {
 
   case SET_CAN_INFINITE_SCROLL: {
     const { infinite, images, imageIds } = action;
-    const canInfiniteScroll = !!(infinite && images.length < imageIds.length);
+    const canInfiniteScroll = infinite && images.length < imageIds.length;
     return { ...state, canInfiniteScroll };
   }
 
@@ -402,7 +401,7 @@ const useMeowGalleryContext = () => {
   actions.loadImages = async (id = null) => {
     const loadedImageIds = state.images.map(image => image.id);
     let remainingImageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId));
-
+  
     if (id != null) {
       const index = remainingImageIds.indexOf(id);
       if (index !== -1) {
@@ -411,9 +410,9 @@ const useMeowGalleryContext = () => {
         remainingImageIds = [];
       }
     } else {
-      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount - state.images.length);
+      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount);
     }
-
+  
     if (remainingImageIds.length) {
       actions.fetchImages(remainingImageIds);
     }
@@ -430,13 +429,13 @@ const useMeowGalleryContext = () => {
     });
 
     try {
-      const response = await nekoFetch(url, { nonce: restNonce });
+      const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
-        dispatch({ type: SET_IMAGES, images: response.data.concat(state.images) });
+        dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
       }
     }
     catch (err) {
-      if (err && err.message) {
+      if (err.message) {
         alert(err.message);
       }
     }
@@ -457,16 +456,17 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
 
   useEffect(() => { dispatch({ type: SET_CLASS_NAMES, layout, customClass, animation, captions }); }, [layout, customClass, animation, captions]);
   useEffect(() => { dispatch({ type: SET_CONTAINER_CLASS_NAMES, layout }); }, [layout]);
-  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout]);
+  useEffect(() => { dispatch({ type: SET_INLINE_STYLES, layout, justifiedRowHeight: justifiedRowHeight }); }, [layout, justifiedRowHeight]);
   useEffect(() => { dispatch({ type: SET_GUTTER, layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter,
     cascadeGutter, horizontalGutter, carouselGutter, mapGutter }); }
   , [layout, tilesGutter, tilesGutterMobile, tilesGutterTablet, masonryGutter, justifiedGutter, squareGutter, cascadeGutter, horizontalGutter, carouselGutter, mapGutter]);
   useEffect(() => { dispatch({ type: SET_CULLUMNS, layout, masonryColumns, squareColumns }); }, [layout, masonryColumns, squareColumns]);
   useEffect(() => { dispatch({ type: SET_DENSITY, tilesDensity, tilesDensityMobile, tilesDensityTablet }); }, [tilesDensity, tilesDensityMobile, tilesDensityTablet]);
-  useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [carouselImageHeight]);
+  useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
+
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>

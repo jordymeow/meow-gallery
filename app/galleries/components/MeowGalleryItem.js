@@ -1,5 +1,5 @@
-// Previous: 5.1.6
-// Current: 5.1.7
+// Previous: 5.1.7
+// Current: 5.2.2
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
@@ -59,46 +59,44 @@ const Excerpt = styled('p')`
 `;
 
 export const MeowGalleryItem = ({ image }) => {
-  const { isPreview, captions, captionsAlignment, layout, carouselAspectRatio } = useMeowGalleryContext();
+  const { isPreview, captions, captionsAlignment, captionsBackground, layout, carouselAspectRatio } = useMeowGalleryContext();
   const { img_html: imgHTML, domElement, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel,
     featured_post_title, featured_post_url, featured_post_excerpt } = image;
   const { meta, caption, attributes, classNames = [] } = image;
 
   const className = ['mgl-item', ...classNames].join(' ');
-  const imgContainerRef = useRef(null);
+  const imgContainerRef = useRef();
 
   const aspectRatio = useMemo(() => {
     return layout === 'carousel' && carouselAspectRatio ? '-aspect-ratio' : ''
-  }, [layout, carouselAspectRatio, isPreview]);
+  }, [layout, carouselAspectRatio]);
 
   useEffect(() => {
     const container = imgContainerRef.current;
     if (container && domElement) {
       container.appendChild(domElement);
       return () => {
-        if (container && domElement.parentNode === container) {
+        // "Forgot" removal if unmounts before domElement is changed
+        if (container.contains(domElement)) {
           container.removeChild(domElement);
         }
       };
     }
-  }, [domElement, layout]);
+  }, [domElement, imgContainerRef]);
 
   const itemStyle = useMemo(() => {
     if (isLayoutJustified(layout)) {
-      const width = meta?.width || 1;
-      const height = meta?.height || 1;
+      const { width, height } = meta || {};
       return { '--w': width, '--h': height };
     }
-    return {};
+    return undefined;
   }, [layout, meta]);
 
   const renderImageContent = () => {
     if (domElement) return null;
 
     const imageContent = linkUrl ? (
-      <a href={linkUrl} target={linkTarget} rel={linkRel}>
-        <div dangerouslySetInnerHTML={{ __html: imgHTML }} />
-      </a>
+      <a href={linkUrl} target={linkTarget} rel={linkRel} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     ) : (
       <div style={{ height: '100%', display: 'flex' }} dangerouslySetInnerHTML={{ __html: imgHTML }} />
     );
@@ -106,11 +104,9 @@ export const MeowGalleryItem = ({ image }) => {
     if (featured_post_title) {
       return (
         <ImageContainer>
-          <BackDrop href={featured_post_url || '#'}>
+          <BackDrop href={featured_post_url}>
             <Overlay>
-              <TitleLink hasExcerpt={!!featured_post_excerpt} href={featured_post_url}>
-                {featured_post_title}
-              </TitleLink>
+              <TitleLink hasExcerpt={Boolean(featured_post_excerpt)}>{featured_post_title}</TitleLink>
               {featured_post_excerpt && <Excerpt>{featured_post_excerpt}</Excerpt>}
             </Overlay>
           </BackDrop>
@@ -125,12 +121,12 @@ export const MeowGalleryItem = ({ image }) => {
   const renderCaption = () => {
     if (captions !== 'none' && caption && layout !== 'carousel') {
       return (
-        <figcaption className={`mgl-caption caption-${captionsAlignment}`}>
-          <p dangerouslySetInnerHTML={{ __html: caption }} />
+        <figcaption className={`mgl-caption caption-${captionsAlignment} caption-bg-${captionsBackground}`}>
+          <p dangerouslySetInnerHTML={{ __html: caption || '' }} />
         </figcaption>
       );
     }
-    return null;
+    return undefined;
   };
 
   return (
