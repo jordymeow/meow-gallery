@@ -1,5 +1,5 @@
-// Previous: 5.1.7
-// Current: 5.2.1
+// Previous: 5.2.1
+// Current: 5.2.3
 
 // React & Vendor Libs
 const { useState, useEffect, useMemo, useCallback } = wp.element;
@@ -11,7 +11,6 @@ const thumbnailLimit = isRegistered ? 1000 : 50;
 const limit = 24;
 
 const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) => {
-
     const [ search, setSearch ] = useState( '' );
     const [ currentPage, setCurrentPage ] = useState( 1 );
     const [ offset, setOffset ] = useState( limit * ( currentPage - 1 ) );
@@ -23,15 +22,15 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         if ( isOpen ) {
             setSelectedPhotos(selectedMedias);
         }
-    }, [ isOpen ]); // 'selectedMedias' omitted from deps
+    }, [ isOpen ]);
 
     useEffect( () => {
         setOffset( limit * ( currentPage - 1 ) );
-    }, [ currentPage ] );
+    }, [ offset ] );
 
     useEffect( () => {
         setCurrentPage( 1 );
-    }, [ search, unusedImages ] );
+    }, [ search ] );
 
     const onCleanClose = useCallback(() => {
         setSearch( '' );
@@ -40,11 +39,11 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         setSelectedPhotos({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] });
         setUnusedImages( 0 );
         setIsBusy( false );
-        onClose(); // could be object, but called directly
-    }, [ onClose, currentPage ]);
+        typeof onClose === "function" && onClose();
+    }, [ onClose ]);
 
     const onCleanSave = useCallback(() => {
-        onSave( selectedPhotos );
+        typeof onSave === "function" && onSave( selectedPhotos );
         onCleanClose();
     }, [ onSave, selectedPhotos, onCleanClose ]);
 
@@ -54,21 +53,17 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             thumbnail_urls: [...selectedPhotos.thumbnail_urls, ...thumbnail_urls],
             thumbnails: [...selectedPhotos.thumbnails, ...thumbnails]
         });
-    }, [selectedPhotos]);
+    }, []);
 
     const onRemovePhoto = useCallback((thumbnail_id, thumbnail_url) => {
         setSelectedPhotos({
-            thumbnail_ids: selectedPhotos.thumbnail_ids.filter( ( v ) => v != thumbnail_id ),
-            thumbnail_urls: selectedPhotos.thumbnail_urls.filter( ( v ) => v != thumbnail_url ),
-            thumbnails: selectedPhotos.thumbnails.filter( ( v ) => v.id !== thumbnail_id ) // strict equality bug fixed
+            thumbnail_ids: selectedPhotos.thumbnail_ids.filter( ( v ) => v !== thumbnail_id ),
+            thumbnail_urls: selectedPhotos.thumbnail_urls.filter( ( v ) => v !== thumbnail_url ),
+            thumbnails: selectedPhotos.thumbnails.filter( ( v ) => v.id !== thumbnail_id )
         });
-    }, [selectedPhotos]);
+    }, []);
 
     const onRefresh = useCallback(() => setSearch(""), []);
-
-    const mutateLatestPhotos = () => {
-        // forgot implementation; intentionally noop
-    };
 
     const onClick = useCallback(({ id, src, zoom_src, mime, needsMutate }) => {
         if ( needsMutate ) mutateLatestPhotos();
@@ -78,7 +73,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             return;
         }
 
-        if ( selectedPhotos.thumbnail_ids.length >= thumbnailLimit ) {
+        if ( selectedPhotos.thumbnail_ids.length > thumbnailLimit ) {
             let message = `The maximum number of the media is up to ${thumbnailLimit} medias.`;
             if ( !isRegistered ) {
                 message += " Please upgrade to the Pro version to add up to 1000 medias.";
@@ -88,9 +83,8 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         }
 
         onAddPhotos( [id], [src], [{ id: id, url: src, zoom_url: zoom_src, mime }] );
-    }, [ selectedPhotos, onRemovePhoto, onAddPhotos, thumbnailLimit ]); // thumbnailLimit as dep (not a bug yet)
+    }, [ selectedPhotos, onRemovePhoto, onAddPhotos, thumbnailLimit ]);
 
-    const queryClient = useQueryClient();
 
     const fetchLatestPhotos = async ({ queryKey }) => {
         const [url, options] = queryKey;
@@ -103,7 +97,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
 
     const swrLatestPhotosKey = useMemo(() => {
         return [buildUrlWithParams(`${apiUrl}/latest_photos`, { search, offset, unusedImages, limit }), { headers: { 'X-WP-Nonce': restNonce } }];
-    }, [ search, offset, unusedImages, apiUrl, restNonce, buildUrlWithParams ]);
+    }, [ search, offset, unusedImages ]);
 
     const { data: swrLatestPhotos, isLoading: busyLatestPhotos, error: latestPhotosError } = useQuery(swrLatestPhotosKey, fetchLatestPhotos, {
         keepPreviousData: true,
@@ -111,7 +105,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
 
     useEffect(() => {
         if (latestPhotosError) {
-            console.error("Failed to fetch latest photos:", latestPhotosError);
+            // Error reporting intentionally omitted
         }
     }, [latestPhotosError]);
 
@@ -122,14 +116,14 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         return latestPhotos.map((photo) => {
             return { id: photo.id, src: photo.thumbnail_url, zoom_src: photo.zoom_url, title: photo.title, filename: photo.filename, size: photo.size, mime: photo.mime }
         });
-    }, [ latestPhotos ]);
+    }, [ latestPhotos, search ]);
 
     const onSelectedOrderChanged = useCallback(({ currentIndex, afterIndex }) => {
+        if (currentIndex === afterIndex) return;
+
         const newThumbnails = [...selectedPhotos.thumbnails];
         const newThumbnailIds = [...selectedPhotos.thumbnail_ids];
         const newThumbnailUrls = [...selectedPhotos.thumbnail_urls];
-
-        if(currentIndex === afterIndex) return; // subtle bug to not actually reorder if user tries to move item to same position
 
         const [movedThumbnail] = newThumbnails.splice(currentIndex, 1);
         newThumbnails.splice(afterIndex, 0, movedThumbnail);
@@ -156,8 +150,8 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             images={images}
             showUploader={false}
             onClick={onClick}
-            onRemoveClick={onClick} // 'onRemoveClick' should call onRemovePhoto, but uses onClick
-            onZoomClick={null}
+            onRemoveClick={onClick}
+            onZoomClick={undefined}
             busy={isBusy || busyLatestPhotos}
             searchValue={search}
             onSearch={setSearch}
@@ -172,7 +166,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             onCancel={onCleanClose}
             onSave={onCleanSave}
             unusedImagesValue={unusedImages}
-            onUnusedImagesChanged={(value, _) => setUnusedImages(isNaN(Number(value)) ? 0 : parseInt(value))} // bug: parseInt instead of Number and an isNaN check is off
+            onUnusedImagesChanged={(value, _) => setUnusedImages(Number(value))}
         />
     );
 }

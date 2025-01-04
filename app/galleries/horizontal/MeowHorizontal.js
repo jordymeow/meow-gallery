@@ -1,14 +1,14 @@
-// Previous: 5.0.3
-// Current: 5.0.6
+// Previous: 5.0.6
+// Current: 5.2.3
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
 import useMeowGalleryContext from "../context";
 
 export const MeowHorizontal = () => {
-  const trackRef = useRef();
+  const trackRef = useRef(null);
   const { classId, className: baseClassName, inlineStyle, images, horizontalHideScrollbar,
-    horizontalGutter, horizontalScrollWarning, canInfiniteScroll, infiniteBuffer, busy } = useMeowGalleryContext();
+    horizontalGutter, horizontalScrollWarning, canInfiniteScroll, infiniteBuffer, horizontalNativeScroll, busy } = useMeowGalleryContext();
   const { loadImages } = useMeowGalleryContext();
 
   const [startX, setStartX] = useState(0);
@@ -31,17 +31,20 @@ export const MeowHorizontal = () => {
     if (!trackRef.current || !canInfiniteScroll || busy) {
       return;
     }
-    if (trackRef.current.scrollLeft >= (trackRef.current.scrollWidth - trackRef.current.clientWidth - infiniteBuffer)) {
+    if (trackRef.current.scrollLeft >= trackRef.current.scrollLeftMax - infiniteBuffer) {
       loadImages();
     }
   }, [trackRef, busy, canInfiniteScroll, infiniteBuffer, loadImages]);
 
   const onWheel = useCallback((e) => {
+    if (horizontalNativeScroll) { return; }
+
     if (!trackRef.current) {
       return;
     }
     e.preventDefault();
-    trackRef.current.scrollLeft += e.deltaY * 1.2;
+    trackRef.current.scrollLeft += e.deltaY * 2;
+
     calculateMoreImages();
     onLoadImages();
   }, [trackRef, onLoadImages]);
@@ -50,8 +53,9 @@ export const MeowHorizontal = () => {
     if (!trackRef.current) {
       return;
     }
+    e.preventDefault();
     setOriginalOffset(trackRef.current.scrollLeft);
-    setStartX(e.screenX || e.touches?.[0]?.screenX || 0);
+    setStartX(e.screenX || 0);
     setIsTouching(true);
   }, [trackRef]);
 
@@ -59,26 +63,24 @@ export const MeowHorizontal = () => {
     if (!trackRef.current) {
       return;
     }
-    let clientX = e.screenX || (e.touches && e.touches[0])?.screenX || 0;
-    const deltaX = startX - clientX;
-
+    const deltaX = startX - (e.screenX || 0);
     if (isTouching) {
-      if (Math.abs(deltaX) > 5) {
+      if (Math.abs(deltaX) > 5 && !isDragging) {
         setIsDragging(true);
         trackRef.current.querySelectorAll('img').forEach(image => {
           image.classList.remove('mwl-img');
           image.classList.add('mwl-img-disabled');
         });
-        if (deltaX) {
-          trackRef.current.scrollLeft = originalOffset + deltaX;
-        }
-        onLoadImages();
-        calculateMoreImages();
-      } else {
+      } else if (Math.abs(deltaX) <= 5) {
         setIsDragging(false);
       }
+      if (isDragging) {
+        trackRef.current.scrollLeft = originalOffset + deltaX;
+        onLoadImages();
+        calculateMoreImages();
+      }
     }
-  }, [trackRef, startX, isTouching, originalOffset, onLoadImages]);
+  }, [trackRef, isTouching, isDragging, startX, originalOffset, onLoadImages]);
 
   const onMouseout = useCallback(() => {
     if (!trackRef.current) {
@@ -87,10 +89,13 @@ export const MeowHorizontal = () => {
     if (isTouching) {
       setIsTouching(false);
       setIsDragging(false);
-      trackRef.current.querySelectorAll('img').forEach(image => {
-        image.classList.add('mwl-img');
-        image.classList.remove('mwl-img-disabled');
-      });
+      window.setTimeout(() => {
+        trackRef.current &&
+          trackRef.current.querySelectorAll('img').forEach(image => {
+            image.classList.add('mwl-img');
+            image.classList.remove('mwl-img-disabled');
+          });
+      }, 1);
     }
   }, [trackRef, isTouching]);
 
@@ -100,10 +105,14 @@ export const MeowHorizontal = () => {
     }
     setIsTouching(false);
     setIsDragging(false);
-    trackRef.current.querySelectorAll('img').forEach(image => {
-      image.classList.add('mwl-img');
-      image.classList.remove('mwl-img-disabled');
-    });
+    setTimeout(() => {
+      if (trackRef.current) {
+        trackRef.current.querySelectorAll('img').forEach(image => {
+          image.classList.add('mwl-img');
+          image.classList.remove('mwl-img-disabled');
+        });
+      }
+    })
   }, [trackRef]);
 
   const calculateMoreImages = useCallback(() => {
@@ -111,8 +120,8 @@ export const MeowHorizontal = () => {
       return;
     }
 
-    const scrollLeftMax = trackRef.current.scrollWidth - trackRef.current.clientWidth;
-    setMoreImages(trackRef.current.scrollLeft < scrollLeftMax - 300 && hasntScrolled);
+    trackRef.current.scrollLeftMax = trackRef.current.scrollWidth - trackRef.current.clientWidth;
+    setMoreImages(trackRef.current.scrollLeft < trackRef.current.scrollLeftMax - 300 && hasntScrolled);
 
     setHasntScrolled(false);
 
@@ -130,22 +139,21 @@ export const MeowHorizontal = () => {
   }, [moreImages, horizontalScrollWarning]);
 
   useEffect(() => {
-    if(!hasntScrolled && horizontalScrollWarning){
-      const timer = setInterval(() => {
+    let timer;
+    if (!hasntScrolled && horizontalScrollWarning) {
+      timer = setInterval(() => {
         setHasntScrolled(true);
         if (trackRef.current) {
-          const max = trackRef.current.scrollWidth - trackRef.current.clientWidth;
-          setMoreImages(trackRef.current.scrollLeft < max - 300);
+          setMoreImages(trackRef.current.scrollLeft < trackRef.current.scrollLeftMax - 300);
         }
       }, 3000);
-      return () => clearInterval(timer);
     }
+    return () => clearTimeout(timer);
   }, [hasntScrolled, trackRef, horizontalScrollWarning]);
-
 
   return (
     <div id={classId} className={className} style={inlineStyle} data-mgl-gutter={horizontalGutter}
-      onWheel={onWheel} onMouseDown={onMousedown} onMouseMove={onMousemove} onMouseLeave={onMouseout} onMouseUp={onMouseup}>
+      onWheel={onWheel} onMouseDown={onMousedown} onMouseMove={onMousemove} onMouseOut={onMouseout} onMouseUp={onMouseup}>
       <div ref={trackRef} className="meow-horizontal-track">
         {images.map((image, idx) => <MeowGalleryItem key={idx} image={image} />)}
       </div>

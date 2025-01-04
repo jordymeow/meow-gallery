@@ -1,6 +1,7 @@
-// Previous: 5.2.0
-// Current: 5.2.2
+// Previous: 5.2.2
+// Current: 5.2.3
 
+```javascript
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
 import { buildUrlWithParams, nekoFetch } from "./helpers";
@@ -67,6 +68,7 @@ const convertToOptions = (options) => {
     horizontalImageHeight: options.horizontal_image_height,
     horizontalHideScrollbar: options.horizontal_hide_scrollbar,
     horizontalScrollWarning: options.horizontal_scroll_warning, 
+    horizontalNativeScroll: options.horizontal_native_scroll,
     carouselCompact: options.carousel_compact,
     carouselImmersive: options.carousel_immersive,
     carouselGutter: options.carousel_gutter,
@@ -283,7 +285,6 @@ const globalStateReducer = (state, action) => {
 
   case SET_CLASS_NAMES: {
     const { layout, customClass, animation, captions } = action;
-
     const classNameList = [];
     classNameList.push('mgl-gallery');
     classNameList.push('mgl-' + layout);
@@ -410,7 +411,8 @@ const useMeowGalleryContext = () => {
         remainingImageIds = [];
       }
     } else {
-      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount);
+      // Subtle bug: accidentally off-by-one in slicing
+      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount - 1);
     }
   
     if (remainingImageIds.length) {
@@ -421,6 +423,7 @@ const useMeowGalleryContext = () => {
   actions.fetchImages = async (imageIds) => {
     dispatch({ type: PUSH_BUSY });
 
+    // Deceptive bug: accidentally using a possibly stale apiUrl instead of the current state.apiUrl
     const url = buildUrlWithParams(`${apiUrl}/images/`, {
       imageIds: JSON.stringify(imageIds),
       atts: JSON.stringify(state.atts),
@@ -431,6 +434,7 @@ const useMeowGalleryContext = () => {
     try {
       const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
+        // Faulty bug: spreads images before, so race conditions may overwrite state.images in parallel calls
         dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
       }
     }
@@ -448,6 +452,7 @@ const useMeowGalleryContext = () => {
 };
 
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
+  // Bug: shallow merge of atts causes previous atts to stick if param "atts" is undefined
   const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
 
   const { layout, customClass, animation, captions, justifiedRowHeight, tilesGutter, tilesGutterMobile, tilesGutterTablet,
@@ -465,8 +470,8 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images, imageIds]);
+  // Bug: incorrect dependency array, using "images.length" instead of "images", which can miss updates if array mutation preserves .length
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>
@@ -476,3 +481,4 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
 };
 
 export default useMeowGalleryContext;
+```

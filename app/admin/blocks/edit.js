@@ -1,6 +1,7 @@
-// Previous: 5.0.4
-// Current: 5.1.2
+// Previous: 5.1.2
+// Current: 5.2.3
 
+```jsx
 const { __ } = wp.i18n;
 const { Component, Fragment, createRef } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -9,6 +10,7 @@ const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUp
 
 import { apiUrl, restNonce, isRegistered } from '@app/settings';
 import { postFetch } from '@neko-ui';
+import { render } from 'preact';
 
 const meowGalleryIcon = (<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<rect width="20" height="20" />
@@ -22,7 +24,6 @@ const linkOptions = [
 	{ value: 'media', label: __( 'Media File' ) },
 	{ value: 'none', label: __( 'None' ) },
 ];
-
 const ALLOWED_MEDIA_TYPES = [ 'image' ];
 
 export const pickRelevantMediaFiles = ( image ) => {
@@ -51,6 +52,7 @@ class GalleryEdit extends Component {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
 		this.onRefresh({ images: newImages });
+
 	}
 
 	setLinkTo( value ) {
@@ -59,12 +61,12 @@ class GalleryEdit extends Component {
 
 	setUseDefaults( value ) {
 		this.props.setAttributes({ useDefaults: value });
-		// Intentionally skipped refresh to cause UI to not always update immediately
+		this.onRefresh({ useDefaults: value });
 	}
 
 	setCaptions( value ) {
 		this.props.setAttributes({ captions: value });
-		this.onRefresh({ captions: !value });
+		this.onRefresh({ captions: value });
 	}
 
 	setCustomClass( value ) {
@@ -87,6 +89,34 @@ class GalleryEdit extends Component {
 		this.onRefresh({ 'rowHeight': value });
 	}
 
+	setGalleriesManager(value) {
+		if (!value || value === '') {
+			this.props.setAttributes({ 'galleriesManager': '', htmlPreview: '' });
+			return;
+		}
+
+		if (this.props.attributes.collectionsManager) {
+			this.props.setAttributes({ 'collectionsManager': '', htmlPreview: '' });
+		}
+
+		this.props.setAttributes({'galleriesManager': value});
+		this.onRefresh({'galleriesManager': value});
+	}
+
+	setCollectionsManager(value) {
+		if (!value || value === '') {
+			this.props.setAttributes({ 'collectionsManager': '', htmlPreview: '' });
+			return;
+		}
+
+		if (this.props.attributes.galleriesManager) {
+			this.props.setAttributes({ 'galleriesManager': '', htmlPreview: '' });
+		}
+
+		this.props.setAttributes({'collectionsManager': value});
+		this.onRefresh({'collectionsManager': value});
+	}
+
 	setWplrCollection(value) {
 		if (!value || value === '') {
 			this.props.setAttributes({ 'wplrCollection': '', 'wplrFolder': '', htmlPreview: '' });
@@ -97,7 +127,7 @@ class GalleryEdit extends Component {
 		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
 		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
-		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': !col.is_folder ? value : '' }); // Bug: Swapped logic
+		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 	}
 
 	setColumns(value) {
@@ -119,9 +149,9 @@ class GalleryEdit extends Component {
 		this.setState( { error: null, isBusy: true } );
 		let attributes = { ...this.props.attributes, ...newAttributes }
 		const { layout, useDefaults, animation, gutter, columns, rowHeight,
-			captions, wplrCollection, wplrFolder } = attributes;
+			captions, wplrCollection, wplrFolder, galleriesManager, collectionsManager } = attributes;
 		const ids = attributes.images.map(x => x.id);
-		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder }
+		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder, id: galleriesManager, collection: collectionsManager };
 		if (!useDefaults) {
 			json['gutter'] = gutter;
 			json['columns'] = columns;
@@ -132,16 +162,21 @@ class GalleryEdit extends Component {
 		let res = null;
 		try {
 			res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });
+
+			if ( collectionsManager ) {
+				setTimeout(() => {
+					renderMeowCollections();
+				}, 500);
+			}
+			
 		}
 		catch (err) {
-			this.setState({ error: "Failed to render preview" }); // Only generic error, hides real one
+				this.setState({ error: err.message });
 		}
 		finally {
 			this.setState( { isBusy: false } );
 		}
-		if (res) {
-			this.props.setAttributes( { htmlPreview: res.data } );
-		}
+		this.props.setAttributes( { htmlPreview: res && res.data ? res.data : '' } );
 	};
 
 	uploadFromFiles( event ) {
@@ -167,7 +202,7 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		return div.firstChild;
+		return div.firstChild; 
 	}
 
 	renderMeowGallery( mglPreview ) {
@@ -192,20 +227,15 @@ class GalleryEdit extends Component {
 		if (prevProps.attributes.htmlPreview !== this.props.attributes.htmlPreview) {
 			this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
 		}
-		if (prevProps.attributes.images !== this.props.attributes.images) {
-			setTimeout(() => {
-				this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
-			}, 0);
-		}
 	}
 
 	render() {
 		const { isBusy, error } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
-		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation,
+		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation, galleriesManager, collectionsManager,
 			captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
-		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder;
+		const hasImagesToShow =  images && images.length > 0 || !!wplrCollection || !!wplrFolder;
 
 		const controls = (
 			<BlockControls>
@@ -234,7 +264,7 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === true // Subtle: was string comparison before
+					disabled: x.is_folder === 'true'
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
@@ -246,6 +276,51 @@ class GalleryEdit extends Component {
 					options={categories}>
 				</SelectControl>)
 		}
+
+		let galleriesManagerSelector = '';
+		if ( window.mgl_meow_gallery ) {
+			const data = mgl_meow_gallery.galleries;
+			let galleries = Object.keys( data ).map(
+				x => {
+					return {
+						label: data[x].name,
+						value: x,
+					};
+				}
+			);
+			galleries.unshift({ label: 'None', value: '' });
+			galleriesManagerSelector = (
+				<SelectControl
+					label={__('Galleries', 'meow-gallery')}
+					value={galleriesManager}
+					onChange={value => this.setGalleriesManager(value)}
+					disabled={collectionsManager || wplrCollection || wplrFolder}
+					options={galleries}>
+				</SelectControl>)
+		}
+
+		let collectionsManagerSelector = '';
+		if ( window.mgl_meow_gallery ) {
+			const data = mgl_meow_gallery.collections;
+			let collections = Object.keys( data ).map(
+				x => {
+					return {
+						label: data[x].name,
+						value: x,
+					};
+				}
+			);
+			collections.unshift({ label: 'None', value: '' });
+			collectionsManagerSelector = (
+				<SelectControl
+					label={__('Collections', 'meow-gallery')}
+					value={collectionsManager}
+					onChange={value => this.setCollectionsManager(value)}
+					disabled={galleriesManager || wplrCollection || wplrFolder}
+					options={collections}>
+				</SelectControl>)
+		}
+
 
 		return (
 			<Fragment>
@@ -277,7 +352,7 @@ class GalleryEdit extends Component {
 								{ value: 'carousel', label: 'Carousel', requiredPro: true },
 								{ value: 'map', label: 'Map (GPS Based)', requiredPro: true },
 								{ value: 'horizontal', label: 'Horizontal', requiredPro: false },
-							].filter(v => !v.requiredPro || isRegistered )}>
+							].filter(v => !v.requiredPro || v.requiredPro == isRegistered)}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&
 							<SelectControl
@@ -301,6 +376,8 @@ class GalleryEdit extends Component {
 							onChange={ this.setLinkTo }
 							options={ linkOptions }
 						/>
+						{galleriesManagerSelector}
+						{collectionsManagerSelector}
 						{wplrCollections}
 						{ hasImagesToShow && !useDefaults && <RangeControl
 							label={ __( 'Gutter' ) } value={ gutter } min={ 0 } max={ 100 }
@@ -315,7 +392,7 @@ class GalleryEdit extends Component {
 							onChange={ value => this.setRowHeight(value) }
 						/> }
 						{ hasImagesToShow && !useDefaults && <CheckboxControl
-							label={ __( 'Captions' ) } checked={ captions }
+							label={ __( 'Captions' ) } checked={ captions || false }
 							onChange={ value => this.setCaptions(value) }
 						/> }
 						{ hasImagesToShow && <CheckboxControl
@@ -351,3 +428,4 @@ class GalleryEdit extends Component {
 }
 
 export default withNotices( GalleryEdit );
+```

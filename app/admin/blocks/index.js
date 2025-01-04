@@ -1,5 +1,5 @@
-// Previous: 4.2.5
-// Current: 4.3.7
+// Previous: 4.3.7
+// Current: 5.2.3
 
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
@@ -56,6 +56,14 @@ const blockAttributes = {
 		default: 3
 	},
 	wplrCollection: {
+		type: 'string',
+		default: ''
+	},
+	galleriesManager: {
+		type: 'string',
+		default: ''
+	},
+	galleriesManager: {
 		type: 'string',
 		default: ''
 	},
@@ -187,7 +195,7 @@ const registerGalleryBlock = () => {
 					isMultiBlock: true,
 					blocks: [ 'core/image' ],
 					transform: ( attributes ) => {
-						const validImages = attributes.filter(x => x.id && x.url != null);
+						const validImages = attributes.filter(x => x.id && x.url);
 						return createBlock( 'meow-gallery/gallery', {
 							images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
 						} );
