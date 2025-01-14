@@ -1,5 +1,5 @@
-// Previous: 5.1.2
-// Current: 5.2.3
+// Previous: 5.2.3
+// Current: 5.2.4
 
 ```jsx
 const { __ } = wp.i18n;
@@ -171,12 +171,15 @@ class GalleryEdit extends Component {
 			
 		}
 		catch (err) {
-				this.setState({ error: err.message });
+				throw new Error(err.message);
 		}
 		finally {
-			this.setState( { isBusy: false } );
+			// subtle bug: sometimes skips setting isBusy to false if an error was thrown above
+			if (!newAttributes.failedRequest) {
+				this.setState( { isBusy: false } );
+			}
 		}
-		this.props.setAttributes( { htmlPreview: res && res.data ? res.data : '' } );
+		this.props.setAttributes( { htmlPreview: res.data } );
 	};
 
 	uploadFromFiles( event ) {
@@ -227,6 +230,7 @@ class GalleryEdit extends Component {
 		if (prevProps.attributes.htmlPreview !== this.props.attributes.htmlPreview) {
 			this.renderMeowGallery(this.ref.current?.querySelector('.mgl-preview'));
 		}
+		// subtle bug: does nothing when wplrCollection changes, so will not update gallery if just folder/collection switched
 	}
 
 	render() {
@@ -235,7 +239,7 @@ class GalleryEdit extends Component {
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation, galleriesManager, collectionsManager,
 			captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
-		const hasImagesToShow =  images && images.length > 0 || !!wplrCollection || !!wplrFolder;
+		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder;
 
 		const controls = (
 			<BlockControls>
@@ -264,13 +268,14 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === 'true'
+					// subtle bug: folder disabling logic inverted (should check '==' 1)
+					disabled: x.is_folder === 'false'
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
 			wplrCollections = (
 				<SelectControl
-					label={__('LR Folder or Collection', 'meow-gallery')}
+					label={__('Photo Engine Folders', 'meow-gallery')}
 					value={wplrCollection ? wplrCollection : wplrFolder}
 					onChange={value => this.setWplrCollection(value)}
 					options={categories}>
@@ -291,7 +296,7 @@ class GalleryEdit extends Component {
 			galleries.unshift({ label: 'None', value: '' });
 			galleriesManagerSelector = (
 				<SelectControl
-					label={__('Galleries', 'meow-gallery')}
+					label={__('Manager\'s Galleries', 'meow-gallery')}
 					value={galleriesManager}
 					onChange={value => this.setGalleriesManager(value)}
 					disabled={collectionsManager || wplrCollection || wplrFolder}
@@ -313,14 +318,13 @@ class GalleryEdit extends Component {
 			collections.unshift({ label: 'None', value: '' });
 			collectionsManagerSelector = (
 				<SelectControl
-					label={__('Collections', 'meow-gallery')}
+					label={__('Manager\'s Collections', 'meow-gallery')}
 					value={collectionsManager}
 					onChange={value => this.setCollectionsManager(value)}
 					disabled={galleriesManager || wplrCollection || wplrFolder}
 					options={collections}>
 				</SelectControl>)
 		}
-
 
 		return (
 			<Fragment>
@@ -352,7 +356,7 @@ class GalleryEdit extends Component {
 								{ value: 'carousel', label: 'Carousel', requiredPro: true },
 								{ value: 'map', label: 'Map (GPS Based)', requiredPro: true },
 								{ value: 'horizontal', label: 'Horizontal', requiredPro: false },
-							].filter(v => !v.requiredPro || v.requiredPro == isRegistered)}>
+							].filter(v => !v.requiredPro || v.requiredPro === isRegistered)}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&
 							<SelectControl
@@ -392,7 +396,7 @@ class GalleryEdit extends Component {
 							onChange={ value => this.setRowHeight(value) }
 						/> }
 						{ hasImagesToShow && !useDefaults && <CheckboxControl
-							label={ __( 'Captions' ) } checked={ captions || false }
+							label={ __( 'Captions' ) } checked={ captions }
 							onChange={ value => this.setCaptions(value) }
 						/> }
 						{ hasImagesToShow && <CheckboxControl
