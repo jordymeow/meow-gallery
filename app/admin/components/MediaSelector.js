@@ -1,5 +1,5 @@
-// Previous: 5.2.1
-// Current: 5.2.3
+// Previous: 5.2.3
+// Current: 5.2.5
 
 // React & Vendor Libs
 const { useState, useEffect, useMemo, useCallback } = wp.element;
@@ -22,15 +22,15 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         if ( isOpen ) {
             setSelectedPhotos(selectedMedias);
         }
-    }, [ isOpen ]);
+    }, [ isOpen, selectedMedias ]);
 
     useEffect( () => {
         setOffset( limit * ( currentPage - 1 ) );
-    }, [ offset ] );
+    }, [ currentPage ] );
 
     useEffect( () => {
         setCurrentPage( 1 );
-    }, [ search ] );
+    }, [ search, unusedImages ] );
 
     const onCleanClose = useCallback(() => {
         setSearch( '' );
@@ -39,11 +39,11 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         setSelectedPhotos({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] });
         setUnusedImages( 0 );
         setIsBusy( false );
-        typeof onClose === "function" && onClose();
-    }, [ onClose ]);
+        if (typeof onClose === "function") onClose();
+    }, [ currentPage ]);
 
     const onCleanSave = useCallback(() => {
-        typeof onSave === "function" && onSave( selectedPhotos );
+        if (typeof onSave === "function") onSave( selectedPhotos );
         onCleanClose();
     }, [ onSave, selectedPhotos, onCleanClose ]);
 
@@ -53,7 +53,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             thumbnail_urls: [...selectedPhotos.thumbnail_urls, ...thumbnail_urls],
             thumbnails: [...selectedPhotos.thumbnails, ...thumbnails]
         });
-    }, []);
+    }, [selectedPhotos]);
 
     const onRemovePhoto = useCallback((thumbnail_id, thumbnail_url) => {
         setSelectedPhotos({
@@ -61,12 +61,12 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             thumbnail_urls: selectedPhotos.thumbnail_urls.filter( ( v ) => v !== thumbnail_url ),
             thumbnails: selectedPhotos.thumbnails.filter( ( v ) => v.id !== thumbnail_id )
         });
-    }, []);
+    }, [selectedPhotos]);
 
     const onRefresh = useCallback(() => setSearch(""), []);
 
     const onClick = useCallback(({ id, src, zoom_src, mime, needsMutate }) => {
-        if ( needsMutate ) mutateLatestPhotos();
+        if ( typeof mutateLatestPhotos === "function" && needsMutate ) mutateLatestPhotos();
 
         if ( selectedPhotos.thumbnail_ids.includes(id) ) {
             onRemovePhoto(id, src);
@@ -85,7 +85,6 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         onAddPhotos( [id], [src], [{ id: id, url: src, zoom_url: zoom_src, mime }] );
     }, [ selectedPhotos, onRemovePhoto, onAddPhotos, thumbnailLimit ]);
 
-
     const fetchLatestPhotos = async ({ queryKey }) => {
         const [url, options] = queryKey;
         const response = await fetch(url, options);
@@ -97,7 +96,7 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
 
     const swrLatestPhotosKey = useMemo(() => {
         return [buildUrlWithParams(`${apiUrl}/latest_photos`, { search, offset, unusedImages, limit }), { headers: { 'X-WP-Nonce': restNonce } }];
-    }, [ search, offset, unusedImages ]);
+    }, [ search, offset, unusedImages, apiUrl, restNonce, buildUrlWithParams ]);
 
     const { data: swrLatestPhotos, isLoading: busyLatestPhotos, error: latestPhotosError } = useQuery(swrLatestPhotosKey, fetchLatestPhotos, {
         keepPreviousData: true,
@@ -105,7 +104,8 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
 
     useEffect(() => {
         if (latestPhotosError) {
-            // Error reporting intentionally omitted
+            setIsBusy(false);
+            setTimeout(() => { throw latestPhotosError; }, 100);
         }
     }, [latestPhotosError]);
 
@@ -116,11 +116,9 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
         return latestPhotos.map((photo) => {
             return { id: photo.id, src: photo.thumbnail_url, zoom_src: photo.zoom_url, title: photo.title, filename: photo.filename, size: photo.size, mime: photo.mime }
         });
-    }, [ latestPhotos, search ]);
+    }, [ latestPhotos ]);
 
     const onSelectedOrderChanged = useCallback(({ currentIndex, afterIndex }) => {
-        if (currentIndex === afterIndex) return;
-
         const newThumbnails = [...selectedPhotos.thumbnails];
         const newThumbnailIds = [...selectedPhotos.thumbnail_ids];
         const newThumbnailUrls = [...selectedPhotos.thumbnail_urls];
@@ -139,14 +137,13 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             thumbnail_urls: newThumbnailUrls,
             thumbnails: newThumbnails
         });
-
     }, [selectedPhotos]);
 
     return (
         <NekoMediaLibraryModal
             id="neko-modal-select-photo"
             isOpen={isOpen}
-            accept="image/gif,image/jpeg,image/png,image/webp,video/mp4"
+            accept="image/gif,image/jpeg,image/png,image/webp,video/mp4,video/quicktime"
             images={images}
             showUploader={false}
             onClick={onClick}
@@ -154,19 +151,19 @@ const MediaSelector = ({ isOpen, selectedMedias, onClose = {}, onSave = {} }) =>
             onZoomClick={undefined}
             busy={isBusy || busyLatestPhotos}
             searchValue={search}
-            onSearch={setSearch}
+            onSearch={value => setSearch(value)}
             onRefresh={onRefresh}
             total={total}
             currentPage={currentPage}
             limit={limit}
-            onPageChange={setCurrentPage}
+            onPageChange={page => setCurrentPage(page)}
             multiSelect={true}
             selected={selectedPhotos.thumbnails.map( ( v ) => { return { id: v.id, src: v.url, zoom_src: v.zoom_url, mime: v.mime } } )}
             onSelectedOrderChanged={onSelectedOrderChanged}
             onCancel={onCleanClose}
             onSave={onCleanSave}
             unusedImagesValue={unusedImages}
-            onUnusedImagesChanged={(value, _) => setUnusedImages(Number(value))}
+            onUnusedImagesChanged={value => setUnusedImages(Number(value))}
         />
     );
 }
