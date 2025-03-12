@@ -40,6 +40,7 @@ spl_autoload_register(function ( $class ) {
   }
 });
 
-new Meow_MGL_Core();
+$core = new Meow_MGL_Core();
+new Meow_MGL_Migrations($core);
 
 ?>

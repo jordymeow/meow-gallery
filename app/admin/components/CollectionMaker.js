@@ -1,14 +1,14 @@
-// Previous: 5.1.0
-// Current: 5.1.1
+// Previous: 5.1.1
+// Current: 5.2.6
 
-```jsx
 const { useState, useMemo, useEffect } = wp.element;
 
-import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTable, NekoModal, nekoFetch, NekoSelect, NekoOption, NekoSpacer } from '@neko-ui';
-import { apiUrl, restNonce, isRegistered } from '@app/settings';
+import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTable, NekoModal, NekoSelect, NekoOption, NekoSpacer, NekoShortcode } from '@neko-ui';
+import { isRegistered } from '@app/settings';
 
-import { tableDateTimeFormatter, tableInfoFormatter } from  "../admin-helpers";
+import { tableDateTimeFormatter, tableInfoFormatter } from "../admin-helpers";
 import { CollectionThumnails } from './CollectionThumnails';
+import { useCollections, useSaveCollection, useRemoveCollection, useGalleryItems } from '../hooks/useQueries';
 
 const columns = [
     { accessor: 'thumbnail', title: '' },
@@ -22,7 +22,6 @@ const layoutOptions = [
 { value: 'bento', label: <span>Bento</span> },
 ];
 
-const shortcodeStyle = {display: 'flex',alignItems: 'center',background: '#f8fcff',height: 26,color: '#779bb8',margin: 0,padding: '0px 10px',fontSize: 13,textAlign: 'center',border: '2px solid rgb(210 228 243)',borderRadius: 8,fontFamily: 'system-ui',cursor: 'pointer',whiteSpace: 'nowrap',overflow: 'hidden',textOverflow: 'ellipsis',flex: '1 1 auto'};
 const collectionPreviewStyle = { display: 'flex', alignItems: 'center', border: '1px solid #e1e1e1', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', borderRadius: '8px', padding: '15px', marginTop: '10px', justifyContent: 'space-between' };
 
 const CollectionMaker = ({
@@ -30,98 +29,63 @@ const CollectionMaker = ({
     jsxShortcodeMaker,
     selectedGalleriesItems,
     setSelectedIdsGalleryMaker,
-    modals, setModals
+    modals, setModals, allGalleries
 }) => {
     const [buttonOkText, setButtonOkText] = useState('Create');
     const [copyMessage, setCopyMessage] = useState({});
-
     const [currentCollection, setCurrentCollection] = useState({ id: 0, name: '', layout: 'bento', galleries: [] });
-    const [collections, setCollections] = useState([]);
-    const [collectionsTotal, setCollectionsTotal] = useState(0);
 
-    const [ filters, setFilters ] = useState(() => {
+    const [filters, setFilters] = useState(() => {
         return columns.filter(v => v.filters).map(v => {
           return { accessor: v.accessor, value: null}
         });
-      });
-    const [ collectionsQueryParams, setCollectionsQueryParams ] = useState({
+    });
+
+    const [collectionsQueryParams, setCollectionsQueryParams] = useState({
         filters: filters, sort: { accessor: 'updated', by: 'desc' }, page: 1, limit: 10
-      });
+    });
 
-    useEffect(() => {
-        fetchCollections();
-    }, []);
+    const collectionsQuery = useCollections(collectionsQueryParams);
+    const saveCollectionMutation = useSaveCollection();
+    const removeCollectionMutation = useRemoveCollection();
 
-    useEffect(() => {
-        fetchCollections();
-    }, [collectionsQueryParams]);
+    const { data: collectionsData, isLoading } = collectionsQuery;
+    const collections = collectionsData?.data || {};
+    const collectionsTotal = collectionsData?.total || 0;
+
+    const galleryItemsQuery = useGalleryItems(
+        currentCollection.id !== 0 
+            ? currentCollection.galleries_ids || []
+            : []
+    );
 
     useEffect(() => {
         setCurrentCollection({ ...currentCollection, galleries: selectedGalleriesItems });
     }, [selectedGalleriesItems]);
 
-    const fetchCollections = async () => {
+    const onCreateCollection = async () => {
         setBusyAction(true);
-        collectionsQueryParams.offset = (collectionsQueryParams.page - 1) * collectionsQueryParams.limit;
         try {
-            const response = await nekoFetch(`${apiUrl}/fetch_collections`, {
-                nonce: restNonce,
-                method: 'POST',
-                json: collectionsQueryParams,
+            await saveCollectionMutation.mutateAsync({
+                id: currentCollection.id,
+                name: currentCollection.name,
+                layout: currentCollection.layout,
+                description: currentCollection.description,
+                galleries_ids: selectedGalleriesItems.filter(x => x.medias).map(x => x.id),
             });
-            if (response.success) {
-                setCollections(response.data);
-                setCollectionsTotal(response.total);
-            }
-        }
-        catch (err) {
+            cleanCancel();
+        } catch (err) {
             alert(err.message);
         }
         setBusyAction(false);
     };
 
-    const onCreateCollection = async () => {
-        setBusyAction(true);
-
-        try {
-            const response = await nekoFetch(`${apiUrl}/save_collection`, {
-                json: {
-                    id: currentCollection.id,
-                    name: currentCollection.name,
-                    layout: currentCollection.layout,
-                    description: currentCollection.description,
-                    galleries_ids: selectedGalleriesItems.filter(x => x.medias).map(x => x.id),
-                },
-                nonce: restNonce,
-                method: 'POST'
-            });
-            if (response.success) {
-                cleanCancel();
-                fetchCollections();
-            }
-        }
-        catch (err) {
-            alert(err.message);
-        }
-        setBusyAction(false);
-    }
-
     const onRemoveCollection = async ({id, name}) => {
         if (confirm(`Are you sure you want to remove the "${name}" collection?`)) {
             setBusyAction(true);
             try {
-                const response = await nekoFetch(`${apiUrl}/remove_collection`, {
-                    json: {
-                        id: id
-                    },
-                    nonce: restNonce,
-                    method: 'POST'
-                });
-                if (response.success) {
-                    fetchCollections();
-                }
-            }
-            catch (err) {
+                await removeCollectionMutation.mutateAsync({ id, name });
+            } catch (err) {
                 alert(err.message);
             }
             setBusyAction(false);
@@ -129,7 +93,7 @@ const CollectionMaker = ({
     };
 
     const onClickShortcode = async ({ id, name, shortcode }) => {
-        if (!navigator.clipboard) {
+        if (!window.navigator || !navigator.clipboard) {
             alert("Clipboard is not enabled (only works with https).");
             return;
         }
@@ -140,12 +104,10 @@ const CollectionMaker = ({
         }, 1000);
     };
 
-    const onEditCollection = (id) => {
+    const onEditCollection = async (id) => {
         const collection = collections[id];
-
         setCurrentCollection({ ...collection, id: id });
         setSelectedIdsGalleryMaker(collection.galleries_ids);
-
         setButtonOkText('Update');
         setModals({ ...modals, createCollection: true });
     };
@@ -158,30 +120,27 @@ const CollectionMaker = ({
 
     const rows = useMemo(() => {
         return Object.entries(collections)?.map(([id, collection]) => {
+            const params = { layout: collection.layout, ids: collection.galleries_ids.join(', ') };
 
-            const shortcodeGalleriesIds = `[meow-collection layout="${collection.layout}" ids="${(collection.galleries_ids || []).join(', ')}"]`;
-            const shortcodeUniqueId = `[meow-collection id="${id}"]`;
+            const jsxShortcodeGalleriesIds = <NekoShortcode
+                prefix={'meow-collection'}
+                params={params}
+            />;
 
-            const jsxShortcodeGalleriesIds = <pre onClick={() => { onClickShortcode({ id, name: collection.name, shortcode: shortcodeGalleriesIds }) }} style={shortcodeStyle}>
-                {!copyMessage[id] && shortcodeGalleriesIds}
-                {copyMessage[id] && copyMessage[id]}
-            </pre>;
-
-            const jsxShortcodeUniqueId = <pre onClick={() => { onClickShortcode({ id: 'uid_'+id, name: collection.name, shortcode: shortcodeUniqueId }) }} style={shortcodeStyle}>
-                {!copyMessage['uid_'+id] && shortcodeUniqueId}
-                {copyMessage['uid_'+id] && copyMessage['uid_'+id]}
-            </pre>;
+            const jsxShortcodeUniqueId = <NekoShortcode
+                prefix={'meow-collection'}
+                params={{ id }}
+            />;
 
             const date = collection?.updated ? tableDateTimeFormatter(collection.updated) : null;
             const info = tableInfoFormatter({ id, name: collection.name, description: collection.description });
-
+            
             return {
                 updated: date,
-                thumbnail: <CollectionThumnails galleries={collection.galleries ? collection.galleries.filter(x => x.medias) : []} />,
+                thumbnail: <CollectionThumnails galleries={collection.galleries.filter(x => x.medias)} />,
                 info: info,
                 shortcode: <>
                     {jsxShortcodeGalleriesIds}
-                    <NekoSpacer />
                     {jsxShortcodeUniqueId}
                 </>,
                 actions: <>
@@ -197,14 +156,14 @@ const CollectionMaker = ({
         <div style={{ display: 'flex', flexDirection: 'row' }}>
             <NekoPaging currentPage={collectionsQueryParams.page} limit={collectionsQueryParams.limit}
             total={collectionsTotal} onClick={page => { 
-                setCollectionsQueryParams({ ...collectionsQueryParams, page });
+                setCollectionsQueryParams(prev => ({ ...prev, page }));
             }}
             />
         </div>
         </div>);
-    }, [ collectionsQueryParams, collectionsTotal ]);
+    }, [collectionsQueryParams, collectionsTotal]);
 
-    const jsxCollectionMakerTable = 
+    const jsxCollectionMaker = 
     <>
     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>
@@ -214,11 +173,10 @@ const CollectionMaker = ({
         {jsxCollectionPaging}
     </div>
     <NekoTable
-        busy={false}
-
+        busy={isLoading}
         sort={collectionsQueryParams.sort}
         onSortChange={(accessor, by) => {
-            setCollectionsQueryParams({ ...collectionsQueryParams, sort: { accessor, by } });
+            setCollectionsQueryParams(prev => ({ ...prev, sort: { accessor, by } }));
         }}
         filters={filters}
         onFilterChange={(accessor, value) => {
@@ -232,14 +190,11 @@ const CollectionMaker = ({
         data={rows}
         columns={columns}
         emptyMessage={<>
-            {busy ? 'Loading...' : isRegistered ? 'It\'s empty here. You can create your first Collection by clicking on the button above.😸' : <ProOnly/>}
+            {isLoading ? 'Loading...' : isRegistered ? 'It\'s empty here. You can create your first Collection by clicking on the button above.😸' : <ProOnly/>}
         </>
         }
     />
-
     </>;
-
-    const jsxCollectionMaker = jsxCollectionMakerTable;
 
 
     const jsxModalCreateCollection =
@@ -262,7 +217,7 @@ const CollectionMaker = ({
                 <NekoSpacer />
                 <NekoInput name="collection_description" type="text" value={currentCollection.description} placeholder="Collection Description..." onChange={(e) => setCurrentCollection({...currentCollection, description: e})} />
 
-                {currentCollection.galleries && currentCollection.galleries.length > 0 &&
+                {currentCollection.galleries.length > 0 &&
                     <div style={collectionPreviewStyle}>
                         <NekoTypo style={{ margin: 0 }}>{currentCollection.galleries.length} Selected: </NekoTypo>
 
@@ -286,8 +241,16 @@ const CollectionMaker = ({
                     </div>}
             </>}
 
-            okButton={{ label: buttonOkText, onClick: onCreateCollection, disabled: (currentCollection.name.length === 0 || currentCollection.galleries.length === 0 || busy) }}
-            cancelButton={{ label: 'Cancel', onClick: cleanCancel, disabled: busy }}
+            okButton={{ 
+                label: buttonOkText, 
+                onClick: onCreateCollection, 
+                disabled: (currentCollection.name.length === 0 || currentCollection.galleries.length === 0 || busy || saveCollectionMutation.isPending) 
+            }}
+            cancelButton={{ 
+                label: 'Cancel', 
+                onClick: cleanCancel, 
+                disabled: busy || saveCollectionMutation.isPending 
+            }}
             onRequestClose={() => cleanCancel()}
         />;
 
@@ -304,7 +267,7 @@ const CollectionMaker = ({
             cancelButton={{ label: 'Cancel', onClick: () => {setModals({ ...modals, selectGalleries: false }); }, disabled: busy }}
             onRequestClose={() => {setModals({ ...modals, selectGalleries: false }); }}
         />;
-    
+
     const jsxModalCollectionInformation =
     <NekoModal
         isOpen={modals.collectionInformation}
@@ -328,8 +291,15 @@ const CollectionMaker = ({
         onRequestClose={() => setModals({ ...modals, collectionInformation: false })}
     />;
 
-    return { jsxCollectionMaker, jsxModalCollectionInformation, jsxModalSelectGalleries, jsxModalCreateCollection, collectionsTotal };
+    return { 
+        jsxCollectionMaker, 
+        jsxModalCollectionInformation, 
+        jsxModalSelectGalleries, 
+        jsxModalCreateCollection, 
+        collectionsTotal,
+        collectionsQueryParams,
+        setCollectionsQueryParams
+    };
 };
 
 export { CollectionMaker };
-```

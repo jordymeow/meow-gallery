@@ -1,5 +1,5 @@
-// Previous: 4.3.7
-// Current: 5.2.3
+// Previous: 5.2.3
+// Current: 5.2.6
 
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
@@ -63,7 +63,7 @@ const blockAttributes = {
 		type: 'string',
 		default: ''
 	},
-	galleriesManager: {
+	collectionsManager: {
 		type: 'string',
 		default: ''
 	},
@@ -82,9 +82,29 @@ const blockAttributes = {
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
-	let ids = images.map(x => x.id).join(',');
-	let attrs = `ids="${ids}" `;
+	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass, galleriesManager, collectionsManager } = attributes;
+
+	let ids = [];
+	if (images && images.length)
+		ids = images.map(x => x.id).join(',');
+	let attrs = '';
+
+	if( ids )
+		attrs += `ids="${ids}" `;
+	if ( galleriesManager )
+		attrs += `id="${galleriesManager}" `;
+	if ( collectionsManager )
+		attrs += `collection="${collectionsManager}" `;
+	if (wplrCollection)
+		attrs += `wplr-collection="${wplrCollection}" `;
+	if (wplrFolder)
+		attrs += `wplr-folder="${wplrFolder}" `;
+	if (linkTo && linkTo !== 'none')
+		attrs += `link="${linkTo}" `;
+	if (align)
+		attrs += `align="${align}" `;
+	if (customClass)
+		attrs += `custom-class="${customClass}" `;
 	
 	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
@@ -96,16 +116,7 @@ const buildCoreAttributes = function(attributes) {
 		let boolCaptions = captions ? 'true' : 'false';
 		attrs += `captions="${boolCaptions}" `;
 	}
-	if (wplrCollection)
-		attrs += `wplr-collection="${wplrCollection}" `;
-	if (wplrFolder)
-		attrs += `wplr-folder="${wplrFolder}" `;
-	if (linkTo && linkTo !== 'none')
-		attrs += `link="${linkTo}" `;
-	if (align)
-		attrs += `align="${align}" `;
-	if (customClass)
-		attrs += `custom-class="${customClass}" `;
+	
 	return attrs.trim();
 };
 
@@ -113,6 +124,7 @@ const buildShortcode = function(attributes) {
 	const { useDefaults, layout, rowHeight, columns, customClass } = attributes;
 	const attrs = buildCoreAttributes(attributes);
 	let shortcode = '';
+
 	if (useDefaults)
 		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'tiles')
@@ -160,7 +172,7 @@ const registerGalleryBlock = () => {
 
 		save({ attributes }) {
 			let str = buildShortcode(attributes);
-			return (<Fragment>{str}</Fragment>);
+			return (Fragment ? <Fragment>{str}</Fragment> : str);
 		},
 
 		deprecated: [
@@ -195,7 +207,7 @@ const registerGalleryBlock = () => {
 					isMultiBlock: true,
 					blocks: [ 'core/image' ],
 					transform: ( attributes ) => {
-						const validImages = attributes.filter(x => x.id && x.url);
+						const validImages = attributes.filter(x => x.id && x.url && x.alt !== undefined);
 						return createBlock( 'meow-gallery/gallery', {
 							images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
 						} );
@@ -207,7 +219,7 @@ const registerGalleryBlock = () => {
 					type: 'block',
 					blocks: [ 'core/image' ],
 					transform: ( { images, align } ) => {
-						if ( images.length > 0 ) {
+						if ( images && images.length > 0 ) {
 							return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
 						}
 						return createBlock( 'core/image', { align } );
