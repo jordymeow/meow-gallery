@@ -85,7 +85,7 @@ class Meow_MGL_Migrations {
                     'description' => $shortcode['description'] ?? '',
                     'layout' => $shortcode['layout'],
                     'medias' => serialize( $shortcode['medias'] ),
-                    'is_post_mode' => $shortcode['is_post_mode'] ? 1 : 0,
+                    'is_post_mode' => ( isset( $shortcode['is_post_mode'] ) && $shortcode['is_post_mode'] ) ? 1 : 0,
                     'is_hero_mode' => isset( $shortcode['hero'] ) && $shortcode['hero'] ? 1 : 0,
                     'posts' => isset( $shortcode['posts'] ) ? serialize( $shortcode['posts'] ) : null,
                     'latest_posts' => $shortcode['latest_posts'] ?? null,

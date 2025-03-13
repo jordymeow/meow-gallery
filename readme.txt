@@ -4,7 +4,7 @@ Tags: gallery, masonry, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 5.2.6
+Stable tag: 5.2.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,7 +50,7 @@ Languages: English.
 
 == Changelog ==
 
-= 5.2.6 (2025/03/12) =
+= 5.2.7 (2025/03/13) =
 * Update: Reworked the Block to support Manager shortcodes for better integration.
 * Add: Added support for the AVIF image format in the MediaSelector component.
 * Update: Refactored gallery and collection data retrieval to use core methods for consistency.

@@ -122,12 +122,13 @@ class Meow_MGL_Core {
 			$shortcode_id = $atts['id'];
 
 			try {
-				$shortcode = $this->get_gallery_by_id( id: $shortcode_id );
-			} catch (Exception $e) {
+				$shortcode = $this->get_gallery_by_id( $shortcode_id );
+			}
+			catch ( Exception $e ) {
 				return "<p class='meow-error'><b>Meow Gallery:</b> This ID wasn't found in the Gallery Manager. (ID: $shortcode_id). " . $e->getMessage() . "</p>";
 			}
 
-			if (!isset($shortcode['medias']) || !isset($shortcode['medias']['thumbnail_ids'])) {
+			if ( !isset( $shortcode['medias'] ) || !isset( $shortcode['medias']['thumbnail_ids'])) {
 				return "<p class='meow-error'><b>Meow Gallery:</b> Thumbnail IDs not found.</p>";
 			}
 
@@ -154,13 +155,14 @@ class Meow_MGL_Core {
 
 			if ( $num_posts > 0 ) {
 				
-				$latest_posts = get_posts( array( 'numberposts' => $num_posts ) );
-				$latest_posts_ids = array_map( function($x) { return $x->ID; }, $latest_posts );
+				$latest_posts = get_posts( [ 'numberposts' => $num_posts ] );
+				$latest_posts_ids = array_map( function( $x ) { return $x->ID; }, $latest_posts );
 
-				if (isset($atts['posts'])) {
+				if ( isset( $atts['posts'] ) ) {
 					error_log( "⚠️ Meow Gallery: in gallery $atts[id] both 'latest_posts' and 'posts' attributes are used in the same shortcode. 'latest_posts' will be merged with 'posts'.");
 					$atts['posts'] = array_merge( $latest_posts_ids, explode(',', $atts['posts']) );
-				} else {
+				}
+				else {
 					$atts['posts'] = implode( ',', $latest_posts_ids );
 				}
 			}
@@ -182,7 +184,7 @@ class Meow_MGL_Core {
 				}
 			}
 
-			if (count($posts_ids) !== count($featured_images)) {
+			if ( count( $posts_ids ) !== count( $featured_images ) ) {
 				return "<p class='meow-error'><b>Meow Gallery:</b> The number of featured images and posts id should be the same.</p>";
 			}
 

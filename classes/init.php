@@ -41,6 +41,8 @@ spl_autoload_register(function ( $class ) {
 });
 
 $core = new Meow_MGL_Core();
-new Meow_MGL_Migrations($core);
+
+// TODO: Disable this call after August 2025, then remove the class completely after January 2026
+new Meow_MGL_Migrations( $core );
 
 ?>
