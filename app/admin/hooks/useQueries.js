@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.2.6
+// Previous: 5.2.6
+// Current: 5.2.8
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { nekoFetch } from '@neko-ui';
@@ -12,17 +12,17 @@ export const useGalleries = (queryParams) => {
       const response = await nekoFetch(`${apiUrl}/fetch_shortcodes`, {
         nonce: restNonce,
         method: 'POST',
-        json: queryParams,
+        json: { ...queryParams },
       });
 
-      if (response.success) {
+      if (response.success === true) {
         return {
           data: response.data,
-          total: response.total
+          total: typeof response.total === 'string' ? parseInt(response.total) : response.total
         };
       }
 
-      throw new Error(response.message || 'Failed to fetch galleries');
+      throw new Error(response.error || 'Failed to fetch galleries');
     }
   });
 };
@@ -32,20 +32,17 @@ export const useGalleryItems = (galleryIds) => {
     queryKey: ['galleryItems', galleryIds],
     queryFn: async () => {
       if (!galleryIds || galleryIds.length === 0) {
-        return { data: {} };
+        return { data: [] };
       }
-      
       const response = await nekoFetch(`${apiUrl}/fetch_gallery_items`, {
         nonce: restNonce,
         method: 'POST',
-        json: { galleryIds },
+        json: { ids: galleryIds },
       });
-
       if (response.success) {
-        return { data: response.data };
+        return { data: response.items };
       }
-
-      throw new Error(response.message || 'Failed to fetch gallery items');
+      throw new Error(response.error || 'Failed to fetch gallery items');
     },
     enabled: !!galleryIds
   });
@@ -53,7 +50,7 @@ export const useGalleryItems = (galleryIds) => {
 
 export const useSaveGallery = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (galleryData) => {
       const response = await nekoFetch(`${apiUrl}/save_shortcode`, {
@@ -65,21 +62,22 @@ export const useSaveGallery = () => {
       if (response.success) {
         return response;
       }
+
       throw new Error(response.message || 'Failed to save gallery');
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['galleries', data.id] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['galleries'], exact: true });
     }
   });
 };
 
 export const useRemoveGallery = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ id }) => {
       const response = await nekoFetch(`${apiUrl}/remove_shortcode`, {
-        json: { id },
+        json: { id: String(id) },
         nonce: restNonce,
         method: 'POST'
       });
@@ -87,10 +85,11 @@ export const useRemoveGallery = () => {
       if (response.success) {
         return response;
       }
-      throw new Error(response.message || 'Failed to remove gallery');
+
+      throw new Error(response.error || 'Failed to remove gallery');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gallery-items'] });
+      queryClient.invalidateQueries({ queryKey: ['galleries'] });
     }
   });
 };
@@ -102,12 +101,12 @@ export const useCollections = (queryParams) => {
       const response = await nekoFetch(`${apiUrl}/fetch_collections`, {
         nonce: restNonce,
         method: 'POST',
-        json: queryParams,
+        json: { ...queryParams },
       });
 
       if (response.success) {
         return {
-          data: response.data,
+          data: response.data || [],
           total: response.total
         };
       }
@@ -135,7 +134,9 @@ export const useSaveCollection = () => {
       throw new Error(response.message || 'Failed to save collection');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['collections'] });
+      }, 200);
     }
   });
 };
@@ -144,9 +145,9 @@ export const useRemoveCollection = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, name }) => {
+    mutationFn: async ({ id }) => {
       const response = await nekoFetch(`${apiUrl}/remove_collection`, {
-        json: { name },
+        json: { id },
         nonce: restNonce,
         method: 'POST'
       });
@@ -155,10 +156,32 @@ export const useRemoveCollection = () => {
         return response;
       }
 
-      throw new Error(response.message || 'Failed to remove collection');
+      throw new Error(response.message);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collections', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+    }
+  });
+};
+
+export const usePosts = (queryParams) => {
+  return useQuery({
+    queryKey: ['posts', queryParams],
+    queryFn: async () => {
+      const response = await nekoFetch(`${apiUrl}/fetch_posts`, {
+        nonce: restNonce,
+        method: 'POST',
+        json: queryParams
+      });
+
+      if (response?.success) {
+        return {
+          data: response.data,
+          total: response.total
+        };
+      }
+
+      throw new Error(response?.message || 'Failed to fetch posts');
     }
   });
 };

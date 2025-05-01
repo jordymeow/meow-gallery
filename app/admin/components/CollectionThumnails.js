@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.1.1
+// Previous: 5.1.1
+// Current: 5.2.8
 
 const { useState, useEffect } = wp.element;
 
@@ -19,6 +19,9 @@ function CollectionThumnails({ galleries }) {
       {galleries?.map((gallery, index) => {
         const isActiveOpacity = index === activeIndex ? 1 : 0;
         const transition = "opacity 1s ease-in-out";
+
+        const thumbnailIndex = gallery.medias.thumbnail_ids.findIndex((id) => id === gallery?.lead_image_id);
+
         return (
           <div 
             key={index} 
@@ -34,7 +37,7 @@ function CollectionThumnails({ galleries }) {
             }}
           >
             <img
-              src={gallery.medias.thumbnail_urls[0]}
+              src={gallery.medias.thumbnail_urls[ thumbnailIndex === -1 ? 0 : thumbnailIndex ]}
               style={{ width: 50, height: 50, borderRadius: 5, margin: 5 }}
             />
             <span style={{ marginRight: '5px', color: 'white' }}>
