@@ -1,5 +1,5 @@
-// Previous: 5.2.6
-// Current: 5.2.8
+// Previous: 5.2.8
+// Current: 5.2.9
 
 const { useState, useEffect } = wp.element;
 import { NekoQuickLinks, NekoLink, NekoBlock, NekoSpacer } from '@neko-ui';
@@ -16,10 +16,11 @@ const galleryColumns = [
     { accessor: 'actions', title: 'Actions' },
 ];
 
-const Managers = ({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverrideDisabled }) => {
+const Managers = ({ busy, setBusyAction, layoutOptions, orderByOptions, mglGalleryShortcodeOverrideDisabled }) => {
     const [displayManager, setDisplayManager] = useState('galleries');
     const [selectedGalleriesItems, setSelectedGalleriesItems] = useState([]);
-    const [allGalleries, setAllGalleries] = useState([]);
+    const [allGalleries, setAllGalleries] = useState({});
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
 
     const [managersModals, setManagersModals] = useState({
         selectMedia: false, 
@@ -48,7 +49,8 @@ const Managers = ({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverr
         savedGalleries
     } = ShortcodeMaker({ 
         allGalleries,
-        layoutOptions, 
+        layoutOptions,
+        orderByOptions,
         busy, 
         setBusyAction, 
         mglGalleryShortcodeOverrideDisabled, 
@@ -62,7 +64,16 @@ const Managers = ({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverr
 
     useEffect(() => {
         if (savedGalleries && Object.keys(savedGalleries).length > 0) {
-            setAllGalleries(prev => ([...prev, ...Object.values(savedGalleries)]));
+            setAllGalleries(prev => {
+                let result = {...prev};
+                Object.entries(savedGalleries).forEach(([k, v]) => {
+                    result[k] = v;
+                });
+                return result;
+            });
+            setIsFirstLoad(false);
+        } else if (!savedGalleries && isFirstLoad) {
+            setAllGalleries([]);
         }
     }, [savedGalleries]);
 
@@ -85,7 +96,7 @@ const Managers = ({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverr
 
     const jsxQuickLinks =
         <NekoQuickLinks name='mgl-manager-links' value={displayManager} busy={busy}
-            onChange={value => { setDisplayManager(displayManager) }}>
+            onChange={value => { setDisplayManager(value) }}>
             <NekoLink title={'Galleries'} value='galleries' count={shortcodesTotal} />
             <NekoLink title={'Collections'} value='collections' count={collectionsTotal} />
         </NekoQuickLinks>;
@@ -94,16 +105,16 @@ const Managers = ({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverr
         <NekoBlock busy={busy} title="Galleries & Collections Managers" className="primary" style={{width: '100%'}}>
             {jsxQuickLinks}
             <NekoSpacer />
-            {displayManager == 'galleries' && jsxShortcodeMaker}
-            {displayManager == 'collections' && jsxCollectionMaker}
+            {displayManager === 'galleries' ? jsxShortcodeMaker : null}
+            {displayManager === 'collections' ? jsxCollectionMaker : null}
             
             {jsxModalCreateCollection}
             {jsxModalCollectionInformation}
             {jsxModalSelectGalleries}
 
-            {jsxCreateShortcodeModal}
+            {!busy && jsxCreateShortcodeModal}
             {jsxSelectImagesModal}
-            {jsxSelectLeadImageModal}
+            {busy || jsxSelectLeadImageModal}
             {jsxSelectPostsModal}
             {jsxShortcodeInformationModal}
         </NekoBlock>

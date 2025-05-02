@@ -1,5 +1,5 @@
-// Previous: 5.2.3
-// Current: 5.2.8
+// Previous: 5.2.8
+// Current: 5.2.9
 
 ```jsx
 const { useState } = wp.element;
@@ -30,7 +30,7 @@ const Settings = () => {
   const mglCaptionsBackground = options?.captions_background;
   const mglLoading = options?.loading;
   const mglInfinite = options?.infinite;
-  const mglInfiniteBuffer = options?.infinite_buffer;
+  const mglInfiniteBuffer = options?.infinite_buffer || 0;
   const mglImageSize = options?.image_size;
   const mglGalleryShortcodeOverrideDisabled = options?.gallery_shortcode_override_disabled;
   const mglTilesGutter = options?.tiles_gutter;
@@ -85,6 +85,16 @@ const Settings = () => {
     { value: 'none', label: <span>None</span> }
   ];
 
+  const orderByOptions = [
+    { value: 'none', label: <span>None</span> },
+    { value: 'date-asc', label: <span>Date Ascending</span> },
+    { value: 'date-desc', label: <span>Date Descending</span> },
+    { value: 'title-asc', label: <span>Title Ascending</span> },
+    { value: 'title-desc', label: <span>Title Descending</span> },
+    { value: 'ids-asc', label: <span>IDs Ascending</span> },
+    { value: 'ids-desc', label: <span>IDs Descending</span> },
+  ];
+
   const animationOptions = [
     { value: 'zoom-out', label: <span>Zoom Out</span> },
     { value: 'zoom-in', label: <span>Zoom In</span> },
@@ -118,7 +128,7 @@ const Settings = () => {
     { value: 'button-loader', label: <span>Button Loader</span>},
   ]
 
-  const { jsxManagers } = Managers({ busy, setBusyAction, layoutOptions, mglGalleryShortcodeOverrideDisabled });
+  const { jsxManagers } = Managers({ busy, setBusyAction, layoutOptions, orderByOptions, mglGalleryShortcodeOverrideDisabled });
 
   const updateOption = async (value, name) => {
     const newSettingsData = {
@@ -168,40 +178,37 @@ const Settings = () => {
         alert(err.message);
       }
     }
-    finally {
+    // finally {
       setBusyAction(false);
-    }
+    // }
   };
 
   const retrieveOptions = async () => {
     const res = await nekoFetch(`${apiUrl}/all_settings`, { method: 'GET', nonce: restNonce });
-    return res?.options;
+    return res?.data;
   };
-
 
   const onExportSettings = async () => {
     setBusyAction(true);
     try {
       const today = new Date();
       const options = await retrieveOptions();
-      const data = options;
-      const filename = `meow-gallery-${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}.json`;
+      const data = { options };
+      const filename = `meow-gallery-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`;
 
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
+
       link.href = url;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-      }, 100);
+      // URL.revokeObjectURL(url);
     }
     catch (err) {
       alert("Error while exporting settings. Please check your console.");
-      console.log(err);
+      // console.log(err);
     }
     finally {
       setBusyAction(false);
@@ -213,27 +220,28 @@ const Settings = () => {
     try {
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
-      fileInput.accept = '.json';
+      fileInput.accept = 'application/json';
       fileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) {
+          setBusyAction(false);
           return;
         }
         const reader = new FileReader();
         reader.onload = async (e) => {
           const data = JSON.parse(e.target.result);
           const { options } = data;
+
           await updateOptions(options);
           alert("Settings imported. The page will now reload to reflect the changes.");
           window.location.reload();
         };
         reader.readAsText(file);
       };
-      fileInput.click();
+      // fileInput.click();
     }
     catch (err) {
       alert("Error while importing settings. Please check your console.");
-      console.log(err);
     }
     finally {
       setBusyAction(false);
@@ -246,14 +254,14 @@ const Settings = () => {
     { value: 'maptiler', label: <span>MapTiler</span> },
     { value: 'openstreetmap', label: <span>OpenStreetMap <small>(for development only)</small></span> }
   ];
-  
+
   const jsxMap =
     <NekoBlock busy={busy} title="Map" className="primary">
       <NekoSettings title="Default Engine">
         <NekoSelect scrolldown name="map_engine" disabled={busy} value={mglMapEngine}
           description=""
           onChange={updateOption}>
-          {mapEnginesOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+          {mapEnginesOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
             label={option.label} requirePro={option.requirePro} />)
           }
         </NekoSelect>
@@ -348,7 +356,7 @@ const Settings = () => {
       <NekoSettings title="Stylish">
         <NekoCheckboxGroup max="1">
           <NekoCheckbox name="tiles_stylish_style" disabled={busy} label="Enable" value="1"
-            requirePro={!isRegistered} checked={mglTilesStylishStyle === "1"} onChange={updateOption}
+            requirePro={!isRegistered} checked={Boolean(mglTilesStylishStyle)} onChange={updateOption}
             description="Bring your galleries to life with a stylish style. It will add a nice shadow, a border and a slick hover animation to your images to make them stand out." />
         </NekoCheckboxGroup>
       </NekoSettings>
@@ -497,7 +505,7 @@ const Settings = () => {
       <NekoSelect scrolldown name="layout" disabled={busy} value={mglLayout}
         description=""
         onChange={updateOption}>
-        {layoutOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {layoutOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -508,19 +516,18 @@ const Settings = () => {
       <NekoSelect scrolldown name="link" disabled={busy} value={mglLink}
         description=""
         onChange={updateOption}>
-        <NekoOption key='none' id='none' value={'none'} label="None" />
+        <NekoOption key='none' id='none' value={null} label="None" />
         <NekoOption key='media' id='media' value='media' label="Media File" />
         <NekoOption key='attachment' id='attachment' value='attachment' label="Attachment Page" />
       </NekoSelect>
     </NekoSettings>;
-
 
   const jsxAnimation =
     <NekoSettings title="Animation">
       <NekoSelect scrolldown name="animation" disabled={busy} value={mglAnimation}
         description=""
         onChange={updateOption}>
-        {animationOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {animationOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -531,17 +538,17 @@ const Settings = () => {
       <NekoSelect scrolldown name="image_size" disabled={busy} value={mglImageSize}
         description=""
         onChange={updateOption}>
-        {imageSizeOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {imageSizeOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
     </NekoSettings>;
-  
+
   const jsxGalleryShortcodeOverride =
     <NekoSettings title="Gallery Shortcode Override">
       <NekoCheckboxGroup max="1">
         <NekoCheckbox name="gallery_shortcode_override_disabled" disabled={busy} label="Disable" value="1"
-          requirePro={!isRegistered} checked={!!mglGalleryShortcodeOverrideDisabled} onChange={updateOption}
+          requirePro={!isRegistered} checked={mglGalleryShortcodeOverrideDisabled} onChange={updateOption}
           description="If you don't want to use Meow Gallery for the standard WordPress Gallery shortcodes, you can disable it here." />
       </NekoCheckboxGroup>
     </NekoSettings>;
@@ -550,7 +557,7 @@ const Settings = () => {
     <NekoSettings title="Captions">
       <NekoSelect scrolldown name="captions" disabled={busy} value={mglCaptions}
         onChange={updateOption}>
-        {captionsOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
+        {captionsOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -581,9 +588,9 @@ const Settings = () => {
 
   const jsxLoadings = 
     <NekoSettings title="Loading Style">
-      <NekoSelect scrolldown name="loading" disabled={busy || !mglInfinite} value={mglLoading} requirePro={!isRegistered}
+      <NekoSelect scrolldown name="loading" disabled={busy || mglInfinite} value={mglLoading} requirePro={!isRegistered}
         onChange={updateOption}>
-        {loadingOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value}
+        {loadingOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value}
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -593,7 +600,7 @@ const Settings = () => {
     <NekoSettings title="Right Click">
       <NekoCheckboxGroup max="1">
         <NekoCheckbox name="right_click" disabled={busy} label="Allow" description="" value="1"
-          requirePro={!isRegistered} checked={!!mglRightClick} onChange={updateOption} />
+          requirePro={!isRegistered} checked={mglRightClick} onChange={updateOption} />
       </NekoCheckboxGroup>
     </NekoSettings>;
 
@@ -601,7 +608,7 @@ const Settings = () => {
     <NekoSettings title="Infinite Scroll">
       <NekoCheckboxGroup max="1">
         <NekoCheckbox name="infinite" disabled={busy} label="Enable" value="1"
-          requirePro={!isRegistered} checked={!!mglInfinite} onChange={updateOption}
+          requirePro={!isRegistered} checked={mglInfinite} onChange={updateOption}
           description="Images will be loaded only when they are in the visible part of the browser."
         />
       </NekoCheckboxGroup>
@@ -632,7 +639,6 @@ const Settings = () => {
   <NekoButton className="blue" disabled={busy} onClick={onImportSettings}>
     Import Options
   </NekoButton>;
-
 
   return (
 		<NekoPage>
@@ -668,7 +674,6 @@ const Settings = () => {
                   </NekoBlock>
                   <NekoBlock busy={busy} title="UI" className="primary">
                     {jsxCaptions}
-
                     {mglCaptions !== "none" && jsxCaptionsAlignment}
                     {mglCaptions !== "none" && jsxCaptionsBackground}
                     {jsxRightClick}
@@ -732,9 +737,7 @@ const Settings = () => {
 
             <NekoTab title='Galleries & Collections'>
               <NekoWrapper>
-
               {jsxManagers}
-              
               </NekoWrapper>
             </NekoTab>
 
