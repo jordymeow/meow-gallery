@@ -1,5 +1,5 @@
-// Previous: 5.2.8
-// Current: 5.2.9
+// Previous: 5.2.9
+// Current: 5.3.0
 
 ```jsx
 const { useState, useMemo, useEffect } = wp.element;
@@ -56,7 +56,7 @@ const ShortcodeMaker = ({
     const shortcodesTotal = galleryData?.total || 0;
 
     const setPostIdsStringToArray = (ids) => {
-        setPostIds(ids.split(',').map(id => id.trim()));
+        setPostIds(ids.split(',').map(id => id.trim()).filter(Boolean));
     };
 
     useEffect(() => {
@@ -70,7 +70,7 @@ const ShortcodeMaker = ({
             return gallery;
         });
         setSelectedGalleriesItems(selectedGalleriesItems);
-    }, [selectedIds, savedGalleries]); // BUG: allGalleries omitted as a dependency
+    }, [selectedIds, savedGalleries, allGalleries]);
 
     const setSelectedIdsGalleryMaker = (ids) => {
         setSelectedIds(ids);
@@ -79,7 +79,7 @@ const ShortcodeMaker = ({
     const galleryPreviewStyle = { display: 'flex', alignItems: 'center', border: '1px solid #e1e1e1', boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', borderRadius: '8px', padding: '15px', marginTop: '10px', justifyContent: 'space-between' };
     
     const cleanCancel = () => { 
-        setModals({ ...modals, createShortcode: false });
+        setModals({ ...modals, createShortcode: false }); 
         setselectedMedias({ thumbnail_ids: [], thumbnail_urls: [], thumbnails: [] });
         setGalleryName('');
         setGalleryLayout('');
@@ -139,7 +139,6 @@ const ShortcodeMaker = ({
         setPostIds([]);
         setLatestPostsNumber(5);
         setOrderBy('none');
-
         setButtonOkText('Create');
         setModals({ ...modals, createShortcode: true });
     };
@@ -165,7 +164,7 @@ const ShortcodeMaker = ({
                 setLatestPostsNumber(gallery.latest_posts);
             }
             
-            if (gallery.hero) {
+            if (gallery.is_hero_mode) {
                 setCarouselHeroMode(true);
             }
         }
@@ -182,21 +181,21 @@ const ShortcodeMaker = ({
 
             if (gallery?.order_by && gallery?.order_by !== 'none' ) {
                 params.order_by = gallery.order_by;
-             }
+            }
 
             if (gallery?.is_post_mode) {
                 if (gallery.posts) {
-                    params.posts = gallery.posts.join(', ');
+                    params.posts = Array.isArray(gallery.posts) ? gallery.posts.join(', ') : gallery.posts;
                 }
                 else if (gallery.latest_posts) {
                     params.latest_posts = gallery.latest_posts;
                 }
 
-                if (gallery?.hero) {
+                if (gallery?.is_hero_mode) {
                     params.hero = "true";
                 }
             } else {
-                params.ids = gallery.medias.thumbnail_ids.join(', ');
+                params.ids = !gallery.medias ? '' : gallery.medias.thumbnail_ids.join(', ');
             }
 
             const shortcodeMediaIds = <NekoShortcode
@@ -210,11 +209,11 @@ const ShortcodeMaker = ({
             />;
 
             const date = gallery?.updated ? tableDateTimeFormatter(gallery.updated) : null;
-            const info = tableInfoFormatter({ id, name: gallery.name, description: gallery.description });
+            const info = tableInfoFormatter({ id, name: gallery.name, description: gallery.description, order: gallery.order_by, layout: gallery.layout });
 
             const thumbnail = <>
                 <div style={{ width: 100, display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 3 }}>
-                    {gallery.medias.thumbnails.slice(0, 4).map((thumbnail, index) => {
+                    {gallery.medias?.thumbnails?.slice(0, 4).map((thumbnail, index) => {
                         const el = thumbnail.mime?.includes('video') ?
                             <video muted={true} loop={true} playsInline={true} key={index} src={thumbnail.url} style={{ width: '100%', height: '100%', display: 'block', borderRadius: 3, objectFit: 'cover' }} /> :
                             <img key={index} src={thumbnail.url} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 3 }} />;
@@ -239,7 +238,7 @@ const ShortcodeMaker = ({
                 </>
             };
         });
-    }, [savedGalleries]); // BUG: mglGalleryShortcodeOverrideDisabled omitted
+    }, [savedGalleries, mglGalleryShortcodeOverrideDisabled]);
 
     const jsxShortcodePaging = useMemo(() => {
         return (<div>
@@ -251,7 +250,7 @@ const ShortcodeMaker = ({
                 />
             </div>
         </div>);
-    }, [shortcodesQueryParams.page, shortcodesTotal]); // BUG: shortcodesQueryParams.limit omitted
+    }, [shortcodesQueryParams, shortcodesTotal]);
 
     const jsxShortcodeMaker = <>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -287,7 +286,7 @@ const ShortcodeMaker = ({
 
             selectedItems={selectedIds}
             onSelectRow={id => { setSelectedIds([id]) }}
-            onSelect={ids => { setSelectedIds([...selectedIds, ...ids]) }}
+            onSelect={ids => { setSelectedIds([...selectedIds, ...ids.filter(x => !selectedIds.includes(x))]) }}
             onUnselect={ids => { setSelectedIds([...selectedIds.filter(x => !ids.includes(x))]) }}
         />
     </>;
@@ -303,7 +302,7 @@ const ShortcodeMaker = ({
         isOpen={modals.selectPosts}
         selectedPosts={postIds}
         onClose={() => setModals({ ...modals, selectPosts: false })}
-        onSave={setPostIds}
+        onSave={posts => setPostIds(posts)}
     />;
 
     const jsxShortcodeInformationModal = <NekoModal
@@ -345,7 +344,7 @@ const ShortcodeMaker = ({
             content={<>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <NekoInput name="gallery_name" type="text" value={galleryName} placeholder="Gallery Name..." onChange={(e) => setGalleryName(e)} style={{ flex: .9 }} />
-                    <NekoSelect scrolldown name="gallery_layout" disabled={busy} value={galleryLayout}
+                    <NekoSelect scrolldown name="gallery_layout" disabled={busy || false} value={galleryLayout}
                         style={{ minWidth: 100 }}
                         onChange={(value) => setGalleryLayout(value)}>
                         {layoutOptions?.map(option => <NekoOption key={option.id} id={option.id} value={option.value}
@@ -381,12 +380,12 @@ const ShortcodeMaker = ({
 
                         {isLatestPostsMode &&
                             <NekoInput name="latest_posts_number" type="number" value={latestPostsNumber} style={{ flex: 1 }}
-                                placeholder="Number of latest posts..." onChange={(e) => setLatestPostsNumber(e)} />
+                                placeholder="Number of latest posts..." onChange={(e) => setLatestPostsNumber(Number(e))} />
                         }
 
                     </div>
 
-                    {galleryLayout == 'carousel' &&
+                    {galleryLayout === 'carousel' &&
                         <NekoCheckbox
                             name="carousel_hero_mode"
                             label="Hero Mode"
@@ -433,10 +432,8 @@ const ShortcodeMaker = ({
 
                         <NekoButton className="primary" onClick={() => setModals({ ...modals, selectLeadImage: true })} style={{ marginTop: 10 }}>Select a Lead Image</NekoButton>
                     </div>
-                    
                     </>
-                    
-                    }
+                }
             </>}
 
             okButton={{ 
@@ -447,7 +444,6 @@ const ShortcodeMaker = ({
             cancelButton={{ label: 'Cancel', onClick: cleanCancel, disabled: busy || saveGalleryMutation.isPending }}
             onRequestClose={() => cleanCancel()}
         />;
-
 
     const jsxSelectLeadImageModal =
     <NekoModal

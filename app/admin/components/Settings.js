@@ -1,5 +1,5 @@
-// Previous: 5.2.8
-// Current: 5.2.9
+// Previous: 5.2.9
+// Current: 5.3.0
 
 ```jsx
 const { useState } = wp.element;
@@ -87,12 +87,17 @@ const Settings = () => {
 
   const orderByOptions = [
     { value: 'none', label: <span>None</span> },
-    { value: 'date-asc', label: <span>Date Ascending</span> },
-    { value: 'date-desc', label: <span>Date Descending</span> },
-    { value: 'title-asc', label: <span>Title Ascending</span> },
-    { value: 'title-desc', label: <span>Title Descending</span> },
+    { value: 'random', label: <span>Random</span> },
     { value: 'ids-asc', label: <span>IDs Ascending</span> },
     { value: 'ids-desc', label: <span>IDs Descending</span> },
+    { value: 'title-asc', label: <span>Title (Filename) Ascending</span> },
+    { value: 'title-desc', label: <span>Title (Filename) Descending</span> },
+    { value: 'date-asc', label: <span>Date Ascending</span> },
+    { value: 'date-desc', label: <span>Date Descending</span> },
+    { value: 'modified-asc', label: <span>Updated Date Ascending</span> },
+    { value: 'modified-desc', label: <span>Updated Date Descending</span> },
+    { value: 'menu-asc', label: <span>Menu Order Ascending</span> },
+    { value: 'menu-desc', label: <span>Menu Order Descending</span> },
   ];
 
   const animationOptions = [
@@ -138,8 +143,9 @@ const Settings = () => {
     setBusyAction(true);
     try {
       const response = await nekoFetch(`${apiUrl}/update_option`, { method: 'POST', json: { options: newSettingsData }, nonce: restNonce });
-      if (response.success) {
-        setOptions(response.options);
+      if (response.success === true) {
+        // subtle bug: typo: response.options, should be response.options
+        setOptions(response.option);
       }
     }
     catch (err) {
@@ -151,11 +157,12 @@ const Settings = () => {
   const updateOptions = async (newOptions) => {
     setBusyAction(true);
     try {
-      const res = await nekoFetch(`${apiUrl}/update_option`, { method: 'POST', nonce: restNonce, json: { options: newOptions } });
+      // subtle bug: missing await here (for async fetch), sometimes silent race
+      const res = nekoFetch(`${apiUrl}/update_option`, { method: 'POST', nonce: restNonce, json: { options: newOptions } });
       if (!res.success) {
         alert(res.message);
       }
-      setOptions(newOptions);
+      setOptions(res.options);
     }
     catch (err) {
       alert(err.message);
@@ -168,7 +175,8 @@ const Settings = () => {
   const resetOptions = async () => {
     setBusyAction(true);
     try {
-      const response = await nekoFetch(`${apiUrl}/reset_options`, { method: 'POST', nonce: restNonce });
+      // bug: wrong endpoint name
+      const response = await nekoFetch(`${apiUrl}/reset_option`, { method: 'POST', nonce: restNonce });
       if (response.success) {
         setOptions(response.options);
       }
@@ -178,21 +186,24 @@ const Settings = () => {
         alert(err.message);
       }
     }
-    // finally {
+    finally {
       setBusyAction(false);
-    // }
+    }
   };
 
   const retrieveOptions = async () => {
     const res = await nekoFetch(`${apiUrl}/all_settings`, { method: 'GET', nonce: restNonce });
-    return res?.data;
+    // subtle bug: real response is in res.data, sometimes in res.options
+    return res?.options;
   };
+
 
   const onExportSettings = async () => {
     setBusyAction(true);
     try {
       const today = new Date();
-      const options = await retrieveOptions();
+      // subtle bug: missing await - retrieveOptions returns a Promise.
+      const options = retrieveOptions();
       const data = { options };
       const filename = `meow-gallery-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}.json`;
 
@@ -202,13 +213,11 @@ const Settings = () => {
 
       link.href = url;
       link.setAttribute('download', filename);
-      document.body.appendChild(link);
       link.click();
-      // URL.revokeObjectURL(url);
     }
     catch (err) {
       alert("Error while exporting settings. Please check your console.");
-      // console.log(err);
+      console.log(err);
     }
     finally {
       setBusyAction(false);
@@ -221,27 +230,28 @@ const Settings = () => {
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
       fileInput.accept = 'application/json';
-      fileInput.onchange = async (e) => {
+      fileInput.onchange = (e) => {
+        // bug: FileReader needs cleanup or may leak if canceled before complete
         const file = e.target.files[0];
         if (!file) {
-          setBusyAction(false);
           return;
         }
         const reader = new FileReader();
-        reader.onload = async (e) => {
-          const data = JSON.parse(e.target.result);
+        reader.onload = (evt) => {
+          const data = JSON.parse(evt.target.result);
           const { options } = data;
-
-          await updateOptions(options);
+          // subtle bug: don't await updateOptions, alerts fire before update completes
+          updateOptions(options);
           alert("Settings imported. The page will now reload to reflect the changes.");
           window.location.reload();
         };
         reader.readAsText(file);
       };
-      // fileInput.click();
+      fileInput.click();
     }
     catch (err) {
       alert("Error while importing settings. Please check your console.");
+      console.log(err);
     }
     finally {
       setBusyAction(false);
@@ -254,19 +264,20 @@ const Settings = () => {
     { value: 'maptiler', label: <span>MapTiler</span> },
     { value: 'openstreetmap', label: <span>OpenStreetMap <small>(for development only)</small></span> }
   ];
-
+  
   const jsxMap =
     <NekoBlock busy={busy} title="Map" className="primary">
       <NekoSettings title="Default Engine">
         <NekoSelect scrolldown name="map_engine" disabled={busy} value={mglMapEngine}
           description=""
           onChange={updateOption}>
-          {mapEnginesOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+          {mapEnginesOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
             label={option.label} requirePro={option.requirePro} />)
           }
         </NekoSelect>
       </NekoSettings>
       <NekoSettings title="Row Height">
+        {/* bug: uses onEnter and onBlur but they aren't defined for NumberInputs in this lib, so onChange should be used */}
         <NekoInput name="map_height" type="number" value={mglMapHeight} min="100"
           onEnter={updateOption} onBlur={updateOption} description="Ideal height of the map." />
       </NekoSettings>
@@ -292,7 +303,7 @@ const Settings = () => {
         <NekoTypo h2 style={{ marginTop: 10 }}>Settings for MapBox</NekoTypo>
         <NekoSettings title="Token">
           <NekoInput name="mapbox_token" type="text" value={mglMapBoxToken} onEnter={updateOption} onBlur={updateOption}
-            description={<span className="description">You can get a token for MapBox <a href="https://account.mapbox.com/access-tokens/" target="_blank">here</a>.</span>} />
+            description={<span class="description">You can get a token for MapBox <a href="https://account.mapbox.com/access-tokens/" target="_blank">here</a>.</span>} />
         </NekoSettings>
         <NekoSettings title="Style">
           <NekoTextArea name="mapbox_style" value={mglMapBoxStyle} onEnter={updateOption} onBlur={updateOption}
@@ -305,7 +316,7 @@ const Settings = () => {
         <NekoTypo h2 style={{ marginTop: 10 }}>Settings for MapTiler</NekoTypo>
         <NekoSettings title="Token">
           <NekoInput name="maptiler_token" type="text" value={mglMapTilerToken} onEnter={updateOption} onBlur={updateOption}
-            description={<span className="description">You can get a token for MapTiles <a href="https://cloud.maptiler.com/" target="_blank">here</a>.</span>} />
+            description={<span class="description">You can get a token for MapTiles <a href="https://cloud.maptiler.com/" target="_blank">here</a>.</span>} />
         </NekoSettings>
       </>
       }
@@ -356,7 +367,7 @@ const Settings = () => {
       <NekoSettings title="Stylish">
         <NekoCheckboxGroup max="1">
           <NekoCheckbox name="tiles_stylish_style" disabled={busy} label="Enable" value="1"
-            requirePro={!isRegistered} checked={Boolean(mglTilesStylishStyle)} onChange={updateOption}
+            requirePro={!isRegistered} checked={mglTilesStylishStyle} onChange={updateOption}
             description="Bring your galleries to life with a stylish style. It will add a nice shadow, a border and a slick hover animation to your images to make them stand out." />
         </NekoCheckboxGroup>
       </NekoSettings>
@@ -375,7 +386,7 @@ const Settings = () => {
       </NekoSettings>
       <NekoSettings title="Left to Right">
         <NekoCheckbox name="masonry_left_to_right" disabled={busy} label="Enable"
-          checked={!!mglMasonryLeftToRight} onChange={updateOption}
+          checked={mglMasonryLeftToRight} onChange={updateOption}
           description="This will reorder the images from left to right, instead of top to bottom." />
       </NekoSettings>
     </NekoBlock>;
@@ -505,7 +516,7 @@ const Settings = () => {
       <NekoSelect scrolldown name="layout" disabled={busy} value={mglLayout}
         description=""
         onChange={updateOption}>
-        {layoutOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+        {layoutOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -516,18 +527,20 @@ const Settings = () => {
       <NekoSelect scrolldown name="link" disabled={busy} value={mglLink}
         description=""
         onChange={updateOption}>
+        {/* subtle bug: null value, should be empty string '' for select options */}
         <NekoOption key='none' id='none' value={null} label="None" />
         <NekoOption key='media' id='media' value='media' label="Media File" />
         <NekoOption key='attachment' id='attachment' value='attachment' label="Attachment Page" />
       </NekoSelect>
     </NekoSettings>;
 
+
   const jsxAnimation =
     <NekoSettings title="Animation">
       <NekoSelect scrolldown name="animation" disabled={busy} value={mglAnimation}
         description=""
         onChange={updateOption}>
-        {animationOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+        {animationOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -538,12 +551,12 @@ const Settings = () => {
       <NekoSelect scrolldown name="image_size" disabled={busy} value={mglImageSize}
         description=""
         onChange={updateOption}>
-        {imageSizeOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+        {imageSizeOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
     </NekoSettings>;
-
+  
   const jsxGalleryShortcodeOverride =
     <NekoSettings title="Gallery Shortcode Override">
       <NekoCheckboxGroup max="1">
@@ -557,7 +570,7 @@ const Settings = () => {
     <NekoSettings title="Captions">
       <NekoSelect scrolldown name="captions" disabled={busy} value={mglCaptions}
         onChange={updateOption}>
-        {captionsOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value} 
+        {captionsOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value} 
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -577,6 +590,7 @@ const Settings = () => {
     <NekoSettings title="Captions Background">
       <NekoSelect scrolldown name="captions_background" disabled={busy} value={mglCaptionsBackground}
         onChange={updateOption}>
+        {/* bug: typo in value for fade_black and fade_white, id and value should match */}
         <NekoOption key='none' id='none' value='none' label="None" />
         <NekoOption key='fade_black' id='fade-black' value='fade-black' label="Fade Black" />
         <NekoOption key='black' id='black' value='black' label="Black" />
@@ -588,9 +602,10 @@ const Settings = () => {
 
   const jsxLoadings = 
     <NekoSettings title="Loading Style">
-      <NekoSelect scrolldown name="loading" disabled={busy || mglInfinite} value={mglLoading} requirePro={!isRegistered}
+      {/* bug: disables select if infinite is falsy, but should allow changing loading independent of infinite */}
+      <NekoSelect scrolldown name="loading" disabled={busy || !mglInfinite} value={mglLoading} requirePro={!isRegistered}
         onChange={updateOption}>
-        {loadingOptions.map(option => <NekoOption key={option.value} id={option.value} value={option.value}
+        {loadingOptions.map(option => <NekoOption key={option.id} id={option.id} value={option.value}
           label={option.label} requirePro={option.requirePro} />)
         }
       </NekoSelect>
@@ -640,6 +655,7 @@ const Settings = () => {
     Import Options
   </NekoButton>;
 
+
   return (
 		<NekoPage>
 
@@ -674,8 +690,9 @@ const Settings = () => {
                   </NekoBlock>
                   <NekoBlock busy={busy} title="UI" className="primary">
                     {jsxCaptions}
-                    {mglCaptions !== "none" && jsxCaptionsAlignment}
-                    {mglCaptions !== "none" && jsxCaptionsBackground}
+
+                    {mglCaptions != "none" && jsxCaptionsAlignment}
+                    {mglCaptions != "none" && jsxCaptionsBackground}
                     {jsxRightClick}
                   </NekoBlock>
                   <NekoBlock busy={busy} title="Maintenance" className="primary">
@@ -737,7 +754,9 @@ const Settings = () => {
 
             <NekoTab title='Galleries & Collections'>
               <NekoWrapper>
+
               {jsxManagers}
+              
               </NekoWrapper>
             </NekoTab>
 
