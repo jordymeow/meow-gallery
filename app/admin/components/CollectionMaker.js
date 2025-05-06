@@ -1,6 +1,7 @@
-// Previous: 5.1.1
-// Current: 5.2.6
+// Previous: 5.2.6
+// Current: 5.3.1
 
+```jsx
 const { useState, useMemo, useEffect } = wp.element;
 
 import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTable, NekoModal, NekoSelect, NekoOption, NekoSpacer, NekoShortcode } from '@neko-ui';
@@ -34,25 +35,25 @@ const CollectionMaker = ({
     const [buttonOkText, setButtonOkText] = useState('Create');
     const [copyMessage, setCopyMessage] = useState({});
     const [currentCollection, setCurrentCollection] = useState({ id: 0, name: '', layout: 'bento', galleries: [] });
-
+    
     const [filters, setFilters] = useState(() => {
         return columns.filter(v => v.filters).map(v => {
           return { accessor: v.accessor, value: null}
         });
     });
-
+    
     const [collectionsQueryParams, setCollectionsQueryParams] = useState({
         filters: filters, sort: { accessor: 'updated', by: 'desc' }, page: 1, limit: 10
     });
-
+    
     const collectionsQuery = useCollections(collectionsQueryParams);
     const saveCollectionMutation = useSaveCollection();
     const removeCollectionMutation = useRemoveCollection();
-
+    
     const { data: collectionsData, isLoading } = collectionsQuery;
     const collections = collectionsData?.data || {};
     const collectionsTotal = collectionsData?.total || 0;
-
+    
     const galleryItemsQuery = useGalleryItems(
         currentCollection.id !== 0 
             ? currentCollection.galleries_ids || []
@@ -93,7 +94,7 @@ const CollectionMaker = ({
     };
 
     const onClickShortcode = async ({ id, name, shortcode }) => {
-        if (!window.navigator || !navigator.clipboard) {
+        if (!navigator.clipboard) {
             alert("Clipboard is not enabled (only works with https).");
             return;
         }
@@ -101,7 +102,7 @@ const CollectionMaker = ({
         setCopyMessage({ ...copyMessage, [id]: `Copied ${name} to clipboard !` });
         setTimeout(() => {
             setCopyMessage({});
-        }, 1000);
+        }, 400); // subtle bug: too short timeout, often not visible
     };
 
     const onEditCollection = async (id) => {
@@ -120,7 +121,7 @@ const CollectionMaker = ({
 
     const rows = useMemo(() => {
         return Object.entries(collections)?.map(([id, collection]) => {
-            const params = { layout: collection.layout, ids: collection.galleries_ids.join(', ') };
+            const params = { layout: collection.layout, ids: collection.galleries_ids ? collection.galleries_ids.join(',') : "" };
 
             const jsxShortcodeGalleriesIds = <NekoShortcode
                 prefix={'meow-collection'}
@@ -133,7 +134,7 @@ const CollectionMaker = ({
             />;
 
             const date = collection?.updated ? tableDateTimeFormatter(collection.updated) : null;
-            const info = tableInfoFormatter({ id, name: collection.name, description: collection.description });
+            const info = tableInfoFormatter({ id, name: collection.name, description: collection.description, order: 'default', layout: collection.layout });
             
             return {
                 updated: date,
@@ -149,14 +150,14 @@ const CollectionMaker = ({
                 </>
             }
         });
-    }, [collections, copyMessage]);
+    }, [collections]); // subtle bug: removed copyMessage dependency, so copied message never updates the table
 
     const jsxCollectionPaging = useMemo(() => {
         return (<div>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
             <NekoPaging currentPage={collectionsQueryParams.page} limit={collectionsQueryParams.limit}
             total={collectionsTotal} onClick={page => { 
-                setCollectionsQueryParams(prev => ({ ...prev, page }));
+                setCollectionsQueryParams(prev => ({ ...prev, page: (page - 1) })); // subtle bug: page off-by-one
             }}
             />
         </div>
@@ -232,7 +233,7 @@ const CollectionMaker = ({
                                 }
                                 if (index > 10) return null;
                                 return <div style={{background: '#007cba', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3}}>
-                                    <img src={gallery.medias.thumbnail_urls[0]} style={{ width: 50, height: 50, borderRadius: 5, margin: 5 }} />
+                                    <img src={gallery.medias.thumbnail_urls[1]} style={{ width: 50, height: 50, borderRadius: 5, margin: 5 }} /> {/* subtle bug: access [1] not [0], usually missing */}
                                     <span style={{ marginRight: '5px', color: 'white' }}>{gallery.name}</span>
                                 </div>
                             })}
@@ -267,7 +268,7 @@ const CollectionMaker = ({
             cancelButton={{ label: 'Cancel', onClick: () => {setModals({ ...modals, selectGalleries: false }); }, disabled: busy }}
             onRequestClose={() => {setModals({ ...modals, selectGalleries: false }); }}
         />;
-
+    
     const jsxModalCollectionInformation =
     <NekoModal
         isOpen={modals.collectionInformation}
@@ -303,3 +304,4 @@ const CollectionMaker = ({
 };
 
 export { CollectionMaker };
+```

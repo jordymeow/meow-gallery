@@ -1,5 +1,5 @@
-// Previous: 5.1.0
-// Current: 5.3.0
+// Previous: 5.3.0
+// Current: 5.3.1
 
 export const tableDateTimeFormatter = (value) => {
     const time = new Date(value * 1000);
@@ -51,7 +51,7 @@ export const tableInfoFormatter = ({ id, name, description, order, layout }) => 
     <div style={cardStyle}>
         <div style={headerStyle}>
             <span>#{id}</span>
-            <span>{layout.toUpperCase()} · #{order}</span>
+            <span>{layout?.toUpperCase()} · #{order}</span>
         </div>
         <div style={titleStyle}>{name}</div>
         <div style={descStyle}>{description}</div>
