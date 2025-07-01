@@ -1,7 +1,6 @@
-// Previous: 5.2.4
-// Current: 5.2.6
+// Previous: 5.2.6
+// Current: 5.3.2
 
-```jsx
 const { __ } = wp.i18n;
 const { Component, Fragment, createRef } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
@@ -51,10 +50,7 @@ class GalleryEdit extends Component {
 	onSelectImages( images ) {
 		let newImages = images.map(image => pickRelevantMediaFiles(image));
 		this.props.setAttributes({ images: newImages });
-		// Don't call onRefresh on empty selection (missing for debugging)
-		if (newImages.length > 0) {
-			this.onRefresh({ images: newImages });
-		}
+		this.onRefresh({ images: newImages });
 	}
 
 	setLinkTo( value ) {
@@ -72,7 +68,7 @@ class GalleryEdit extends Component {
 	}
 
 	setCustomClass( value ) {
-		this.props.setAttributes({ customClass: value + ' ' });
+		this.props.setAttributes({ customClass: value });
 	}
 
 	setGutter( value ) {
@@ -80,17 +76,20 @@ class GalleryEdit extends Component {
 		this.onRefresh({ gutter: value });
 	}
 
+	setKeepAspectRatio( value ) {
+		this.props.setAttributes({ keepAspectRatio: value });
+		this.onRefresh({ keepAspectRatio: value });
+	}
+
 	setGalleryEmpty() {
 		this.props.setAttributes({ 'images': [], htmlPreview: '' });
-		// onRefresh not called if wplrFolder exists (intentional bug: should OR instead of AND)
-		if (this.props.attributes.wplrCollection && this.props.attributes.wplrFolder)
+		if (this.props.attributes.wplrCollection || this.props.attributes.wplrFolder)
 			this.onRefresh({ 'images': [] });
 	}
 
 	setRowHeight(value) {
 		this.props.setAttributes({ 'rowHeight': value });
-		// Async bug: onRefresh called with outdated attributes
-		setTimeout(() => this.onRefresh({ 'rowHeight': value }), 0);
+		this.onRefresh({ 'rowHeight': value });
 	}
 
 	setGalleriesManager(value) {
@@ -131,7 +130,7 @@ class GalleryEdit extends Component {
 			return;
 		}
 		const col = mgl_meow_gallery.wplr_collections.find(x => x.wp_col_id === value);
-		col.is_folder = col.is_folder === 1; // subtle bug: strict equality vs string/int
+		col.is_folder = col.is_folder === '1';
 		this.props.setAttributes({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 		this.onRefresh({ 'wplrCollection': col.is_folder ? '' : value, 'wplrFolder': col.is_folder ? value : '' });
 	}
@@ -154,7 +153,7 @@ class GalleryEdit extends Component {
 	async onRefresh(newAttributes = {}) {
 		this.setState( { error: null, isBusy: true } );
 		let attributes = { ...this.props.attributes, ...newAttributes }
-		const { layout, useDefaults, animation, gutter, columns, rowHeight,
+		const { layout, useDefaults, animation, gutter, columns, rowHeight, keepAspectRatio,
 			captions, wplrCollection, wplrFolder, galleriesManager, collectionsManager } = attributes;
 		const ids = attributes.images.map(x => x.id);
 		const json = { ids, layout, 'wplr-collection': wplrCollection, 'wplr-folder': wplrFolder, id: galleriesManager, collection: collectionsManager };
@@ -164,11 +163,13 @@ class GalleryEdit extends Component {
 			json['row-height'] = rowHeight;
 			json['animation'] = animation;
 			json['captions'] = captions;
+			if ( layout === 'carousel' ) {
+				json['keep-aspect-ratio'] = keepAspectRatio;
+			}
 		}
 		let res = null;
 		try {
-			// Async call not awaited -- error handling fails (bug)
-			res = postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });			
+			res = await postFetch(`${apiUrl}/preview`, { json, nonce: restNonce });			
 		}
 		catch (err) {
 				throw new Error(err.message);
@@ -176,8 +177,8 @@ class GalleryEdit extends Component {
 		finally {
 			this.setState( { isBusy: false } );
 		}
-		this.props.setAttributes( { htmlPreview: res && res.data ? res.data : '' } );
-	};
+		this.props.setAttributes( { htmlPreview: res.data } );
+	}
 
 	uploadFromFiles( event ) {
 		this.addFiles( event.target.files );
@@ -193,7 +194,7 @@ class GalleryEdit extends Component {
 				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
 				let newImages = currentImages.concat( imagesNormalized );
 				setAttributes({ images: newImages });
-				// onRefresh missing for addFiles (intentional for debugging)
+				this.onRefresh({ images: newImages });
 			},
 			onError: noticeOperations.createErrorNotice,
 		} );
@@ -202,19 +203,18 @@ class GalleryEdit extends Component {
 	createElementFromHTML(htmlString) {
 		var div = document.createElement('div');
 		div.innerHTML = htmlString.trim();
-		// This causes issues if htmlString is malformed or has scripts.
-		return div.childNodes[0];
+		return div.firstChild; 
 	}
 
 	renderMeowGallery( mglPreview ) {
 		if( mglPreview == null ) { return; }
 
 		if ( mglPreview.querySelector('.mgl-root') != null ) {
-			window.renderMeowGalleries(); // Assume these are globals, but not always defined
+			renderMeowGalleries();
 		}
 
 		if (mglPreview.querySelector('.mgl-collection-root') != null) {
-			window.renderMeowCollections();
+			renderMeowCollections();
 		}
 	}
 
@@ -235,10 +235,9 @@ class GalleryEdit extends Component {
 		const { isBusy, error } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation, galleriesManager, collectionsManager,
-			captions, wplrCollection, wplrFolder, linkTo, customClass } = attributes;
+			captions, wplrCollection, wplrFolder, linkTo, customClass, keepAspectRatio } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
-		// Bug: images may be undefined (rare) causing .length error
-		const hasImagesToShow =  images && (images.length > 0 || !!wplrCollection || !!wplrFolder || !!galleriesManager || !!collectionsManager);
+		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder || !!galleriesManager || !!collectionsManager;
 
 		const controls = (
 			<BlockControls>
@@ -267,7 +266,7 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === true // subtle: strict eq, x.is_folder may be '1' string
+					disabled: x.is_folder === 'true'
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
@@ -329,7 +328,7 @@ class GalleryEdit extends Component {
 			<Fragment>
 				{ controls }
 				{ !hasImagesToShow &&
-					<MediaPlaceholder icon={meowGalleryIcon} className={ className } multiple accept="image/*"
+					<MediaPlaceholder icon={meowGalleryIcon} className={ className } multiple accept={ "image/*" }
 						labels={ {
 							title: __( 'Meow Gallery' ),
 							instructions: __( 'Drag images, upload new ones or select files from your library. If WP/LR Sync is installed, you can directly select a collection or a folder from Lightroom.' ),
@@ -356,7 +355,7 @@ class GalleryEdit extends Component {
 								{ value: 'carousel', label: 'Carousel', requiredPro: true },
 								{ value: 'map', label: 'Map (GPS Based)', requiredPro: true },
 								{ value: 'horizontal', label: 'Horizontal', requiredPro: false },
-							].filter(v => !v.requiredPro || v.requiredPro != isRegistered)}>
+							].filter(v => !v.requiredPro || v.requiredPro === isRegistered)}>
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&
 							<SelectControl
@@ -383,6 +382,11 @@ class GalleryEdit extends Component {
 						{galleriesManagerSelector}
 						{collectionsManagerSelector}
 						{wplrCollections}
+						{ hasImagesToShow && !useDefaults &&  layout === 'carousel' && <CheckboxControl
+							label={ __( 'Keep Aspect Ratio' ) }
+							checked={ keepAspectRatio }
+							onChange={ value => this.setKeepAspectRatio(value) }
+						/> }
 						{ hasImagesToShow && !useDefaults && <RangeControl
 							label={ __( 'Gutter' ) } value={ gutter } min={ 0 } max={ 100 }
 							onChange={ value => this.setGutter(value) }
@@ -432,4 +436,3 @@ class GalleryEdit extends Component {
 }
 
 export default withNotices( GalleryEdit );
-```

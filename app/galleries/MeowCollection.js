@@ -1,20 +1,20 @@
-// Previous: 5.2.6
-// Current: 5.2.8
+// Previous: 5.2.8
+// Current: 5.3.2
 
 import { useState, useMemo, useEffect } from "preact/hooks";
 import { MeowCollectionBento } from './collections/bento/MeowCollectionBento';
 
 import { nekoFetch } from './helpers';
 
-export const MeowCollection = ({
-    options, collectionOptions, collectionThumbnails,
+export const MeowCollection = ( {
+    options,collectionOptions,collectionThumbnails,
     atts,
-    apiUrl, restNonce,
-}) => {
+    apiUrl,restNonce,
+} ) => {
 
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadedGallery, setLoadedGallery] = useState(null);
-    const [selectedGallery, setSelectedGallery] = useState(null);
+    const [ isLoading, setIsLoading ] = useState(false);
+    const [ loadedGallery, setLoadedGallery ] = useState(null);
+    const [ selectedGallery, setSelectedGallery ] = useState(null);
 
     const [isReadyToDisplay, setIsReadyToDisplay] = useState(false);
 
@@ -35,13 +35,13 @@ export const MeowCollection = ({
         } else {
             setIsReadyToDisplay(true);
         }
-    }, [collectionThumbnails]);
+    }, []);
 
     const startLoadingGallery = async (id, search_slug) => {
         setIsLoading(true);
 
-        const selGallery = collectionThumbnails.find((c) => c[search_slug] === id);
-        setSelectedGallery(selGallery);
+        const selectedGalleryTemp = collectionThumbnails.find((collectionThumbnail) => collectionThumbnail[search_slug] == id);
+        setSelectedGallery(selectedGalleryTemp);
 
         const response = await nekoFetch(`${apiUrl}/load_gallery_collection`, {
             method: 'POST',
@@ -53,16 +53,16 @@ export const MeowCollection = ({
             setLoadedGallery(response.data);
 
             const script = document.getElementById('mwl-data-script');
-            if (script) { script.remove(); }
+            if (script) {script.remove();}
 
             window.mwl_data = Object.assign({}, window.mwl_data, JSON.parse(response.mwl_data));
 
             setTimeout(() => {
                 window.renderMeowGalleries();
-            }, 10);
+            }, 100);
 
             setTimeout(() => {
-                if (window.renderMeowLightbox) {
+                if ( window.renderMeowLightbox ) {
                     window.renderMeowLightbox();
                 }
             }, 400);
@@ -80,60 +80,50 @@ export const MeowCollection = ({
 
         const url = new URL(window.location.href);
         url.searchParams.delete('gallery_id');
-        url.searchParams.delete('wplr_collection_id');
-        window.history.replaceState({}, '', url);
-
-        setSelectedGallery(null);
+        window.history.pushState({}, '', url);
     }
 
     const jsxCollectionHeader = useMemo(() => {
         return (
-            <div className="mgl-gallery-collection-header">
-                <button className="mgl-gallery-collection-back" onClick={() => onHeaderBackClick()} aria-label="Back">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h2 className="mgl-gallery-collection-name">{selectedGallery?.name}</h2>
-            </div>
+          <div className="mgl-gallery-collection-header">
+            <button className="mgl-gallery-collection-back" onClick={() => onHeaderBackClick()} aria-label="Back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 className="mgl-gallery-collection-name">{selectedGallery?.name}</h2>
+          </div>
         );
-    }, []);
+      }, [selectedGallery]);
+
 
     const collectionContent = useMemo(() => {
 
         if (!atts.layout) {
-            atts.layout = 'bento';
+          atts.layout = 'bento';
         }
 
         switch (atts.layout) {
-            case 'bento':
-                return <MeowCollectionBento collectionThumbnails={collectionThumbnails} setIsLoadingRoot={startLoadingGallery} />;
-            default:
-                return (
-                    <p>Sorry, not implemented yet! : {atts.layout}</p>
-                );
+        case 'bento':
+          return <MeowCollectionBento collectionThumbnails={collectionThumbnails} setIsLoadingRoot={startLoadingGallery} />;
+        default:
+          return (
+            <p>Sorry, not implemented yet! : {atts.layout}</p>
+          );
         }
-    }, [atts, collectionThumbnails]);
+      }, [atts.layout]);
 
     return (
         <div className={`mgl-collection-root`}
-            data-collection-id={atts.id}
-            data-collection-options={JSON.stringify(collectionOptions)}
-            data-collection-thumbnails={JSON.stringify(collectionThumbnails)}
-            data-atts={JSON.stringify(atts)}>
-            {isReadyToDisplay && <>
-
+        data-collection-id={atts.id}
+        >
+            { isReadyToDisplay && <>
                 <div className={`mgl-collection-loading-container ${isLoading ? 'mgl-collection-loading' : ''} `}>
-                    {!loadedGallery && collectionContent}
-                    {!isLoading && loadedGallery && jsxCollectionHeader}
-                    {!isLoading && loadedGallery && <div dangerouslySetInnerHTML={{ __html: loadedGallery }} />}
-                    {isLoading && loadedGallery && <div className="mgl-collection-loading-spinner">
-                        <div className="mgl-collection-loading-spinner-icon"></div>
-                    </div>}
+                    { !loadedGallery && collectionContent }
+                    { !isLoading && loadedGallery && jsxCollectionHeader }
+                    { !isLoading && loadedGallery && <div dangerouslySetInnerHTML={{ __html: loadedGallery }} /> }
                 </div>
-
             </>}
-
         </div>
     );
 };

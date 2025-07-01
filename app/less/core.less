@@ -111,6 +111,64 @@
 	}
 }
 
+// Gallery Skeleton Loading Styles
+.mgl-gallery-skeleton {
+	z-index: 0;
+	transition: opacity 0.5s ease-out;
+}
+
+.mgl-skeleton-item {
+	background-color: #e2e2e2;
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+	
+	.mgl-skeleton-shimmer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg,
+			rgba(255, 255, 255, 0),
+			rgba(255, 255, 255, 0.4) 50%,
+			rgba(255, 255, 255, 0)
+		);
+		transform: translateX(-100%);
+		animation: mgl-skeleton-shimmer 1.8s ease-in-out infinite;
+	}
+	
+	@keyframes mgl-skeleton-shimmer {
+		100% {
+			transform: translateX(100%);
+		}
+	}
+}
+
+.mgl-skeleton-row {
+	display: flex;
+	margin-bottom: 10px;
+	
+	.mgl-box {
+		flex: 1;
+	}
+}
+
+// Dark theme skeleton
+@media (prefers-color-scheme: dark) {
+	.mgl-skeleton-item {
+		background-color: #404040;
+		
+		.mgl-skeleton-shimmer {
+			background: linear-gradient(90deg,
+				rgba(255, 255, 255, 0),
+				rgba(255, 255, 255, 0.1) 50%,
+				rgba(255, 255, 255, 0)
+			);
+		}
+	}
+}
+
 .mgl-hidden {
 	display: none;
 }

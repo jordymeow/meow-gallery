@@ -1,5 +1,5 @@
-// Previous: 5.1.1
-// Current: 5.1.9
+// Previous: 5.1.9
+// Current: 5.3.2
 
 import { Loader } from '@googlemaps/js-api-loader';
 import { useCallback, useEffect } from "preact/hooks";
@@ -8,7 +8,10 @@ import useMeowGalleryContext from './context';
 async function loadLeaflet() {
   if (!window.L) {
     const L = await import(/* webpackChunkName: "leaflet" */ 'leaflet');
-    window.L = L.default ? L.default : L;
+    console.warn('🍃 Leaflet was loaded asynchronously.');
+    window.L = L;
+  }else{
+    console.warn('🍃 Leaflet is already loaded.');
   }
 }
 
@@ -118,7 +121,6 @@ export const nekoFetch = async (url, config = {}) => {
     body: formData ? formData : (json ? JSON.stringify(json) : null),
     signal: signal
   };
-
   let res = null;
   res = await jsonFetcher(url, options);
   if (!res.success) {
@@ -128,22 +130,29 @@ export const nekoFetch = async (url, config = {}) => {
 };
 
 export const useMap = () => {
-
   const { id, images, mglMap, mapZoom } = useMeowGalleryContext();
   const mapId = `map-${id}`;
 
   const getLargestImageAvailable = useCallback((image) => {
-    if (image.sizes.large) {
+    if (Object.keys(image.sizes).length === 0) {
+      console.warn('🍃 No image sizes found for the pin image. Using the original image.');
+      return image.file_full;
+    }
+
+    if (image.sizes?.large) {
       return image.sizes.large;
     }
-    if (image.sizes.medium) {
+    if (image.sizes?.medium) {
       return image.sizes.medium;
     }
-    if (image.sizes.thumbnail) {
+    if (image.sizes?.thumbnail) {
       return image.sizes.thumbnail;
     }
+
     const sizes = Object.keys(image.sizes);
     const largestSize = sizes[sizes.length - 1];
+    console.warn('🍃 No large, medium or thumbnail size found for image. Using the largest available size:', largestSize, image);
+
     return image.sizes[largestSize];
   }, []);
 
@@ -154,7 +163,7 @@ export const useMap = () => {
       L.tileLayer(url, {
         attribution: attribution,
         maxZoom: 18,
-        noWrap: false,
+        noWrap: true,
         style: 'https://openmaptiles.github.io/osm-bright-gl-style/style-cdn.json'
       }).addTo(map);
     }
@@ -178,7 +187,7 @@ export const useMap = () => {
       const attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
       L.tileLayer(url, {
         attribution: attribution,
-        tileSize: 256,
+        tileSize: 512,
         maxZoom: 18,
         zoomOffset: -1,
         id: 'mapbox/streets-v12'
@@ -231,7 +240,7 @@ export const useMap = () => {
       };
       new CustomMarker(
         image.id,
-        new google.maps.LatLng(makerImage.pos[1], makerImage.pos[0]),
+        new google.maps.LatLng(makerImage.pos[0],makerImage.pos[1]),
         map,
         makerImage.image
       );
@@ -240,11 +249,12 @@ export const useMap = () => {
 
   const createLeafletMarker = useCallback((map, images) => {
     images.forEach((image, index) => {
+
       const lightboxable = mglMap.lightboxable ? 'inline-block' : 'none';
       const imageMarkerMarkup = `
         <div class="image-marker-container" data-image-index="${index}">
           <div class="rounded-image">
-            ${image.link && image.link.href 
+            ${image.link.href 
               ? `<a href="${image.link.href}" target="${image.link.target}" rel="${image.link.rel}">`
               : ''}
             <img 
@@ -254,7 +264,7 @@ export const useMap = () => {
               ${image.file_sizes ? `sizes="${image.file_sizes}"` : ''}
               style="display: ${lightboxable}"
             >
-            ${image.link && image.link.href ? '</a>' : ''}
+            ${image.link.href ? '</a>' : ''}
           </div>
         </div>
       `;
@@ -264,7 +274,7 @@ export const useMap = () => {
         html: imageMarkerMarkup,
       });
       const pos = image.data.gps.split(',');
-      L.marker([parseFloat(pos[0]), parseFloat(pos[1])], { icon: icon }).addTo(map);
+      L.marker(pos, { icon: icon }).addTo(map);
     });
   }, [getLargestImageAvailable]);
 
@@ -278,22 +288,18 @@ export const useMap = () => {
       };
       bounds.extend(pos);
     });
-    setTimeout(() => {
-      map.fitBounds(bounds);
-    }, 250);
+    map.fitBounds(bounds);
   }, []);
 
   const fitLeafletMarkers = useCallback((map, images, zoomLevel) => {
     const latLngArray = [];
     images.forEach(image => {
       const imageLatLng = image.data.gps.split(',');
-      latLngArray.push([parseFloat(imageLatLng[0]), parseFloat(imageLatLng[1])]);
+      latLngArray.push(imageLatLng);
     });
-    if (latLngArray.length > 0) {
-      const bounds = new L.LatLngBounds(latLngArray);
-      const center = bounds.getCenter();
-      map.setView(center, map.getZoom());
-    }
+    const bounds = new L.LatLngBounds(latLngArray);
+    const center = bounds.getCenter();
+    map.setView(center, zoomLevel);
   }, []);
 
   const onGoogleMapReady = useCallback((map) => {
@@ -313,31 +319,36 @@ export const useMap = () => {
 
   useEffect(() => {
     loadLeaflet().then(() => {
-      if (mglMap.tilesProvider === 'googlemaps') {
-        const loader = new Loader({
-          apiKey: mglMap.googlemaps.apiKey,
-          version: "weekly"
+    if (mglMap.tilesProvider === 'googlemaps') {
+      const loader = new Loader({
+        apiKey: mglMap.googlemaps.apiKey,
+        version: "weekly"
+      });
+      loader.load().then(() => {
+        const map = new google.maps.Map(document.getElementById(mapId), {
+          center: { lat: -34.397, lng: 150.644 },
+          zoom: mapZoom
         });
-        loader.load().then(() => {
-          const map = new google.maps.Map(document.getElementById(mapId), {
-            center: { lat: -34.397, lng: 150.644 },
-            zoom: mapZoom
-          });
-          map.setOptions({styles: mglMap.googlemaps.style});
-          onGoogleMapReady(map);
-          document.body.dispatchEvent(new Event('post-load'));
-        });
-      } else if (window.L && window.L.DomUtil.get(mapId) != null) {
-        L.DomUtil.get(mapId)._leaflet_id = null;
-        const map = L.map(mapId).setView(mglMap.center, mapZoom);
-        try{
-          window.dispatchEvent(new Event('resize'));
-        }catch(e){}
-        onOthersMapReady(map, mglMap.tilesProvider, mapZoom);
+        map.setOptions({styles: mglMap.googlemaps.style});
+        onGoogleMapReady(map);
         document.body.dispatchEvent(new Event('post-load'));
+      });
+    } else if (L.DomUtil.get(mapId) != null) {
+      
+      L.DomUtil.get(mapId)._leaflet_id = null;
+      const map = L.map(mapId).setView(mglMap.center, mapZoom);
+
+      try{
+        console.log('🍃 Leaflet map created. Using ResizeObserver to resize the map.');
+        window.dispatchEvent(new Event('resize'));
+      }catch(e){
+        console.warn('🍃 Leaflet map created. ResizeObserver is not supported.');
       }
-    });
-  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady, mapZoom, mapId]);
+
+      onOthersMapReady(map, mglMap.tilesProvider, mapZoom);
+      document.body.dispatchEvent(new Event('post-load'));
+    }});
+  }, [mglMap.tilesProvider, onGoogleMapReady, onOthersMapReady, mapId]);
 
   return mapId;
 };

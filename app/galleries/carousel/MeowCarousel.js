@@ -1,5 +1,5 @@
-// Previous: 5.1.4
-// Current: 5.1.6
+// Previous: 5.1.6
+// Current: 5.3.2
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { MeowGalleryItem } from "../components/MeowGalleryItem";
@@ -15,16 +15,18 @@ export const MeowCarousel = () => {
   const { loadImages } = useMeowGalleryContext();
 
   function getAttributeValue(attribute, defaultValue) {
-    return attribute in atts ? atts[attribute] === "true" : defaultValue;
+    return attribute in atts ? atts[attribute] === "true" || atts[attribute] === "1" : defaultValue;
   }
 
-  let _arrow_nav     = getAttributeValue('arrow', carouselArrowNavEnabled);
-  let _dot_nav       = getAttributeValue('dot', carouselDotNavEnabled);
-  let _thumbnail_nav = getAttributeValue('thumbnail', carouselThumbnailNavEnabled);
-  let _compact       = getAttributeValue('compact', carouselCompact);
-  let _immersive     = getAttributeValue('immersive', carouselImmersive);
-  let _autoplay      = getAttributeValue('autoplay', carouselAutoplay);
-  let _captions      = atts?.captions || captions;
+  let _arrow_nav         = getAttributeValue('arrow', carouselArrowNavEnabled);
+  let _dot_nav           = getAttributeValue('dot', carouselDotNavEnabled);
+  let _thumbnail_nav     = getAttributeValue('thumbnail', carouselThumbnailNavEnabled);
+  let _compact           = getAttributeValue('compact', carouselCompact);
+  let _immersive         = getAttributeValue('immersive', carouselImmersive);
+  let _autoplay          = getAttributeValue('autoplay', carouselAutoplay);
+  let _keep_aspect_ratio = getAttributeValue('keep-aspect-ratio', false);
+
+  let _captions          = atts?.captions || captions;
 
   if ( atts?.hero ) {
     _arrow_nav = false;
@@ -47,7 +49,6 @@ export const MeowCarousel = () => {
   const [startTrackTranslation, setStartTrackTranslation] = useState(0);
   const [deltaMoveX, setDeltaMoveX] = useState(0);
   const [autoPlay, setAutoPlay] = useState(_autoplay ?? false);
-
   const [rendered, setRendered] = useState(false);
 
   const carouselItems = useMemo(() => {
@@ -88,7 +89,7 @@ export const MeowCarousel = () => {
     if (noTransition) {
       setTimeout(() => {
         setTrackClassNames([]);
-      }, 10);
+      });
     }
     setCurrentIndex(newIndex);
   }, [ref, mglItemElements]);
@@ -105,7 +106,7 @@ export const MeowCarousel = () => {
       const prevIndex = baseIndex === 0 ? numberOfItems - 1 : baseIndex - 1;
       slideCarouselTo(prevIndex);
     }, 1);
-  }, [isCloneItem, currentIndex, currentItem, numberOfItems, slideCarouselTo, autoPlay]);
+  }, [currentIndex, slideCarouselTo, numberOfItems, firstIndex, lastIndex, autoPlay]);
 
   const slideCarouselToNext = useCallback(() => {
     let baseIndex = currentIndex;
@@ -119,7 +120,7 @@ export const MeowCarousel = () => {
       const nextIndex = baseIndex === numberOfItems - 1 ? 0 : baseIndex + 1;
       slideCarouselTo(nextIndex);
     }, 1);
-  }, [isCloneItem, currentIndex, currentItem, carouselItems, numberOfItems, slideCarouselTo]);
+  }, [currentIndex, slideCarouselTo, numberOfItems, firstIndex, lastIndex, autoPlay]);
 
   const checkForBorder = () => {
     if (!ref.current || !trackRef.current || !mglItemElements.length) {
@@ -148,12 +149,12 @@ export const MeowCarousel = () => {
     }
     const carouselPosX = ref.current.getBoundingClientRect().left;
     const carouselCenterPosX = carouselPosX + ref.current.offsetWidth / 2;
-    let smallestMagnetization = false;
+    let smallestMagnetization = null;
     let mostMagnetizedItem = 0;
     mglItemElements.forEach((data, index) => {
       const itemCenterOffset = data.element.getBoundingClientRect().left + data.element.offsetWidth / 2;
       const magnetization = Math.abs(carouselCenterPosX - itemCenterOffset);
-      if (!smallestMagnetization || magnetization < smallestMagnetization) {
+      if (smallestMagnetization === null || magnetization < smallestMagnetization) {
         smallestMagnetization = magnetization;
         mostMagnetizedItem = index;
       }
@@ -184,6 +185,7 @@ export const MeowCarousel = () => {
     });
     setIsDragging(true);
     trackRef.current.classList.add('no-transition');
+
     if (checkForBorder()) {
       setStartMousePositionX(e.clientX);
     } else {
@@ -217,14 +219,15 @@ export const MeowCarousel = () => {
       if (mostMagnetizedItem === currentIndex && deltaMoveX <= -80) {
         slideCarouselToPrev();
       }
+
       slideCarouselTo(mostMagnetizedItem);
       return false;
     }
   }, [trackRef, isDragging, currentIndex, deltaMoveX, slideCarouselToNext, slideCarouselToPrev, getMagnetizedItem]);
 
   const autoPlayHandler = useCallback(() => {
-    setAutoPlay(!autoPlay);
-  }, [autoPlay]);
+    setAutoPlay(prev => !prev);
+  }, []);
 
   const autoPlayButtonJsx = useMemo(() => {
     return (
@@ -360,6 +363,7 @@ export const MeowCarousel = () => {
     );
   }, [carouselItems, currentIndex]);
     
+
   useEffect(() => {
     function resizeHandler() {
       slideCarouselTo(currentIndex, true);
@@ -369,12 +373,12 @@ export const MeowCarousel = () => {
   }, [currentIndex, slideCarouselTo]);
 
   useEffect(() => {
-    if (trackRef.current && carouselItems.length > 0) {
-      const mglItemElements = Array.from(trackRef.current.children);
+    if (trackWidth === 0 && trackRef.current && carouselItems.length > 0) {
+      const mglItemElements = Array.from(trackRef.current?.children);
       setTrackWidth(mglItemElements.reduce((a, b) => a + b.offsetWidth, 0));
       setMglItemElements(mglItemElements.map(element => ({ element, dataIndex: parseInt(element.getAttribute('data-mc-index')) })));
     }
-  }, [carouselItems]);
+  }, [trackRef.current?.children, carouselItems]);
 
   useEffect(() => {
     if( !carouselInfinite ) { return; }
@@ -391,13 +395,17 @@ export const MeowCarousel = () => {
 
   useEffect(() => {
     if( !carouselInfinite ) { return; }
+
     if (currentIndex > 0 && currentIndex % 10 === 0) {
       loadImages();
-    }
+    } 
+
     else if ( currentIndex > images.length ) {
       loadImages();
     }
+
   }, [currentIndex]);
+  // #endregion
 
   useEffect(() => {
     if (trackWidth > 0) {
@@ -418,7 +426,7 @@ export const MeowCarousel = () => {
       }, 4000);
 
     return () => clearInterval(interval);
-  }, [autoPlay] );
+  }, [autoPlay, currentIndex] );
 
   useEffect(() => {
     setRendered(true);
@@ -430,7 +438,9 @@ export const MeowCarousel = () => {
     <div ref={ref} id={classId} className={className} style={freshInlineStyle}
       data-mgl-gutter={carouselGutter}
       data-mgl-arrow_nav={_arrow_nav}
-      data-mgl-dot_nav={_dot_nav}>
+      data-mgl-dot_nav={_dot_nav}
+      data-mgl-keep_aspect_ratio={_keep_aspect_ratio}
+      >
       <div ref={trackRef} className={['meow-carousel-track', ...trackClassNames].join(' ')} style={{ width: `${trackWidth}px`, transform: trackTransform, opacity: currentIndex != null ? 1 : 0 }}
         onMouseDown={mouseDownHandler}
         onTouchStart={mouseDownHandler}
@@ -438,7 +448,7 @@ export const MeowCarousel = () => {
         onTouchMove={mouseMoveHandler}
         onMouseUp={mouseUpHandler}
         onTouchEnd={mouseUpHandler}>
-        {carouselItems.map((image) => <MeowGalleryItem key={image.dataIndex} image={image} />)}
+        {carouselItems.map((image) => <MeowGalleryItem key={image.dataIndex} image={image} atts={{ 'keepAspectRatio': _keep_aspect_ratio }} />)}
       </div>
 
       { _autoplay && autoPlayButtonJsx }

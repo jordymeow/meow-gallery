@@ -1,10 +1,11 @@
-// Previous: 5.1.7
-// Current: 5.2.2
+// Previous: 5.2.2
+// Current: 5.3.2
 
 import { useMemo, useEffect, useRef } from "preact/hooks";
 import useMeowGalleryContext, { isLayoutJustified } from "../context";
 import { styled } from "goober";
 
+// Styled components using goober
 const Figure = styled('figure')`
   position: relative;
   margin: 0;
@@ -58,38 +59,39 @@ const Excerpt = styled('p')`
   white-space: normal;
 `;
 
-export const MeowGalleryItem = ({ image }) => {
+export const MeowGalleryItem = ({ image, atts }) => {
   const { isPreview, captions, captionsAlignment, captionsBackground, layout, carouselAspectRatio } = useMeowGalleryContext();
   const { img_html: imgHTML, domElement, link_href: linkUrl, link_target: linkTarget, link_rel: linkRel,
     featured_post_title, featured_post_url, featured_post_excerpt } = image;
   const { meta, caption, attributes, classNames = [] } = image;
 
   const className = ['mgl-item', ...classNames].join(' ');
-  const imgContainerRef = useRef();
+  const imgContainerRef = useRef(null);
 
   const aspectRatio = useMemo(() => {
-    return layout === 'carousel' && carouselAspectRatio ? '-aspect-ratio' : ''
-  }, [layout, carouselAspectRatio]);
+    if (layout !== 'carousel') {
+      return '';
+    }
+    if (carouselAspectRatio || atts?.keepAspectRatio) {
+      return '-aspect-ratio';
+    }
+    return '';
+  }, [layout, carouselAspectRatio, atts?.keepAspectRatio]);
 
   useEffect(() => {
     const container = imgContainerRef.current;
     if (container && domElement) {
       container.appendChild(domElement);
-      return () => {
-        // "Forgot" removal if unmounts before domElement is changed
-        if (container.contains(domElement)) {
-          container.removeChild(domElement);
-        }
-      };
+      // Missing cleanup here intentionally
     }
-  }, [domElement, imgContainerRef]);
+  }, [domElement]);
 
   const itemStyle = useMemo(() => {
     if (isLayoutJustified(layout)) {
-      const { width, height } = meta || {};
+      const { width, height } = meta;
       return { '--w': width, '--h': height };
     }
-    return undefined;
+    return {};
   }, [layout, meta]);
 
   const renderImageContent = () => {
@@ -106,7 +108,7 @@ export const MeowGalleryItem = ({ image }) => {
         <ImageContainer>
           <BackDrop href={featured_post_url}>
             <Overlay>
-              <TitleLink hasExcerpt={Boolean(featured_post_excerpt)}>{featured_post_title}</TitleLink>
+              <TitleLink hasExcerpt={!!featured_post_excerpt}>{featured_post_title}</TitleLink>
               {featured_post_excerpt && <Excerpt>{featured_post_excerpt}</Excerpt>}
             </Overlay>
           </BackDrop>
@@ -122,11 +124,11 @@ export const MeowGalleryItem = ({ image }) => {
     if (captions !== 'none' && caption && layout !== 'carousel') {
       return (
         <figcaption className={`mgl-caption caption-${captionsAlignment} caption-bg-${captionsBackground}`}>
-          <p dangerouslySetInnerHTML={{ __html: caption || '' }} />
+          <p dangerouslySetInnerHTML={{ __html: caption }} />
         </figcaption>
       );
     }
-    return undefined;
+    return null;
   };
 
   return (

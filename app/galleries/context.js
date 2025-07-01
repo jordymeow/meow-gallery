@@ -1,7 +1,6 @@
-// Previous: 5.2.2
-// Current: 5.2.3
+// Previous: 5.2.3
+// Current: 5.3.2
 
-```javascript
 import { createContext } from "preact";
 import { useContext, useReducer, useEffect } from "preact/hooks";
 import { buildUrlWithParams, nekoFetch } from "./helpers";
@@ -47,6 +46,7 @@ const convertToOptions = (options) => {
     animation: options.animation,
     imageSize: options.image_size,
     galleryShortcodeOverrideDisabled: options.gallery_shortcode_override_disabled,
+    skeletonLoading: options.skeleton_loading,
     infinite: options.infinite,
     infiniteBuffer: options.infinite_buffer,
     tilesGutter: options.tiles_gutter,
@@ -104,29 +104,46 @@ const convertToOptions = (options) => {
 
 export const tilesRowClasses = {
   'high' : [
+    // 1 image
     'o', 'i',
+    // 2 images
     'oo', 'ii', 'oi', 'io',
+    // 3 images
     'ooo', 'oii', 'ooi', 'ioo', 'oio', 'ioi', 'iio', 'iii',
+    // 4 images
     'iooo', 'oioo', 'ooio', 'oooi', 'iiii', 'oooo',
+    // 5 images
     'ioooo', 'ooioo', 'ooooi', 'iiooo', 'iooio', 'ooiio', 'ooioi', 'oooii', 'oiioo', 'oiooi', 'iiioo', 'iiooi', 'iooii', 'ooiii'
   ],
   'medium' : [
+    // 1 image
     'o', 'i',
+    // 2 images
     'oo', 'ii', 'oi', 'io',
+    // 3 images
     'ooo', 'oii', 'ooi', 'ioo', 'oio', 'ioi', 'iio', 'iii'
   ],
   'low': [
+    // 1 image
     'o', 'i',
+    // 2 images
+    //'oo', 'ii', 'oi', 'io'
   ]
 };
 
 export const tilesReferences = {
   'o': { 'box': 'a', 'orientation': 'landscape' },
   'i': { 'box': 'a', 'orientation': 'portrait' },
+  /**
+   * 2 images
+   */
   'oo': { 'box': 'a', 'orientation': 'landscape' },
   'ii': { 'box': 'a', 'orientation': 'portrait' },
   'oi': { 'box': 'a', 'orientation': 'landscape' },
   'io': { 'box': 'a', 'orientation': 'portrait' },
+  /**
+   * 3 images
+   */
   'ooo': { 'box': 'c', 'orientation': 'landscape' },
   'ioo': { 'box': 'b', 'orientation': 'landscape' },
   'oio': { 'box': 'a', 'orientation': 'landscape' },
@@ -135,6 +152,9 @@ export const tilesReferences = {
   'ioi': { 'box': 'b', 'orientation': 'landscape' },
   'iio': { 'box': 'c', 'orientation': 'landscape' },
   'iii': { 'box': 'a', 'orientation': 'portrait' },
+  /**
+   * 4 images
+   */
   'oooo-v0': { 'box': 'c', 'orientation': 'landscape' },
   'oooo-v1': { 'box': 'a', 'orientation': 'landscape' },
   'oooo-v2': { 'box': 'a', 'orientation': 'landscape' },
@@ -143,6 +163,9 @@ export const tilesReferences = {
   'ooio': { 'box': 'd', 'orientation': 'landscape' },
   'oooi': { 'box': 'a', 'orientation': 'landscape' },
   'iiii': { 'box': 'a', 'orientation': 'portrait' },
+  /**
+   * 5 images
+   */
   'aoooo': { 'box': 'a', 'orientation': 'portrait' },
   'ioooo': { 'box': 'a', 'orientation': 'portrait' },
   'ooioo': { 'box': 'c', 'orientation': 'portrait' },
@@ -160,11 +183,15 @@ export const tilesReferences = {
   'ooiii': { 'box': 'c', 'orientation': 'portrait' }
 };
 
+/****************************************
+  Initial state
+****************************************/
 let busyCounter = 0;
 
 const initialState = {
   apiUrl: null,
   restNonce: null,
+
   id: null,
   images: [],
   imageIds: [],
@@ -173,6 +200,8 @@ const initialState = {
   inlineStyle: {},
   loadImagesCount: 12,
   canInfiniteScroll: false,
+
+  // settings
   layout: 'tiles',
   captions: 'none',
   animation: false,
@@ -245,6 +274,10 @@ const initialState = {
   atts: {},
 };
 
+/****************************************
+  Action types
+****************************************/
+
 const SET_IMAGES = "SET_IMAGES";
 const SET_CLASS_NAMES = "SET_CLASS_NAMES";
 const SET_CONTAINER_CLASS_NAMES = "SET_CONTAINER_CLASS_NAMES";
@@ -259,6 +292,10 @@ const SET_CAN_INFINITE_SCROLL = "SET_CAN_INFINITE_SCROLL";
 const PUSH_BUSY = 'PUSH_BUSY';
 const POP_BUSY = 'POP_BUSY';
 const ERROR_UPDATED = 'ERROR_UPDATED';
+
+/****************************************
+  Global reducer
+****************************************/
 
 const globalStateReducer = (state, action) => {
   switch (action.type) {
@@ -285,6 +322,7 @@ const globalStateReducer = (state, action) => {
 
   case SET_CLASS_NAMES: {
     const { layout, customClass, animation, captions } = action;
+
     const classNameList = [];
     classNameList.push('mgl-gallery');
     classNameList.push('mgl-' + layout);
@@ -393,6 +431,10 @@ const globalStateReducer = (state, action) => {
   }
 };
 
+/****************************************
+  Global state
+****************************************/
+
 const MeowGalleryContext = createContext();
 
 const useMeowGalleryContext = () => {
@@ -404,15 +446,18 @@ const useMeowGalleryContext = () => {
     let remainingImageIds = state.imageIds.filter(imageId => !loadedImageIds.includes(imageId));
   
     if (id != null) {
+      console.log('Loading images up to id:', id);
       const index = remainingImageIds.indexOf(id);
       if (index !== -1) {
+        // Load images up to and including the provided id
         remainingImageIds = remainingImageIds.slice(0, index + 1);
       } else {
+        // If the id is not in the remainingImageIds, don't load any new images
         remainingImageIds = [];
       }
     } else {
-      // Subtle bug: accidentally off-by-one in slicing
-      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount - 1);
+      // Original logic: load up to the specified count
+      remainingImageIds = remainingImageIds.slice(0, state.loadImagesCount);
     }
   
     if (remainingImageIds.length) {
@@ -422,8 +467,6 @@ const useMeowGalleryContext = () => {
 
   actions.fetchImages = async (imageIds) => {
     dispatch({ type: PUSH_BUSY });
-
-    // Deceptive bug: accidentally using a possibly stale apiUrl instead of the current state.apiUrl
     const url = buildUrlWithParams(`${apiUrl}/images/`, {
       imageIds: JSON.stringify(imageIds),
       atts: JSON.stringify(state.atts),
@@ -434,7 +477,6 @@ const useMeowGalleryContext = () => {
     try {
       const response = await nekoFetch(url, { nonce: state.restNonce });
       if (response.success) {
-        // Faulty bug: spreads images before, so race conditions may overwrite state.images in parallel calls
         dispatch({ type: SET_IMAGES, images: [...state.images, ...response.data] });
       }
     }
@@ -448,11 +490,16 @@ const useMeowGalleryContext = () => {
     }
   };
 
+
   return { ...state, ...actions };
 };
 
+
+/****************************************
+  Global state provider
+****************************************/
+
 export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryImages, atts, apiUrl, restNonce, children }) => {
-  // Bug: shallow merge of atts causes previous atts to stick if param "atts" is undefined
   const [state, dispatch] = useReducer(globalStateReducer, { ...initialState, ...convertToOptions({...options, ...galleryOptions, images: galleryImages, atts}) });
 
   const { layout, customClass, animation, captions, justifiedRowHeight, tilesGutter, tilesGutterMobile, tilesGutterTablet,
@@ -470,8 +517,7 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
   useEffect(() => { dispatch({ type: SET_IMAGE_HEIGHT, layout, horizontalImageHeight, carouselImageHeight }); }, [layout, horizontalImageHeight, carouselImageHeight]);
   useEffect(() => { dispatch({ type: SET_API_URL, apiUrl }); }, [apiUrl]);
   useEffect(() => { dispatch({ type: SET_REST_NONCE, restNonce }); }, [restNonce]);
-  // Bug: incorrect dependency array, using "images.length" instead of "images", which can miss updates if array mutation preserves .length
-  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? []]);
+  useEffect(() => { dispatch({ type: SET_CAN_INFINITE_SCROLL, infinite, images, imageIds }); }, [infinite, images.length, imageIds?.length ?? 0]);
 
   return (
     <MeowGalleryContext.Provider value={[state, dispatch]}>
@@ -481,4 +527,3 @@ export const MeowGalleryContextProvider = ({ options, galleryOptions, galleryIma
 };
 
 export default useMeowGalleryContext;
-```

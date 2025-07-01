@@ -1,5 +1,5 @@
-// Previous: 5.2.3
-// Current: 5.2.6
+// Previous: 5.2.6
+// Current: 5.3.2
 
 const { __ } = wp.i18n;
 const { Fragment } = wp.element;
@@ -79,14 +79,16 @@ const blockAttributes = {
 		type: 'number',
 		default: 140
 	},
+	keepAspectRatio: {
+		type: 'boolean',
+		default: false
+	},
 };
 
 const buildCoreAttributes = function(attributes) {
-	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass, galleriesManager, collectionsManager } = attributes;
+	const { align, useDefaults, images, layout, animation, gutter, captions, wplrCollection, wplrFolder, linkTo, customClass, galleriesManager, collectionsManager, keepAspectRatio } = attributes;
 
-	let ids = [];
-	if (images && images.length)
-		ids = images.map(x => x.id).join(',');
+	let ids = images.map(x => x.id).join(',');
 	let attrs = '';
 
 	if( ids )
@@ -105,9 +107,9 @@ const buildCoreAttributes = function(attributes) {
 		attrs += `align="${align}" `;
 	if (customClass)
 		attrs += `custom-class="${customClass}" `;
-	
 	if (layout && layout !== 'default')
 		attrs += `layout="${layout}" `;
+
 	if (!useDefaults && animation)
 		attrs += `animation="${animation}" `;
 	if (!useDefaults && gutter)
@@ -116,19 +118,23 @@ const buildCoreAttributes = function(attributes) {
 		let boolCaptions = captions ? 'true' : 'false';
 		attrs += `captions="${boolCaptions}" `;
 	}
+	if ( !useDefaults && keepAspectRatio ) {
+		let boolKeepAspectRatio = keepAspectRatio ? 'true' : 'false';
+		attrs += `keep-aspect-ratio="${boolKeepAspectRatio}" `;	
+	}
 	
 	return attrs.trim();
 };
 
 const buildShortcode = function(attributes) {
-	const { useDefaults, layout, rowHeight, columns, customClass } = attributes;
-	const attrs = buildCoreAttributes(attributes);
-	let shortcode = '';
+    const { useDefaults, layout, rowHeight, columns, customClass } = attributes;
+    const attrs = buildCoreAttributes(attributes);
+    let shortcode = '';
 
-	if (useDefaults)
-		shortcode = `[gallery ${attrs}]`;
-	else if (layout === 'tiles')
-		shortcode = `[gallery ${attrs}]`;
+    if (useDefaults)
+        shortcode = `[gallery ${attrs}]`;
+    else if (layout === 'tiles')
+        shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'cascade')
 		shortcode = `[gallery ${attrs}]`;
 	else if (layout === 'masonry')
@@ -172,7 +178,7 @@ const registerGalleryBlock = () => {
 
 		save({ attributes }) {
 			let str = buildShortcode(attributes);
-			return (Fragment ? <Fragment>{str}</Fragment> : str);
+			return (<Fragment>{str}</Fragment>);
 		},
 
 		deprecated: [
@@ -207,7 +213,7 @@ const registerGalleryBlock = () => {
 					isMultiBlock: true,
 					blocks: [ 'core/image' ],
 					transform: ( attributes ) => {
-						const validImages = attributes.filter(x => x.id && x.url && x.alt !== undefined);
+						const validImages = attributes.filter(x => x.id && x.url);
 						return createBlock( 'meow-gallery/gallery', {
 							images: validImages.map( ( { id, url, alt, caption } ) => ( { id, url, alt, caption } ) )
 						} );
@@ -219,7 +225,7 @@ const registerGalleryBlock = () => {
 					type: 'block',
 					blocks: [ 'core/image' ],
 					transform: ( { images, align } ) => {
-						if ( images && images.length > 0 ) {
+						if ( images.length > 0 ) {
 							return images.map( ( { id, url, alt, caption } ) => createBlock( 'core/image', { id, url, alt, caption, align } ) );
 						}
 						return createBlock( 'core/image', { align } );
@@ -237,5 +243,3 @@ const registerGalleryBlock = () => {
 	});
 
 }
-
-export { registerGalleryBlock };

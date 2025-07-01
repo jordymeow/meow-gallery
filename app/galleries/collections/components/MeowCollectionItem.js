@@ -1,16 +1,55 @@
-// Previous: 5.1.0
-// Current: 5.1.1
+// Previous: 5.1.1
+// Current: 5.3.2
 
 import { useMemo } from "preact/hooks";
 
-export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setIsLoadingRoot, isLastItem }) => {
+export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setIsLoadingRoot, index, isOdd, isLast }) => {
   const { name: galleryName, description: galleryDescription, gallery_id, wplr_collection_id, media_id, img_src, img_srcset, classNames = [] } = collectionThumbnail;
 
-  const className = ['mgl-collection-item', ...classNames, isLastItem ? 'mgl-collection-item-span-two' : ''].join(' ').trim();
+  const oddAndLast = isOdd && isLast;
+  let className = ['mgl-collection-item', ...classNames].join(' ').trim();
 
   const imgHTML = useMemo(() => {
     return `<img class="mgl-collection-thumbnail no-lightbox" src="${img_src}" srcset="${img_srcset}" />`;
   }, [img_src, img_srcset]);
+
+  const gridAreaStyle = useMemo(() => {
+    if (index === undefined) return {};
+
+    if (oddAndLast) {
+      const zeroBasedIndex = index - 1;
+      const groupIndex = Math.floor(zeroBasedIndex / 4);
+      const positionInGroup = zeroBasedIndex % 4;
+      const baseRow = groupIndex * 6 + 1;
+      let gridArea;
+      if (positionInGroup === 0) {
+        gridArea = `${baseRow} / 1 / ${baseRow + 3} / 6`;
+      } else if (positionInGroup === 2) {
+        gridArea = `${baseRow + 3} / 1 / ${baseRow + 6} / 6`;
+      } else {
+        return { gridArea: positionInGroup === 1 ? `${baseRow} / 3 / ${baseRow + 3} / 6` : `${baseRow + 3} / 4 / ${baseRow + 6} / 6` };
+      }
+      return { gridArea };
+    }
+
+    const zeroBasedIndex = index - 1;
+    const groupIndex = Math.floor(zeroBasedIndex / 4);
+    const positionInGroup = zeroBasedIndex % 4;
+    const baseRow = groupIndex * 6 + 1;
+
+    switch (positionInGroup) {
+      case 0:
+        return { gridArea: `${baseRow} / 1 / ${baseRow + 3} / 3` };
+      case 1:
+        return { gridArea: `${baseRow} / 3 / ${baseRow + 3} / 6` };
+      case 2:
+        return { gridArea: `${baseRow + 3} / 1 / ${baseRow + 6} / 4` };
+      case 3:
+        return { gridArea: `${baseRow + 3} / 4 / ${baseRow + 6} / 6` };
+      default:
+        return {};
+    }
+  }, [index, oddAndLast]);
 
   const onClickGalleryItem = () => {
     let id, search_slug;
@@ -28,10 +67,10 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
     window.history.pushState({}, '', url);
 
     setIsLoadingRoot(id, search_slug);
-  }
+  };
 
   return (
-    <figure className={className} {...attributes} onClick={() => onClickGalleryItem()}>
+    <figure className={className} {...attributes} onClick={() => onClickGalleryItem()} style={gridAreaStyle}>
         <div className="mgl-collection-img-container" >
           <div
             className="mgl-collection-image-content"
