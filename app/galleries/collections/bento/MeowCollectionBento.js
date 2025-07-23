@@ -1,5 +1,5 @@
-// Previous: 5.1.0
-// Current: 5.3.2
+// Previous: 5.3.2
+// Current: 5.3.3
 
 import { MeowCollectionItem } from "../components/MeowCollectionItem";
 
@@ -16,14 +16,29 @@ export const MeowCollectionBento = ({ classId, className = '', inlineStyle, coll
     const thumbnailsLength = collectionThumbnails.length;
     const isOdd = thumbnailsLength % 2 !== 0;
     
-    // Calculate total rows needed based on the grid pattern
-    // Every group of 4 items needs 6 rows (3 for top pair + 3 for bottom pair)
-    const totalGroups = Math.ceil(thumbnailsLength / 4);
-    const totalRows = totalGroups * 6;
+    // Calculate the actual rows needed based on the last item's position
+    let actualRowsNeeded = 0;
+    
+    if (thumbnailsLength > 0) {
+        const lastIndex = thumbnailsLength;
+        const zeroBasedIndex = lastIndex - 1;
+        const groupIndex = Math.floor(zeroBasedIndex / 4);
+        const positionInGroup = zeroBasedIndex % 4;
+        const baseRow = groupIndex * 6 + 1;
+        
+        // Calculate the end row for the last item
+        if (positionInGroup === 0 || positionInGroup === 1) {
+            // Items in first row of group
+            actualRowsNeeded = baseRow + 2; // baseRow + 3 - 1 (since grid-area end is exclusive)
+        } else {
+            // Items in second row of group  
+            actualRowsNeeded = baseRow + 5; // baseRow + 6 - 1 (since grid-area end is exclusive)
+        }
+    }
 
     const style = {
         gridTemplateColumns: 'repeat(5, 1fr)',
-        gridTemplateRows: `repeat(${totalRows}, minmax(50px, 1fr))`,
+        gridTemplateRows: `repeat(${actualRowsNeeded}, minmax(50px, 1fr))`,
     };
 
     return (

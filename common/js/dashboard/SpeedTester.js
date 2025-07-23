@@ -40,7 +40,7 @@ const SpeedTester = ({ request, title, max }) => {
       setResults([]);
     }
     setRunRequests(!runRequests);
-  }
+  };
 
   return (
     <TabText style={{ width: 200, textAlign: 'center' }}>
@@ -55,6 +55,6 @@ const SpeedTester = ({ request, title, max }) => {
       </NekoButton>
     </TabText>
   );
-}
+};
 
 export { SpeedTester };
