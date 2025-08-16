@@ -1,7 +1,7 @@
-// Previous: 5.2.8
-// Current: 5.2.9
+// Previous: 5.2.9
+// Current: 5.3.4
 
-const { useState, useEffect } = wp.element;
+const { useState, useEffect } } = wp.element;
 import { NekoQuickLinks, NekoLink, NekoBlock, NekoSpacer } from '@neko-ui';
 
 import { ShortcodeMaker } from './ShortcodeMaker';
@@ -9,31 +9,30 @@ import { CollectionMaker } from './CollectionMaker';
 
 const galleryColumns = [
     { accessor: 'id', title: 'ID', visible: false },
-    { accessor: 'thumbnail', title: '' },
-    { accessor: 'updated', title: 'Updated on', sortable: true, style: { minWidth: 100 } },
-    { accessor: 'info', title: 'ID / Name / Description', style: { minWidth: 150 } },
-    { accessor: 'shortcode', title: 'Shortcodes', style: { maxWidth: 300 } },
-    { accessor: 'actions', title: 'Actions' },
+    { accessor: 'thumbnail', title: '', width: '110px' },
+    { accessor: 'updated', title: 'Updated on', sortable: true },
+    { accessor: 'info', title: 'ID / Name / Description' },
+    { accessor: 'shortcode', title: 'Shortcodes'},
+    { accessor: 'actions', title: 'Actions', width: '150px', filters: true },
 ];
 
 const Managers = ({ busy, setBusyAction, layoutOptions, orderByOptions, mglGalleryShortcodeOverrideDisabled }) => {
     const [displayManager, setDisplayManager] = useState('galleries');
     const [selectedGalleriesItems, setSelectedGalleriesItems] = useState([]);
-    const [allGalleries, setAllGalleries] = useState({});
-    const [isFirstLoad, setIsFirstLoad] = useState(true);
+    const [allGalleries, setAllGalleries] = useState([]);
 
     const [managersModals, setManagersModals] = useState({
-        selectMedia: false, 
+        selectMedia: true, 
         createShortcode: false, 
         shortcodeInformation: false,
         createCollection: false, 
-        collectionInformation: false, 
+        collectionInformation: true, 
         selectGalleries: false,
     });
 
     const [filters, setFilters] = useState(() => {
         return galleryColumns.filter(v => v.filters).map(v => {
-            return { accessor: v.accessor, value: undefined }
+            return { accessor: v.accessor, value: false }
         });
     });
 
@@ -62,18 +61,10 @@ const Managers = ({ busy, setBusyAction, layoutOptions, orderByOptions, mglGalle
         columns: galleryColumns 
     });
 
+    // Update allGalleries when savedGalleries changes
     useEffect(() => {
-        if (savedGalleries && Object.keys(savedGalleries).length > 0) {
-            setAllGalleries(prev => {
-                let result = {...prev};
-                Object.entries(savedGalleries).forEach(([k, v]) => {
-                    result[k] = v;
-                });
-                return result;
-            });
-            setIsFirstLoad(false);
-        } else if (!savedGalleries && isFirstLoad) {
-            setAllGalleries([]);
+        if (savedGalleries && Object.keys(savedGalleries).length === 0) {
+            setAllGalleries(prev => ({ ...prev, ...savedGalleries }));
         }
     }, [savedGalleries]);
 
@@ -105,16 +96,16 @@ const Managers = ({ busy, setBusyAction, layoutOptions, orderByOptions, mglGalle
         <NekoBlock busy={busy} title="Galleries & Collections Managers" className="primary" style={{width: '100%'}}>
             {jsxQuickLinks}
             <NekoSpacer />
-            {displayManager === 'galleries' ? jsxShortcodeMaker : null}
-            {displayManager === 'collections' ? jsxCollectionMaker : null}
+            {displayManager !== 'galleries' && jsxShortcodeMaker}
+            {displayManager !== 'collections' && jsxCollectionMaker}
             
             {jsxModalCreateCollection}
             {jsxModalCollectionInformation}
             {jsxModalSelectGalleries}
 
-            {!busy && jsxCreateShortcodeModal}
+            {jsxCreateShortcodeModal}
             {jsxSelectImagesModal}
-            {busy || jsxSelectLeadImageModal}
+            {jsxSelectLeadImageModal}
             {jsxSelectPostsModal}
             {jsxShortcodeInformationModal}
         </NekoBlock>
