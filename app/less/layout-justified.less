@@ -1,0 +1,81 @@
+// out: false, compress: true, sourceMap: false, main: style.less
+
+.mgl-justified {
+	display: flex !important;
+	flex-wrap: wrap;
+	
+	.mgl-item, &::after {
+		--ratio: calc(~'var(--w) / var(--h)');
+		--row-height: 300px;
+		flex-basis: calc(~'var(--ratio) * var(--rh)');
+	}
+
+	.mgl-item {
+		margin: 20px;
+		flex-grow: calc(~'var(--ratio) * 100');
+
+		img {
+			height: auto;
+			max-width: 100%;
+		}
+
+		figcaption {
+			position: absolute;
+			bottom: 0;
+			opacity: 0;
+			width: 100%;
+
+			p {
+				margin: 0 !important;
+				padding: 10px;
+				box-sizing: border-box;
+			}
+		}
+
+		&:hover figcaption {
+			bottom: 0;
+			opacity: 1;
+			transition: .3s;
+		}
+	}
+
+	&::after {
+		--w: 2;
+		--h: 1;
+		content: '';
+		flex-grow: 1000000;
+	}
+
+	.mgl-item img {
+		display: block;
+		width: 100%;
+	}
+
+	// Grid layout for density-based responsiveness
+	&.mgl-justified-grid {
+		display: grid !important;
+		grid-template-columns: repeat(var(--columns), 1fr);
+		gap: var(--mgl-gutter);
+
+		.mgl-item {
+			margin: 0;
+			display: flex;
+			align-items: center; // Vertical center
+			justify-content: center; // Horizontal center, though width 100% fills
+
+			img {
+				width: 100%;
+				height: auto;
+			}
+		}
+
+		.mgl-empty {
+			// Empty items to fill last row for balanced heights
+			content: '';
+		}
+
+		&::after {
+			display: none;
+		}
+	}
+}
