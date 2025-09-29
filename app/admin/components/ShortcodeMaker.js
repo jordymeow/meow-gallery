@@ -1,5 +1,5 @@
-// Previous: 5.3.0
-// Current: 5.3.4
+// Previous: 5.3.4
+// Current: 5.3.6
 
 const { useState, useMemo, useEffect } = wp.element;
 
@@ -39,17 +39,21 @@ const ShortcodeMaker = ({
     const [latestPostsNumber, setLatestPostsNumber] = useState(5);
     const [buttonOkText, setButtonOkText] = useState('Create');
 
+    // Create query parameters state
     const [shortcodesQueryParams, setShortcodesQueryParams] = useState({
         filters: filters, 
         sort: { accessor: 'updated', by: 'desc' }, 
-        page: 1, 
+        page: 1,
+        search: '',
         limit: 10
     });
 
+    // Use our custom hooks
     const galleryQuery = useGalleries(shortcodesQueryParams);
     const saveGalleryMutation = useSaveGallery();
     const removeGalleryMutation = useRemoveGallery();
 
+    // Extract data from query result
     const { data: galleryData, isLoading } = galleryQuery;
     const savedGalleries = galleryData?.data || {};
     const shortcodesTotal = galleryData?.total || 0;
@@ -157,6 +161,7 @@ const ShortcodeMaker = ({
         setIsPostMode(gallery.is_post_mode);
         setOrderBy(gallery.order_by || 'none');
         
+        // Set post-related states if it's in post mode
         if (gallery.is_post_mode) {
             if (gallery.posts) {
                 setIsLatestPostsMode(false);
@@ -246,7 +251,20 @@ const ShortcodeMaker = ({
 
     const jsxShortcodePaging = useMemo(() => {
         return (<div>
+            
             <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <NekoInput
+                    style={{ marginRight: 8 }}
+                    value={shortcodesQueryParams.search}
+                    placeholder="Search..."
+                    onEnter={(value) => setShortcodesQueryParams(prev => ({ ...prev, search: value }))}
+                    onBlur={(value) => setShortcodesQueryParams(prev => ({ ...prev, search: value }))}
+                    iconEmpty='search'
+                iconFilled='delete'
+                onEmptyIconClick={() => setShortcodesQueryParams(prev => ({ ...prev, search: '' }))}
+            />
+
+
                 <NekoPaging currentPage={shortcodesQueryParams.page} limit={shortcodesQueryParams.limit}
                     total={shortcodesTotal} onClick={page => {
                         setShortcodesQueryParams(prev => ({ ...prev, page }));
@@ -513,6 +531,7 @@ const ShortcodeMaker = ({
         cancelButton={{ 
             label: 'Cancel', 
             onClick: () => {
+                // Reset to previous value if canceling
                 setLeadImageId(savedGalleries[galleryId]?.lead_image_id || '');
                 setModals({ ...modals, selectLeadImage: false });
             } 

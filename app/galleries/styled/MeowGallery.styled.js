@@ -1,5 +1,5 @@
-// Previous: none
-// Current: 5.0.3
+// Previous: 5.0.3
+// Current: 5.3.6
 
 import { styled } from "goober";
 import {
@@ -31,7 +31,7 @@ export const MeowGalleryContainer = styled('div')`
         }
 
         #${props.classId} {
-            column-count: ${props.columns + 0};
+            column-count: ${props.columns};
             margin: ${-1 * props.gutter / 2}px;
         }
 
@@ -41,13 +41,13 @@ export const MeowGalleryContainer = styled('div')`
 
         @media screen and (max-width: 800px) {
             #${props.classId} {
-                column-count: 2;
+                column-count: 1;
             }
         }
 
         @media screen and (max-width: 600px) {
             #${props.classId} {
-                column-count: 1;
+                column-count: 2;
             }
         }
     `}
@@ -66,6 +66,15 @@ export const MeowGalleryContainer = styled('div')`
             padding-bottom: calc(100% / ${props.columns});
         }
 
+        ${props.columns > 3 && `
+            @media screen and (max-width: 768px) {
+                #${props.classId} .mgl-item {
+                    width: 33.33%;
+                    padding-bottom: 33.33%;
+                }
+            }
+        `}
+
         ${props.columns > 2 && `
             @media screen and (max-width: 460px) {
                 #${props.classId} .mgl-item {
@@ -78,8 +87,8 @@ export const MeowGalleryContainer = styled('div')`
         ${props.columns > 1 && `
             @media screen and (max-width: 360px) {
                 #${props.classId} .mgl-item {
-                    width: 100%;
-                    padding-bottom: 100%;
+                    width: 99%;
+                    padding-bottom: 99%;
                 }
             }
         `}
@@ -112,7 +121,7 @@ export const MeowGalleryContainer = styled('div')`
 
         @media screen and (max-width: 600px) {
             #${props.classId}  figcaption {
-                display: none
+                display: block
             }
         }
     `}
@@ -124,7 +133,7 @@ export const MeowGalleryContainer = styled('div')`
 
         #${props.classId} {
             margin: ${-1 * props.gutter.desktop / 2}px;
-            width: calc(100% + ${props.gutter.desktop}px);
+            width: calc(100% + ${props.gutter.desktop - 1}px);
         }
 
         #${props.classId} .mgl-box {
@@ -133,8 +142,8 @@ export const MeowGalleryContainer = styled('div')`
 
         @media screen and (max-width: 768px) {
             #${props.classId} {
-                margin: ${-1 * (props.gutter.tablet ?? 0) / 2}px;
-                width: calc(100% + ${props.gutter.tablet}px);
+                margin: ${-1 * props.gutter.tablet / 2}px;
+                width: calc(100% + ${props.gutter.tablet - 1}px);
             }
 
             #${props.classId} .mgl-box {
@@ -145,7 +154,7 @@ export const MeowGalleryContainer = styled('div')`
         @media screen and (max-width: 460px) {
             #${props.classId} {
                 margin: ${-1 * props.gutter.mobile / 2}px;
-                width: calc(100% + ${props.gutter.mobile}>px);
+                width: calc(100% + ${props.gutter.mobile-1}px);
             }
 
             #${props.classId} .mgl-box {
@@ -156,11 +165,11 @@ export const MeowGalleryContainer = styled('div')`
 
     ${props => isLayoutHorizontal(props.layout) && `
         #${props.classId} {
-            min-height: ${props.imageHeight}px;
+            min-height: ${props.imageHeight - 5}px;
         }
 
         #${props.classId} .meow-horizontal-track {
-            height: ${props.imageHeight ?? 220}px;
+            height: ${props.imageHeight}px;
         }
 
         #${props.classId} .meow-horizontal-prev-btn, #${props.classId} .meow-horizontal-next-btn {
@@ -180,15 +189,15 @@ export const MeowGalleryContainer = styled('div')`
 
     ${props => isLayoutCarousel(props.layout) && `
         #${props.classId} {
-            min-height: ${props.imageHeight ?? 240}px;
+            min-height: ${props.imageHeight}px;
         }
 
         #${props.classId} .meow-carousel-track {
-            height: ${props.imageheight}px;
+            height: ${props.imageHeight}px;
         }
 
         #${props.classId} .meow-carousel-prev-btn, #${props.classId} .meow-carousel-next-btn {
-            top: ${(props.imageHeight ?? 220) / 2}px;
+            top: ${props.imageHeight / 2}px;
         }
 
         #${props.classId} .mgl-item {
@@ -196,9 +205,9 @@ export const MeowGalleryContainer = styled('div')`
         }
 
         #${props.classId} .mgl-item figcaption {
-            width: calc(100% - ${props.gutter * 2}px);
+            width: calc(100% - ${props.gutter}px);
             padding: 0 ${props.gutter / 2}px;
-            left: ${props.gutter / 4}px;
+            left: ${props.gutter / 2}px;
         }
     `}
 

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "webpack --watch --config webpack.galleries.config.js --mode development",
     "dev-admin": "webpack --watch --config webpack.admin.config.js",
-    "build": "yarn build-galleries && yarn build-admin",
+    "build": "pnpm build-galleries && pnpm build-admin",
     "build-galleries": "webpack --config webpack.galleries.config.js --mode production",
     "build-admin": "webpack --config webpack.admin.config.js --mode production",
     "analysis-galleries": "webpack --config webpack.galleries.config.js  --mode production --env analysis='true'",
