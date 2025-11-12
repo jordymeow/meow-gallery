@@ -4,7 +4,7 @@ Tags: gallery, masonry, image, block, lightroom
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 5.3.6
+Stable tag: 5.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,11 @@ You can find more information on this plugin on [Meow Apps: Meow Gallery](https:
 Languages: English.
 
 == Changelog ==
+
+= 5.3.7 (2025/11/12) =
+* Add: Uploading state and preview feature for blocks.
+* Add: orderBy attribute and control to the Gallery block.
+* Fix: Drag and drop functionality in blocks.
 
 = 5.3.6 (2025/09/29) =
 * Add: Retrieve thumbnail sizes for Map Markers.

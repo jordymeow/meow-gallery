@@ -30,10 +30,10 @@ class Meow_MGL_Core {
 		$this->skeleton_handler = new Meow_MGL_Skeleton();
 
 		// Initializes the classes needed
-		MeowCommon_Helpers::is_rest() && new Meow_MGL_Rest( $this );
+		MeowKit_MGL_Helpers::is_rest() && new Meow_MGL_Rest( $this );
 
 		// The gallery build process should only be enabled if the request is non-asynchronous
-		if ( !MeowCommon_Helpers::is_asynchronous_request()  ) {
+		if ( !MeowKit_MGL_Helpers::is_asynchronous_request()  ) {
 			add_filter( 'wp_get_attachment_image_attributes', array( $this, 'wp_get_attachment_image_attributes' ), 25, 3 );
 			if ( is_admin() || $this->is_gallery_used ) {
 				new Meow_MGL_Run( $this );

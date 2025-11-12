@@ -1,11 +1,13 @@
-// Previous: 5.2.6
-// Current: 5.3.2
+// Previous: 5.3.2
+// Current: 5.3.7
 
 const { __ } = wp.i18n;
 const { Component, Fragment, createRef } = wp.element;
 const { Button, DropZone, PanelBody, RangeControl,
 	CheckboxControl, TextControl, SelectControl, Toolbar, withNotices } = wp.components;
-const { BlockControls, MediaUpload, MediaPlaceholder, InspectorControls, mediaUpload } = wp.blockEditor;
+const { BlockControls, MediaPlaceholder, InspectorControls } = wp.blockEditor;
+const { MediaUpload, uploadMedia } = wp.mediaUtils;
+
 
 import { apiUrl, restNonce, isRegistered } from '@app/settings';
 import { postFetch } from '@neko-ui';
@@ -44,6 +46,7 @@ class GalleryEdit extends Component {
 			isBusy: false,
 			error: null,
 			selectedImage: null,
+			uploadingImages: [],
 		};
 	}
 
@@ -140,6 +143,11 @@ class GalleryEdit extends Component {
 		this.onRefresh({ columns: value });
 	}
 
+	setOrderBy(value) {
+		this.props.setAttributes({ orderBy: value });
+		this.onRefresh({ orderBy: value });
+	}
+
 	setLayout(layout) {
 		this.props.setAttributes({ layout: layout });
 		this.onRefresh({ layout });
@@ -178,26 +186,42 @@ class GalleryEdit extends Component {
 			this.setState( { isBusy: false } );
 		}
 		this.props.setAttributes( { htmlPreview: res.data } );
-	}
+	};
 
 	uploadFromFiles( event ) {
 		this.addFiles( event.target.files );
 	}
 
 	addFiles( files ) {
+
 		const currentImages = this.props.attributes.images || [];
 		const { noticeOperations, setAttributes } = this.props;
-		mediaUpload( {
+
+		uploadMedia( {
 			allowedTypes: ALLOWED_MEDIA_TYPES,
 			filesList: files,
 			onFileChange: ( images ) => {
-				const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
-				let newImages = currentImages.concat( imagesNormalized );
-				setAttributes({ images: newImages });
-				this.onRefresh({ images: newImages });
+				console.log('Uploaded files', images);
+				
+				const hasBlobUrls = images.some( image => image.url && image.url.startsWith('blob:') );
+				
+				if ( hasBlobUrls ) {
+					this.setState({ uploadingImages: images });
+				} else {
+					const imagesNormalized = images.map( ( image ) => pickRelevantMediaFiles( image ) );
+					let newImages = currentImages.concat( imagesNormalized );
+					setAttributes({ images: newImages });
+					this.setState({ uploadingImages: [] });
+					this.onRefresh({ images: newImages });
+				}
 			},
-			onError: noticeOperations.createErrorNotice,
+			onError: ( error ) => {
+				console.error( 'Error uploading files: ', error );
+				noticeOperations.createErrorNotice( error.message );
+				this.setState({ uploadingImages: [] });
+			}
 		} );
+
 	}
 
 	createElementFromHTML(htmlString) {
@@ -232,12 +256,13 @@ class GalleryEdit extends Component {
 	}
 
 	render() {
-		const { isBusy, error } = this.state;
+		const { isBusy, error, uploadingImages } = this.state;
 		const { attributes, isSelected, className, noticeOperations, noticeUI } = this.props;
 		const { layout, useDefaults, images, gutter, columns, rowHeight, htmlPreview, animation, galleriesManager, collectionsManager,
-			captions, wplrCollection, wplrFolder, linkTo, customClass, keepAspectRatio } = attributes;
+			captions, wplrCollection, wplrFolder, linkTo, customClass, keepAspectRatio, orderBy } = attributes;
 		const dropZone = (<DropZone onFilesDrop={ this.addFiles } />);
 		const hasImagesToShow =  images.length > 0 || !!wplrCollection || !!wplrFolder || !!galleriesManager || !!collectionsManager;
+		const isUploading = uploadingImages.length > 0;
 
 		const controls = (
 			<BlockControls>
@@ -266,7 +291,7 @@ class GalleryEdit extends Component {
 				return {
 					label: (x.level > 0 ? '- ' : '') + x.name.padStart(x.name.length + x.level, " "),
 					value: x.wp_col_id,
-					disabled: x.is_folder === 'true'
+					disabled: x.is_folder != '1'
 				};
 			});
 			categories.unshift({ label: 'None', value: '' });
@@ -324,11 +349,12 @@ class GalleryEdit extends Component {
 				</SelectControl>)
 		}
 
+
 		return (
 			<Fragment>
 				{ controls }
 				{ !hasImagesToShow &&
-					<MediaPlaceholder icon={meowGalleryIcon} className={ className } multiple accept={ "image/*" }
+					<MediaPlaceholder icon={meowGalleryIcon} className={ className } multiple accept="image/*"
 						labels={ {
 							title: __( 'Meow Gallery' ),
 							instructions: __( 'Drag images, upload new ones or select files from your library. If WP/LR Sync is installed, you can directly select a collection or a folder from Lightroom.' ),
@@ -355,7 +381,7 @@ class GalleryEdit extends Component {
 								{ value: 'carousel', label: 'Carousel', requiredPro: true },
 								{ value: 'map', label: 'Map (GPS Based)', requiredPro: true },
 								{ value: 'horizontal', label: 'Horizontal', requiredPro: false },
-							].filter(v => !v.requiredPro || v.requiredPro === isRegistered)}>
+							].filter(v => v.requiredPro || !v.requiredPro)} >
 						</SelectControl>
 						{ hasImagesToShow && !useDefaults &&
 							<SelectControl
@@ -378,6 +404,25 @@ class GalleryEdit extends Component {
 							value={ linkTo }
 							onChange={ this.setLinkTo }
 							options={ linkOptions }
+						/>
+						<SelectControl
+							label={ __( 'Order By' ) }
+							value={ orderBy }
+							onChange={ (value) => this.setOrderBy(value) }
+							options={[
+								{ value: 'none', label: 'None' },
+								{ value: 'random', label: 'Random' },
+								{ value: 'ids-asc', label: 'IDs Ascending' },
+								{ value: 'ids-desc', label: 'IDs Descending' },
+								{ value: 'title-asc', label: 'Title (Filename) Ascending' },
+								{ value: 'title-desc', label: 'Title (Filename) Descending' },
+								{ value: 'date-asc', label: 'Date Ascending' },
+								{ value: 'date-desc', label: 'Date Descending' },
+								{ value: 'modified-asc', label: 'Updated Date Ascending' },
+								{ value: 'modified-desc', label: 'Updated Date Descending' },
+								{ value: 'menu-asc', label: 'Menu Order Ascending' },
+								{ value: 'menu-desc', label: 'Menu Order Descending' },
+							]}
 						/>
 						{galleriesManagerSelector}
 						{collectionsManagerSelector}
@@ -416,6 +461,74 @@ class GalleryEdit extends Component {
 				{ noticeUI }
 				<div ref={this.ref} className="test">
 					{ dropZone }
+					
+					{isUploading && (
+						<div className="mgl-uploading-container" style={{
+							marginTop: '15px',
+							border: '1px solid #b2b2b2ff',
+							padding: '20px',
+							background: '#ebebebff',
+							marginBottom: '20px',
+							color: '#000000ff',
+							border: '1px solid #333'
+						}}>
+							<div style={{ 
+								display: 'flex', 
+								alignItems: 'center', 
+								marginBottom: '15px',
+								fontSize: '14px',
+								fontWeight: '400',
+								color: '#000000ff'
+							}}>
+								<span className='components-spinner' style={{ 
+									marginRight: '10px'
+								}} />
+								Uploading {uploadingImages.length} {uploadingImages.length === 1 ? 'image' : 'images'}...
+							</div>
+							<div style={{
+								display: 'grid',
+								gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+								gap: '10px'
+							}}>
+								{uploadingImages.map((image, index) => (
+									<div key={index} style={{
+										position: 'relative',
+										paddingBottom: '100%',
+										overflow: 'hidden',
+										background: '#1a1a1a',
+										borderRadius: '2px',
+										border: '1px solid #333'
+									}}>
+										{image.url && (
+											<img 
+												src={image.url} 
+												alt="Uploading..."
+												style={{
+													position: 'absolute',
+													top: 0,
+													left: 0,
+													width: '100%',
+													height: '100%',
+													objectFit: 'cover',
+													opacity: 0.5
+												}}
+											/>
+										)}
+										<div style={{
+											position: 'absolute',
+											top: '50%',
+											left: '50%',
+											transform: 'translate(-50%, -50%)',
+											zIndex: 1
+										}}>
+											<span className='components-spinner' />
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
 					{error && (<div className="components-notice is-error">
 						<div className="components-notice__content">
 							<p>
