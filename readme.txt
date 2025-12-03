@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.3.8
+Stable tag: 5.3.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,12 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.3.9 (2025/12/03) =
+* Fix: Resolve an issue where a broken gutter setting showed as [object Object].
+* Fix: Ensure the "animation" option is correctly included when using the block shortcode.
+* Add: Introduce a dedicated enqueue_styles method and refine how plugin scripts are loaded.
+* Add: Enable animation controls directly in the block settings.
 
 = 5.3.8 (2025/12/02) =
 * Update: Smoother and more modern system.
