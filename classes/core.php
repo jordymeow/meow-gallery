@@ -769,7 +769,12 @@ class Meow_MGL_Core {
 	}
 
 	private function get_image_class( $id, $layout, $noLightbox ) {
-    $base_class = $layout === 'carousel' ? 'skip-lazy' : 'wp-image-' . $id;
+    $base_class = 'wp-image-' . $id;
+	
+	if( $layout === 'carousel' ) {
+		$base_class .= ' skip-lazy';
+	}
+
     if ( $noLightbox ) {
       $base_class .= ' no-lightbox';
     }

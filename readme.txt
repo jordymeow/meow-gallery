@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.3.9
+Stable tag: 5.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,13 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.4.0 (2025/12/04) =
+* Update: Better enqueuing.
+* Fix: Stop sending htmlPreview data with block content to improve performance.
+* Update: Apply the new stylesheet loading method in the WordPress admin area.
+* Fix: Ensure the lightbox render is triggered after async loading.
+* Fix: Add the base wp-image- class to carousel images.
 
 = 5.3.9 (2025/12/03) =
 * Fix: Resolve an issue where a broken gutter setting showed as [object Object].

@@ -14,6 +14,7 @@ class Meow_MGL_Run {
 
 		if ( is_admin() ) {
 			add_action( 'init', array( $this, 'enqueue_scripts' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		} else {
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ), 10 );
 			
