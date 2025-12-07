@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.4.0
+Stable tag: 5.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,12 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.4.1 (2025/12/07) =
+* Update: Refined how shortcode ordering options are handled for more predictable display behavior.
+* Fix: Reset the plugin’s internal database version when options are reset to ensure a clean configuration state.
+* Add: Introduced tabindex support and improved keyboard navigation for better accessibility.
+* Fix: Ensured all block-related features safely handle list operations to prevent unexpected errors.
 
 = 5.4.0 (2025/12/04) =
 * Update: Better enqueuing.

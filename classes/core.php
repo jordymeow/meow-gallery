@@ -240,16 +240,27 @@ class Meow_MGL_Core {
 
 		// Ordering
 		if ( isset( $atts['orderby'] ) || isset( $atts['order_by'] ) ) {
-			
+
+			$orderby = '';
+			$order   = 'asc';
+
+			if ( isset( $atts['order'] ) ) {
+				$order = $atts['order'];
+			}
+
 			if ( isset( $atts['orderby'] ) ) {
 				$orderby = $atts['orderby'];
-				$order   = isset( $atts['order'] ) ? $atts['order'] : 'asc';
 			}
 
 			if ( isset( $atts['order_by'] ) ) {
-				$orderby = explode( '-', $atts['order_by'] )[0];
-				$order   = explode( '-', $atts['order_by'] )[1];
+				$orderby = $atts['order_by'];
 			}
+
+			if( strpos( $orderby, '-' ) === 0 ) {
+				$orderby = explode( '-', $orderby )[0];
+				$order   = explode( '-', $orderby )[1];
+			}
+
 
 			$image_ids = explode( ',', $image_ids );
 			$image_ids = Meow_MGL_OrderBy::run( $image_ids, $orderby, $order );
@@ -547,6 +558,7 @@ class Meow_MGL_Core {
 	}
 
 	function reset_options() {
+		delete_option( 'mgl_db_version');
 		delete_option( $this->option_name );
 	}
 
@@ -798,7 +810,7 @@ class Meow_MGL_Core {
 		if ( empty( $image_size ) || $image_size === 'srcset' ) {
 			$img_html = wp_get_attachment_image( $id, $size, false, [
 				'class' => $this->get_image_class( $id, $layout, $noLightbox ),
-				'draggable' => $layout === 'carousel' ? 'false' : null
+				'draggable' => $layout === 'carousel' ? 'false' : null,
 			]);
 		}
 		else {
@@ -827,6 +839,7 @@ class Meow_MGL_Core {
 				'src'      => true,
 				'srcset'   => true,
 				'loading'  => true,
+				'tabindex' => true,
 				'sizes'    => true,
 				'class'    => true,
 				'id'       => true,
