@@ -238,6 +238,22 @@ class Meow_MGL_Core {
 			$image_ids = implode( ',', $check );
 		}
 
+		// Limit images on archive/listing pages (not viewing the full single post)
+		$should_truncate = $this->get_option( 'truncate_on_listing', true );
+		$is_archive_context = !is_singular() && !is_admin() && !$isPreview && $should_truncate;
+		$is_archive_context = apply_filters( 'mgl_is_archive_context', $is_archive_context, $atts );
+		if ( $is_archive_context ) {
+			$archive_limit = apply_filters( 'mgl_archive_images_limit', 4, $atts );
+			if ( $archive_limit > 0 ) {
+				$check = explode( ',', $image_ids );
+				if ( count( $check ) > $archive_limit ) {
+					$check = array_slice( $check, 0, $archive_limit );
+					$image_ids = implode( ',', $check );
+					$atts['is_truncated'] = true; // Flag to potentially show "view more" indicator
+				}
+			}
+		}
+
 		// Ordering
 		if ( isset( $atts['orderby'] ) || isset( $atts['order_by'] ) ) {
 
@@ -565,12 +581,14 @@ class Meow_MGL_Core {
 	function list_options() {
 		return array(
 			'layout' => 'tiles',
-			'captions' => 'none',
+			'ç' => 'none',
 			'link' => null,
+			'caption_source' => 'caption',
 			'captions_alignment' => 'center',
 			'captions_background' => 'fade-black',
 			'animation' => false,
 			'image_size' => 'srcset',
+			'truncate_on_listing' => true,
 			
 			'rendering_mode' => 'dom', // Can be 'dom' or 'js'
 			'tiles_gutter' => 10,
@@ -691,6 +709,31 @@ class Meow_MGL_Core {
 
 	# endregion
 
+	function get_caption_from_source( $image ) {
+		$caption_source = $this->get_option( 'caption_source', 'caption' );
+		$caption = '';
+
+		switch ( $caption_source ) {
+			case 'title':
+				$caption = $image->title;
+				break;
+			case 'caption':
+				$caption = $image->caption;
+				break;
+			case 'description':
+				$caption = $image->description;
+				break;
+			case 'alt':
+				$caption = $image->alt;
+				break;
+			default:
+				$caption = $image->caption;
+				break;
+		}
+
+		return $caption;
+	}
+
 	function get_gallery_images( array $image_ids, array $atts, string $layout, string $size, array $posts_ids = []) {
 		global $wpdb;
 
@@ -698,19 +741,30 @@ class Meow_MGL_Core {
 		$ids = array_map( 'intval', $image_ids );
 		$ids_str = implode( ',', $ids );
 
-		$query = "SELECT p.ID id, p.post_excerpt caption, m.meta_value meta
-			FROM $wpdb->posts p, $wpdb->postmeta m
-			WHERE m.meta_key = '_wp_attachment_metadata'
-			AND p.ID = m.post_id
+		$query = "SELECT
+					p.ID id,
+					p.post_title title,
+					p.post_content description,
+					p.post_excerpt caption,
+					pm.meta_value alt,
+					pm2.meta_value meta
+
+			FROM $wpdb->posts p
+			LEFT JOIN $wpdb->postmeta pm  ON pm.post_id = p.ID  AND pm.meta_key  = '_wp_attachment_image_alt'
+			LEFT JOIN $wpdb->postmeta pm2 ON pm2.post_id = p.ID AND pm2.meta_key = '_wp_attachment_metadata'
+
+			WHERE p.post_type = 'attachment'
+
 			AND p.ID IN (" . $ids_str . ")
 		";
+
 		$res = $wpdb->get_results( $query );
 
 		$ids = explode( ',', $ids_str );
 		$images = [];
 		foreach ( $res as $r ) {
 			$images[$r->id] = [
-				'caption' => $r->caption,
+				'caption' => $this->get_caption_from_source( $r ),
 				'meta' => unserialize( $r->meta ),
 			];
 		}

@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.4.2
+Stable tag: 5.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,13 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.4.3 (2026/01/05) =
+* Add: Fallback width handling in the gallery height calculation.  
+* Add: Truncate option for listing pages to shorten long text.  
+* Update: Tutorial links.  
+* Add: Caption source selection and improved caption retrieval logic.  
+* Add: Expose the `mgl_load_more` function on the global window object (developers can trigger infinite gallery loading from custom scripts).
 
 = 5.4.2 (2025/12/16) =
 * Fix: Corrected box spacing (gutters).
