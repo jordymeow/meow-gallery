@@ -1,5 +1,5 @@
-// Previous: 5.3.0
-// Current: 5.3.1
+// Previous: 5.3.1
+// Current: 5.4.4
 
 export const tableDateTimeFormatter = (value) => {
     const time = new Date(value * 1000);
@@ -33,6 +33,14 @@ const headerStyle = {
     marginBottom: '6px',
 };
 
+const footerStyle = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    color: '#777',
+    fontSize: '0.65rem',
+    marginTop: '6px',
+};
+
 const titleStyle = {
     fontSize: '.8rem',
     fontWeight: 600,
@@ -47,7 +55,7 @@ const descStyle = {
 
 
 // prettier-ignore
-export const tableInfoFormatter = ({ id, name, description, order, layout }) => (
+export const tableInfoFormatter = ({ id, name, description, order, layout, rank }) => (
     <div style={cardStyle}>
         <div style={headerStyle}>
             <span>#{id}</span>
@@ -55,5 +63,8 @@ export const tableInfoFormatter = ({ id, name, description, order, layout }) => 
         </div>
         <div style={titleStyle}>{name}</div>
         <div style={descStyle}>{description}</div>
+        { rank != 0 && <div style={footerStyle}>
+            <span>⭐️: {rank}</span>
+        </div> }
     </div>
 );

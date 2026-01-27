@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.4.3
+Stable tag: 5.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,14 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.4.4 (2026/01/27) =
+* Add: New rank system to manually organize galleries.
+* Add: Bulk delete option to quickly remove multiple galleries.
+* Add: Ability to sort galleries by name.
+* Update: Preview mode now shows the "order by" setting.
+* Add: Truncate count option for galleries on the listing page to shorten long item counts.
+* Fix: Load more now registers and works correctly when using the editor.
 
 = 5.4.3 (2026/01/05) =
 * Add: Fallback width handling in the gallery height calculation.  

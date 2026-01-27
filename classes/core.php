@@ -243,7 +243,12 @@ class Meow_MGL_Core {
 		$is_archive_context = !is_singular() && !is_admin() && !$isPreview && $should_truncate;
 		$is_archive_context = apply_filters( 'mgl_is_archive_context', $is_archive_context, $atts );
 		if ( $is_archive_context ) {
-			$archive_limit = apply_filters( 'mgl_archive_images_limit', 4, $atts );
+			$archive_limit = intval( $this->get_option( 'truncate_count', 4 ) );
+
+			if( $archive_limit === 0 ) {
+				return ""; // If the user does not want the gallery to be shown at all on listing pages
+			}
+
 			if ( $archive_limit > 0 ) {
 				$check = explode( ',', $image_ids );
 				if ( count( $check ) > $archive_limit ) {
@@ -589,6 +594,7 @@ class Meow_MGL_Core {
 			'animation' => false,
 			'image_size' => 'srcset',
 			'truncate_on_listing' => true,
+			'truncate_count' => 4,
 			
 			'rendering_mode' => 'dom', // Can be 'dom' or 'js'
 			'tiles_gutter' => 10,
@@ -1080,7 +1086,7 @@ class Meow_MGL_Core {
 		return $galleries;
 	}
 
-	public function get_galleries( $offset = 0, $limit = 10, $order = 'DESC', $page = 1, $search = '' ) {
+	public function get_galleries( $offset = 0, $limit = 10, $order = 'DESC', $sort = null, $page = 1, $search = '' ) {
 		global $wpdb;
 		$shortcodes_table = $wpdb->prefix . 'mgl_gallery_shortcodes';
 		
@@ -1107,8 +1113,17 @@ class Meow_MGL_Core {
 		}
 		
 		// Get shortcodes with pagination and sorting
+	    $sort_accessor_to_column = [
+			'info' => 'name',
+			'updated' => 'updated_at',
+			'rank' => 'pref_rank',
+		];
+		
+		$sort = $sort_accessor_to_column[$sort] ?? 'pref_rank';
+
+		// Sort by rank DESC first, then by updated_at for equal ranks
 		$query = $wpdb->prepare(
-			"SELECT * FROM $shortcodes_table WHERE name LIKE %s ORDER BY updated_at $order LIMIT %d, %d",
+			"SELECT * FROM $shortcodes_table WHERE name LIKE %s ORDER BY $sort $order, updated_at DESC LIMIT %d, %d",
 			'%' . $wpdb->esc_like( $search ) . '%', $offset, $limit
 		);
 		
@@ -1128,6 +1143,7 @@ class Meow_MGL_Core {
 				'hero' => ( bool )$gallery['is_hero_mode'],
 				'posts' => $gallery['posts'] ? maybe_unserialize( $gallery['posts'] ) : null,
 				'latest_posts' => $gallery['latest_posts'],
+				'rank' => intval( $gallery['pref_rank'] ?? 0 ),
 				'updated' => strtotime( $gallery['updated_at'] )
 			];
 		}
