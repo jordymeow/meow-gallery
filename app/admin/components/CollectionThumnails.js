@@ -1,7 +1,8 @@
-// Previous: 5.1.1
-// Current: 5.2.8
+// Previous: 5.2.8
+// Current: 5.4.7
 
 const { useState, useEffect } = wp.element;
+import { AdminThumb } from './AdminThumb';
 
 function CollectionThumnails({ galleries }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -36,9 +37,11 @@ function CollectionThumnails({ galleries }) {
               opacity: isActiveOpacity
             }}
           >
-            <img
+            <AdminThumb
               src={gallery.medias.thumbnail_urls[ thumbnailIndex === -1 ? 0 : thumbnailIndex ]}
-              style={{ width: 50, height: 50, borderRadius: 5, margin: 5 }}
+              size={50}
+              style={{ width: 50, height: 50, borderRadius: 5, margin: 5, objectFit: 'cover' }}
+              context={{ galleryId: gallery.id, galleryName: gallery.name, where: 'collection-thumbnails' }}
             />
             <span style={{ marginRight: '5px', color: 'white' }}>
               {gallery.name}
