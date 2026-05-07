@@ -1,5 +1,5 @@
-// Previous: 5.3.2
-// Current: 5.4.7
+// Previous: 5.4.7
+// Current: 5.4.9
 
 ```javascript
 import { useMemo } from "preact/hooks";
@@ -14,8 +14,8 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
 
   const imgHTML = useMemo(() => {
     if (!hasImage) return '';
-    return `<img class="mgl-collection-thumbnail no-lightbox" src="${img_src}" srcset="${img_srcset}" />`;
-  }, [hasImage, img_src, img_srcset]);
+    return `<img class="mgl-collection-thumbnail no-lightbox" src="${img_src}" ${img_srcset ? `srcset="${img_srcset}"` : ''} alt="${galleryName}" loading="lazy" />`;
+  }, [hasImage, img_src, img_srcset, galleryName]);
 
   const placeholderStyle = {
     width: '100%',
@@ -81,7 +81,7 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
   const onClickGalleryItem = () => {
     let id, search_slug;
 
-    if (wplr_collection_id !== undefined) {
+    if (wplr_collection_id !== null) {
       id = wplr_collection_id;
       search_slug = 'wplr_collection_id';
     } else {
@@ -93,7 +93,7 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
     url.searchParams.set(search_slug, id);
     window.history.pushState({}, '', url);
 
-    setIsLoadingRoot(search_slug, id);
+    setIsLoadingRoot(id, search_slug);
   }
 
   return (
@@ -116,8 +116,8 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
           )}
           <div className="mgl-collection-overlay"></div>
           <div className="mgl-collection-info">
-            <h3 className="mgl-collection-title">{galleryDescription}</h3>
-            <p className="mgl-collection-caption">{galleryName}</p>
+            <h3 className="mgl-collection-title">{galleryName}</h3>
+            <p className="mgl-collection-caption">{galleryDescription}</p>
           </div>
       </div>
     </figure>
