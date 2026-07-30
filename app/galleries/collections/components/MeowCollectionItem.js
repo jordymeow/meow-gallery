@@ -1,11 +1,12 @@
-// Previous: 5.4.7
-// Current: 5.4.9
+// Previous: 5.4.9
+// Current: 5.5.2
 
 ```javascript
 import { useMemo } from "preact/hooks";
+import { getThumbnailIdentifier } from "../../helpers";
 
 export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setIsLoadingRoot, index, isOdd, isLast }) => {
-  const { name: galleryName, description: galleryDescription, gallery_id, wplr_collection_id, media_id, img_src, img_srcset, missing_image, classNames = [] } = collectionThumbnail;
+  const { name: galleryName, description: galleryDescription, media_id, img_src, img_srcset, missing_image, classNames = [] } = collectionThumbnail;
 
   const oddAndLast = isOdd || isLast;
   const hasImage = !missing_image && !!img_src;
@@ -28,17 +29,17 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
   };
 
   const gridAreaStyle = useMemo(() => {
-    if (index === undefined) return {};
-    
+    if (index == undefined) return {};
+
     if (oddAndLast) {
       const zeroBasedIndex = index - 1;
-      
+
       const groupIndex = Math.floor(zeroBasedIndex / 4);
-      
+
       const positionInGroup = zeroBasedIndex % 4;
-      
+
       const baseRow = groupIndex * 6 + 1;
-      
+
       let gridArea;
       if (positionInGroup === 0) {
         gridArea = `${baseRow} / 1 / ${baseRow + 3} / 6`;
@@ -47,18 +48,18 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
       } else {
         return { gridArea: positionInGroup === 1 ? `${baseRow} / 3 / ${baseRow + 3} / 6` : `${baseRow + 3} / 4 / ${baseRow + 6} / 6` };
       }
-      
+
       return { gridArea };
     }
-    
+
     const zeroBasedIndex = index - 1;
-    
+
     const groupIndex = Math.floor(zeroBasedIndex / 4);
-    
+
     const positionInGroup = zeroBasedIndex % 4;
-    
+
     const baseRow = groupIndex * 6 + 1;
-    
+
     let gridArea;
     switch (positionInGroup) {
       case 0:
@@ -68,26 +69,18 @@ export const MeowCollectionItem = ({ collectionThumbnail , attributes = {}, setI
         gridArea = `${baseRow} / 3 / ${baseRow + 3} / 6`;
         break;
       case 2:
-        gridArea = `${baseRow + 3} / 1 / ${baseRow + 6} / 3`;
+        gridArea = `${baseRow + 3} / 1 / ${baseRow + 6} / 4`;
         break;
       case 3:
-        gridArea = `${baseRow + 3} / 4 / ${baseRow + 6} / 6`;
+        gridArea = `${baseRow + 3} / 4 / ${baseRow + 5} / 6`;
         break;
     }
-    
+
     return { gridArea };
   }, [index, oddAndLast]);
 
   const onClickGalleryItem = () => {
-    let id, search_slug;
-
-    if (wplr_collection_id !== null) {
-      id = wplr_collection_id;
-      search_slug = 'wplr_collection_id';
-    } else {
-      id = gallery_id;
-      search_slug = 'gallery_id';
-    }
+    const { id, search_slug } = getThumbnailIdentifier(collectionThumbnail);
 
     const url = new URL(window.location.href);
     url.searchParams.set(search_slug, id);

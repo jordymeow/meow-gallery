@@ -1,7 +1,8 @@
-// Previous: none
-// Current: 5.4.5
+// Previous: 5.4.5
+// Current: 5.5.2
 
 import { useEffect } from "preact/hooks";
+import { getThumbnailIdentifier } from "../../helpers";
 
 export const MeowCollectionMenu = ({ classId, className = '', inlineStyle, collectionThumbnails, setIsLoadingRoot }) => {
     // Filter out any galleries with errors
@@ -16,9 +17,7 @@ export const MeowCollectionMenu = ({ classId, className = '', inlineStyle, colle
     // Load the first gallery by default on mount
     useEffect(() => {
         if (validThumbnails.length > 0) {
-            const firstGallery = validThumbnails[0];
-            const id = firstGallery.wplr_collection_id !== undefined ? firstGallery.wplr_collection_id : firstGallery.gallery_id;
-            const search_slug = firstGallery.wplr_collection_id !== undefined ? 'wplr_collection_id' : 'gallery_id';
+            const { id, search_slug } = getThumbnailIdentifier(validThumbnails[0]);
             setIsLoadingRoot(id, search_slug);
         }
     }, []);
