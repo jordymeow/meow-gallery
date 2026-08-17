@@ -1,7 +1,8 @@
-// Previous: none
-// Current: 5.4.7
+// Previous: 5.4.7
+// Current: 5.5.3
 
 const { useState } = wp.element;
+import { mgl_log } from '@app/logger';
 
 // Small thumbnail with graceful fallback: if the src 404s (common when an
 // attachment was deleted from the Media Library), swap to an SVG placeholder
@@ -35,7 +36,7 @@ const AdminThumb = ({ src, mime, style, context, size = 40 }) => {
   }
 
   const onError = () => {
-    console.warn('[Meow Gallery] Thumbnail failed to load:', { src, context });
+    mgl_log.warn('[Meow Gallery] Thumbnail failed to load:', { src, context });
     setFailed(true);
   };
 

@@ -1,13 +1,14 @@
-// Previous: 5.3.2
-// Current: 5.3.3
+// Previous: 5.3.3
+// Current: 5.5.3
 
 import { MeowCollectionItem } from "../components/MeowCollectionItem";
+import { mgl_log } from "../../logger";
 
 export const MeowCollectionBento = ({ classId, className = '', inlineStyle, collectionThumbnails, setIsLoadingRoot }) => {
 
     collectionThumbnails = collectionThumbnails.filter((collectionThumbnail) => {
         if ( collectionThumbnail.error ) {
-            console.error('Meow Gallery: Error loading collection thumbnail', collectionThumbnail);
+            mgl_log.error('Meow Gallery: Error loading collection thumbnail', collectionThumbnail);
             return false;
         }
         return true;

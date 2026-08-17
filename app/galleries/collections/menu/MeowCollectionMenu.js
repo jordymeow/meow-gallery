@@ -1,14 +1,15 @@
-// Previous: 5.4.5
-// Current: 5.5.2
+// Previous: 5.5.2
+// Current: 5.5.3
 
 import { useEffect } from "preact/hooks";
 import { getThumbnailIdentifier } from "../../helpers";
+import { mgl_log } from "../../logger";
 
 export const MeowCollectionMenu = ({ classId, className = '', inlineStyle, collectionThumbnails, setIsLoadingRoot }) => {
     // Filter out any galleries with errors
     const validThumbnails = collectionThumbnails.filter((collectionThumbnail) => {
         if (collectionThumbnail.error) {
-            console.error('Meow Gallery: Error loading collection thumbnail', collectionThumbnail);
+            mgl_log.error('Meow Gallery: Error loading collection thumbnail', collectionThumbnail);
             return false;
         }
         return true;

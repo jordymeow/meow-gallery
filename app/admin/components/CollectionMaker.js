@@ -1,11 +1,12 @@
-// Previous: 5.4.7
-// Current: 5.5.2
+// Previous: 5.5.2
+// Current: 5.5.3
 
 ```jsx
 const { useState, useMemo, useEffect } = wp.element;
 
 import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTable, NekoModal, NekoSelect, NekoOption, NekoSpacer, NekoShortcode } from '@neko-ui';
 import { isRegistered } from '@app/settings';
+import { mgl_log } from '@app/logger';
 
 import { tableDateTimeFormatter, tableInfoFormatter } from "../admin-helpers";
 import { CollectionThumnails } from './CollectionThumnails';
@@ -57,7 +58,7 @@ const CollectionMaker = ({
     const collectionsTotal = collectionsData?.total || 0;
     
     const galleryItemsQuery = useGalleryItems(
-        currentCollection.id != 0 
+        currentCollection.id !== 0 
             ? currentCollection.galleries_ids || []
             : []
     );
@@ -244,9 +245,9 @@ const CollectionMaker = ({
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
                             {currentCollection.galleries.map((gallery, index) => {
-                                if ( !gallery.id ) { console.error('Gallery is missing id', gallery); return null;}
+                                if ( !gallery.id ) { mgl_log.error('Gallery is missing id', gallery); return null;}
                                 if ( !gallery.medias ){
-                                    console.error(`Gallery ${gallery.id} might have been deleted.`, gallery);
+                                    mgl_log.error(`Gallery ${gallery.id} might have been deleted.`, gallery);
                                     return <div style={{background: '#ba4300', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3, height: 60}}>
                                     <span  style={{ borderRadius: 5, margin: 5, fontSize: '1.5rem' }}>☠️</span>
                                     <span style={{ marginRight: '5px', color: 'white' }}>{gallery.id}</span>
