@@ -1,5 +1,5 @@
-// Previous: 5.5.2
-// Current: 5.5.3
+// Previous: 5.5.3
+// Current: 5.5.4
 
 ```jsx
 const { useState, useMemo, useEffect } = wp.element;
@@ -8,7 +8,7 @@ import { ProOnly, NekoPaging, NekoIcon, NekoButton, NekoTypo, NekoInput, NekoTab
 import { isRegistered } from '@app/settings';
 import { mgl_log } from '@app/logger';
 
-import { tableDateTimeFormatter, tableInfoFormatter } from "../admin-helpers";
+import { tableDateTimeFormatter, tableInfoFormatter, normalizeMedias } from "../admin-helpers";
 import { CollectionThumnails } from './CollectionThumnails';
 import { AdminThumb } from './AdminThumb';
 import { useCollections, useSaveCollection, useRemoveCollection, useGalleryItems } from '../hooks/useQueries';
@@ -256,7 +256,7 @@ const CollectionMaker = ({
                                 if (index >= 10) return null;
                                 return <div style={{background: '#007cba', borderRadius: 5, display: 'flex', alignItems: 'center', margin: 3}}>
                                     <AdminThumb
-                                        src={gallery.medias.thumbnail_urls[0]}
+                                        src={normalizeMedias(gallery.medias).thumbnails[0]?.url}
                                         size={50}
                                         style={{ width: 50, height: 50, borderRadius: 5, margin: 5, objectFit: 'cover' }}
                                         context={{ galleryId: gallery.id, galleryName: gallery.name, where: 'collection-maker-preview' }}

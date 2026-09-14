@@ -1,5 +1,5 @@
-// Previous: 5.3.1
-// Current: 5.4.4
+// Previous: 5.4.4
+// Current: 5.5.4
 
 export const tableDateTimeFormatter = (value) => {
     const time = new Date(value * 1000);
@@ -68,3 +68,28 @@ export const tableInfoFormatter = ({ id, name, description, order, layout, rank 
         </div> }
     </div>
 );
+
+// A gallery's "medias" holds the ordered attachment IDs, and the thumbnails (URLs + mime) the
+// server resolved for them. Reading it through this normalizer means a gallery whose data is
+// missing or truncated renders placeholders instead of crashing the whole Gallery Manager.
+export const emptyMedias = () => ({ thumbnail_ids: [], thumbnails: [] });
+
+export const normalizeMedias = (medias) => {
+    if (!medias || typeof medias !== 'object' || Array.isArray(medias)) {
+        return emptyMedias();
+    }
+
+    const thumbnail_ids = Array.isArray(medias.thumbnail_ids) ? medias.thumbnail_ids : [];
+    let thumbnails = Array.isArray(medias.thumbnails)
+        ? medias.thumbnails.filter((thumb) => thumb && typeof thumb === 'object')
+        : [];
+
+    // One entry per ID, always. An entry without a URL renders as a placeholder (AdminThumb).
+    // IDs are compared as strings since older galleries stored them as such.
+    if (thumbnails.length !== thumbnail_ids.length) {
+        const byId = new Map(thumbnails.map((thumb) => [String(thumb.id), thumb]));
+        thumbnails = thumbnail_ids.map((id) => byId.get(String(id)) || { id, url: '', zoom_url: '', mime: '' });
+    }
+
+    return { thumbnail_ids, thumbnails };
+};
