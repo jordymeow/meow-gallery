@@ -560,7 +560,7 @@ class Meow_MGL_Core {
 					$aria = !empty( $aria_value ) ? $aria_label . ': ' . $aria_value : $aria_label;
 
 					$custom_link_classes = apply_filters( 'mgl_custom_link_classes', '', $image );
-					$html .= '<a class="' . $custom_link_classes . '" href="' . $image['link_href'] . '" target="' . $image['link_target'] . '" rel="' . $image['link_rel'] . 
+					$html .= '<a class="' . esc_attr( $custom_link_classes ) . '" href="' . $image['link_href'] . '" target="' . esc_attr( $image['link_target'] ?? '' ) . '" rel="' . esc_attr( $image['link_rel'] ?? '' ) .
 					'" aria-label="' . $aria . '">';
 					$html .= $image['img_html'];
 					$html .= '</a>';

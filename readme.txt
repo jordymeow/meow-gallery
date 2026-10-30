@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 5.5.7
+Stable tag: 5.5.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,9 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.5.8 (2026/10/30) =
+* Fix: Security: Escape the target, rel and class attributes of gallery links.
 
 = 5.5.7 (2026/10/30) =
 * Add: The empty gallery message can now be translated, and changed or hidden with the new mgl_empty_gallery_message filter.
@@ -674,4 +677,11 @@ You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/
 
 == Screenshots ==
 
-1. Meow Gallery.
+
+1. The Justified layout lines your photos up in even rows and keeps the shape of every image.
+2. Tiles mixes big and small photos into a magazine-style grid that adapts to each photo's orientation.
+3. Masonry stacks photos in columns, perfect for a mix of portrait and landscape shots.
+4. Add the Meow Gallery block, pick a layout, and see the gallery live in the editor.
+5. The Galleries manager keeps your galleries in one place, each with its own layout and a shortcode to use anywhere.
+6. Set the default look of every layout: gutters, row height, columns and density for desktop, tablet and mobile.
+
