@@ -5,7 +5,7 @@ Donate link: https://www.patreon.com/meowapps
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 5.5.6
+Stable tag: 5.5.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,14 @@ SEO-friendly with automatic sitemap integration (works with Yoast SEO and others
 You can find more information on [Meow Apps: Meow Gallery](https://meowapps.com/meow-gallery/).
 
 == Changelog ==
+
+= 5.5.7 (2026/10/30) =
+* Add: The empty gallery message can now be translated, and changed or hidden with the new mgl_empty_gallery_message filter.
+* Update: Gallery animations are now marked as Pro in the free block.
+* Update: New installs now default to OpenStreetMap for maps; existing map settings are kept.
+* Update: Bento collection titles now inherit the theme color.
+* Fix: Galleries using both id and ids showed up empty; ids wins again, as in WordPress.
+* Fix: OpenStreetMap, Mapbox and MapTiler maps now fit all their pins.
 
 = 5.5.6 (2026/10/03) =
 * Update: Gallery data in the HTML now only keeps the image dimensions, no longer the full list of sizes and the EXIF data.
